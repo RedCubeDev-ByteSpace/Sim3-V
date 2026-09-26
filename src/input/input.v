@@ -7,6 +7,16 @@ import utils
 import math
 
 pub fn handle_input(evt gg.Event, mut app data.App) {
+	// first: share our current cursor position with microui and check if it wants to capture our input
+	app.mu.update_mouse_position(evt)
+	if app.mu.wants_input_capture() {
+		// if so: pass anything and everything else on to microui
+		app.mu.handle_input_event(evt)
+		return
+	}
+
+	// otherwise: treat it as input for the simview
+
 	if evt.typ == .mouse_move {
 		app.input.mouse_pos = vec.vec2[f32](evt.mouse_x, evt.mouse_y)
 	}
@@ -20,9 +30,6 @@ pub fn handle_input(evt gg.Event, mut app data.App) {
 	if handle_simview_zoom(evt, mut app) {
 		return
 	}
-
-	// pass anything else on to microui
-	app.mu.handle_input_event(evt)
 }
 
 pub fn handle_simview_movement(evt gg.Event, mut app data.App) bool {

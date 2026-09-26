@@ -11,8 +11,8 @@ import math.vec
 
 // ---------------------------------------------------------------------------------------------------------------------
 // constants for initial window configuration
-const initial_window_width = 800
-const initial_window_height = 600
+const initial_window_width = 1600
+const initial_window_height = 900
 const window_title = 'Sim3'
 
 // main ----------------------------------------------------------------------------------------------------------------
@@ -52,6 +52,8 @@ fn main() {
 	style.colors[microui.Color.titletext] = gg.Color{50, 50, 50, 255}
 	style.colors[microui.Color.titlebg] = gg.Color{255, 255, 255, 255}
 	style.colors[microui.Color.windowbg] = gg.Color{230, 230, 230, 255}
+	style.colors[microui.Color.base] = gg.Color{255, 255, 255, 255}
+	style.colors[microui.Color.basehover] = gg.Color{240, 240, 240, 255}
 
 	app.mu.set_style(style)
 

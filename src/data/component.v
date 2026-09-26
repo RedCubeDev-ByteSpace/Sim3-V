@@ -3,9 +3,11 @@ module data
 import math.vec
 import gg
 
+pub type AABB = gg.Rect
+
 pub interface IComponent {
 	get_position() vec.Vec2[int]
-	get_aabb() gg.Rect
+	get_aabb() AABB
 	get_rotation() Rotation
 	get_color() gg.Color
 
@@ -58,8 +60,8 @@ pub fn (mut c ComponentBase) set_color(color gg.Color) {
 	c.color = color
 }
 
-pub fn (c ComponentBase) get_aabb() gg.Rect {
-	return gg.Rect{
+pub fn (c ComponentBase) get_aabb() AABB {
+	return AABB{
 		x:      c.pos.x
 		y:      c.pos.y
 		width:  c.size.x

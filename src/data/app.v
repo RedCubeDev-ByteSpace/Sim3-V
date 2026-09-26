@@ -32,6 +32,11 @@ pub mut:
 			prev_camera_offset        vec.Vec2[f32] = vec.Vec2[f32]{0, 0}
 			prev_zoom                 f32           = 1
 		}
+
+		debug struct {
+		pub mut:
+			show_aabb bool
+		}
 	}
 
 	// input -----------------------------------------------------------------------------------------------------------
@@ -51,5 +56,12 @@ pub mut:
 	sim struct {
 	pub mut:
 		components []IComponent = []
+	}
+
+	// bench -----------------------------------------------------------------------------------------------------------
+	// everything concerning the circuit workbench
+	bench struct {
+	pub mut:
+		current_selected_color_idx int
 	}
 }
