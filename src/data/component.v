@@ -18,6 +18,7 @@ mut:
 	set_offset(pos vec.Vec2[int])
 	set_rotation(rot Rotation)
 	set_color(color gg.Color)
+	interact()
 }
 
 pub struct ComponentBase {
@@ -79,3 +80,5 @@ pub fn (c ComponentBase) get_aabb() AABB {
 		height: f32(c.size.y) + 0.4
 	}
 }
+
+pub fn (mut c ComponentBase) interact() {}

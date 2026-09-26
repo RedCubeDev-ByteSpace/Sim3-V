@@ -21,9 +21,9 @@ pub const wire_colors = [
 
 pub fn get_low_color_from_high_color(color gg.Color) gg.Color {
 	return gg.Color{
-		r: u8(f32(color.r) * 0.5)
-		g: u8(f32(color.g) * 0.5)
-		b: u8(f32(color.b) * 0.5)
+		r: u8(f32(color.r) * 0.3)
+		g: u8(f32(color.g) * 0.3)
+		b: u8(f32(color.b) * 0.3)
 		a: color.a
 	}
 }

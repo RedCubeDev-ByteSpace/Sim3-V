@@ -68,9 +68,14 @@ fn main() {
 	app.view.camera_position = vec.vec2[f32](initial_window_width / data.one_simspace_unit_in_px / 2,
 		initial_window_height / data.one_simspace_unit_in_px / 2)
 
-	app.sim.components << components.Switch.new(vec.vec2[int](0, 0), .up, data.wire_colors[0],
+	app.sim.components << components.Switch.new(vec.vec2[int](0, 0), .left, data.wire_colors[0],
 		false)
-	app.sim.components << components.Switch.new(vec.vec2[int](5, 5), .up, data.wire_colors[0],
+	app.sim.components << components.Switch.new(vec.vec2[int](3, 0), .up, data.wire_colors[0],
+		true)
+	app.sim.components << components.Switch.new(vec.vec2[int](6, 0), .right, data.wire_colors[0],
+		false)
+
+	app.sim.components << components.Switch.new(vec.vec2[int](10, 0), .down, data.wire_colors[0],
 		false)
 
 	// run the main draw loop!

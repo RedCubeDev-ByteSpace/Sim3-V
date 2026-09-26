@@ -22,25 +22,48 @@ pub fn handle_input(evt gg.Event, mut app data.App) {
 		app.input.mouse_pos = vec.vec2[f32](evt.mouse_x, evt.mouse_y)
 	}
 
-	// first: is this event something about the movement of the view?
+	// first: are we trying to interact with a component
+	if handle_component_interaction(evt, mut app) {
+		return
+	}
+
+	// second: is this event something about the movement of the view?
 	if handle_simview_movement(evt, mut app) {
 		return
 	}
 
-	// second: is this movement a zoom in or out?
+	// third: is this movement a zoom in or out?
 	if handle_simview_zoom(evt, mut app) {
 		return
 	}
 
-	// third: are we trying to move something?
+	// fourth: are we trying to move something?
 	if handle_component_move(evt, mut app) {
 		return
 	}
 
-	// fourth: are we trying to select something?
+	// fifth: are we trying to select something?
 	if handle_rectangle_select(evt, mut app) {
 		return
 	}
+}
+
+fn handle_component_interaction(evt gg.Event, mut app data.App) bool {
+	// is the workbench currently unused and theres been a mouse click...
+	if app.bench.bench_state == .idle && evt.typ == .mouse_down && evt.mouse_button == .left {
+		// ... check if we've clicked on a component
+		mouse_pos_in_world_space := utils.screenspace_to_worldspace(app, app.input.mouse_pos)
+		for mut comp in app.sim.components {
+			// if yes AND component is not currectly selected -> interact
+			if utils.is_point_inside_aabb(comp.get_aabb(), mouse_pos_in_world_space)
+				&& comp !in app.bench.selected_components {
+				comp.interact()
+				return true
+			}
+		}
+	}
+
+	return false
 }
 
 fn handle_simview_movement(evt gg.Event, mut app data.App) bool {
