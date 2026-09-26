@@ -2,7 +2,7 @@ module data
 
 import gg
 
-pub const grid_color = gg.Color{0, 0, 0, 200}
+pub const grid_color = gg.Color{0, 0, 0, 255}
 pub const component_color = gg.Color{0, 0, 0, 255}
 pub const wire_colors = [
 	gg.Color{84, 110, 122, 255}, // Slate Gray    #546E7A

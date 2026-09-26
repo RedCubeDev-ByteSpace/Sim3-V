@@ -4,6 +4,7 @@ import gg
 import data
 import math.vec
 import utils
+import math
 
 pub fn handle_input(evt gg.Event, mut app data.App) {
 	if evt.typ == .mouse_move {
@@ -19,6 +20,9 @@ pub fn handle_input(evt gg.Event, mut app data.App) {
 	if handle_simview_zoom(evt, mut app) {
 		return
 	}
+
+	// pass anything else on to microui
+	app.mu.handle_input_event(evt)
 }
 
 pub fn handle_simview_movement(evt gg.Event, mut app data.App) bool {
@@ -41,6 +45,11 @@ pub fn handle_simview_movement(evt gg.Event, mut app data.App) bool {
 	if app.input.is_moving_view {
 		// ... and theres a mouse movement -> recalculate the view offset
 		if evt.typ == .mouse_move {
+			// remember the last offset for drawing grid movement trails
+			app.view.grid.draw_grid_movement_trails = true
+			app.view.grid.prev_camera_offset = app.view.camera_offset
+
+			// update the camera offset
 			app.view.camera_offset = vec.Vec2[f32]{
 				x: evt.mouse_x - app.input.view_moving_start_pos.x
 				y: evt.mouse_y - app.input.view_moving_start_pos.y
@@ -57,6 +66,11 @@ pub fn handle_simview_movement(evt gg.Event, mut app data.App) bool {
 
 			app.input.is_moving_view = false
 
+			// stop any grid movement trails
+			app.view.grid.draw_grid_movement_trails = false
+			app.view.grid.prev_camera_offset = app.view.camera_offset
+			app.view.grid.prev_camera_position = app.view.camera_position
+
 			// dont process any input after this
 			return true
 		}
@@ -71,16 +85,52 @@ pub fn handle_simview_zoom(evt gg.Event, mut app data.App) bool {
 		return false
 	}
 
-	mouse_pos_in_world_space_before_zoom := utils.screenspace_to_worldspace(app, app.input.mouse_pos)
 	if evt.scroll_y > 0 {
-		app.view.zoom *= 1.5
+		new_zoom := app.input.target_zoom * 1.5
+		if new_zoom < data.max_zoom {
+			app.input.target_zoom = new_zoom
+		}
 	} else {
-		app.view.zoom /= 1.5
+		if app.input.target_zoom > data.min_zoom {
+			app.input.target_zoom /= 1.5
+		}
 	}
+
+	return true
+}
+
+pub fn sync_zoom(mut app data.App) {
+	if app.view.zoom == app.input.target_zoom {
+		// nothing to do!
+		return
+	}
+
+	// remember the previous zoom and camera position for grid movement trails
+	app.view.grid.draw_grid_movement_trails = true
+	app.view.grid.prev_camera_position = app.view.camera_position
+	app.view.grid.prev_zoom = app.view.zoom
+
+	// otherwise: lerp the zoom towards the target
+	mouse_pos_in_world_space_before_zoom := utils.screenspace_to_worldspace(app, app.input.mouse_pos)
+
+	app.view.zoom = utils.lerp(app.view.zoom, app.input.target_zoom, 0.2)
+
+	// are we close enough to the real value?
+	if math.abs(app.view.zoom - app.input.target_zoom) <= data.zoom_lerp_cutoff {
+		// stop lerping -> just jump to the real value
+		app.view.zoom = app.input.target_zoom
+	}
+
+	// are we close enough to the real value to stop grid movement trails?
+	// (because it looks weird if they go on for too long)
+	if app.view.grid.draw_grid_movement_trails
+		&& math.abs(app.view.zoom - app.input.target_zoom) <= data.zoom_trail_cutoff {
+		// stop any movement tails
+		app.view.grid.draw_grid_movement_trails = false
+	}
+
 	mouse_pos_in_world_space_after_zoom := utils.screenspace_to_worldspace(app, app.input.mouse_pos)
 
 	// adjust the camera position to zoom into where the cursor is positioned
 	app.view.camera_position = app.view.camera_position.add(mouse_pos_in_world_space_after_zoom.sub(mouse_pos_in_world_space_before_zoom))
-
-	return true
 }

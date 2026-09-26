@@ -40,6 +40,21 @@ fn main() {
 	)
 
 	app.mu = microui.new_context(mut app.gg) or { panic('Failed to initialize microui!') }
+
+	// customize the microui style
+	mut style := app.mu.get_style()
+
+	// set the font spacing to 1
+	style.size.y = 1
+
+	// change some of the colors
+	style.colors[microui.Color.text] = gg.Color{50, 50, 50, 255}
+	style.colors[microui.Color.titletext] = gg.Color{50, 50, 50, 255}
+	style.colors[microui.Color.titlebg] = gg.Color{255, 255, 255, 255}
+	style.colors[microui.Color.windowbg] = gg.Color{230, 230, 230, 255}
+
+	app.mu.set_style(style)
+
 	app.sim.components << components.Switch.new(vec.vec2[int](0, 0), .up, data.wire_colors[0],
 		false)
 
@@ -56,6 +71,7 @@ fn on_event(e &gg.Event, mut app data.App) {
 // on_frame ------------------------------------------------------------------------------------------------------------
 // draw a new frame!
 fn on_frame(mut app data.App) {
+	input.sync_zoom(mut app)
 	app.gg.begin()
 
 	// draw all the components that are currently in view
