@@ -49,6 +49,7 @@ pub mut:
 		view_moving_start_pos    vec.Vec2[f32]
 		selecting_start_pos      vec.Vec2[f32]
 		component_move_start_pos vec.Vec2[f32]
+		mui_needs_mouse_up       bool
 
 		target_zoom f32 = 1
 	}
@@ -57,7 +58,8 @@ pub mut:
 	// everything concerning the simulation
 	sim struct {
 	pub mut:
-		components []IComponent = []
+		global_id_counter i64          = 0
+		components        []IComponent = []
 	}
 
 	// bench -----------------------------------------------------------------------------------------------------------

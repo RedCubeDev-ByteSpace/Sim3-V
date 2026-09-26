@@ -19,20 +19,25 @@ mut:
 	set_rotation(rot Rotation)
 	set_color(color gg.Color)
 	interact()
+	open_component_window()
+	draw_component_window(mut app App)
 }
 
 pub struct ComponentBase {
 mut:
 	// base component properties
-	pos      vec.Vec2[int]
-	offset   vec.Vec2[int] = vec.vec2[int](0, 0)
-	size     vec.Vec2[int]
-	rotation Rotation
-	color    gg.Color
+	comp_id               i64
+	pos                   vec.Vec2[int]
+	offset                vec.Vec2[int] = vec.vec2[int](0, 0)
+	size                  vec.Vec2[int]
+	rotation              Rotation
+	color                 gg.Color
+	component_window_open bool
 }
 
-pub fn ComponentBase.new(pos vec.Vec2[int], size vec.Vec2[int], rot Rotation, color gg.Color) ComponentBase {
+pub fn ComponentBase.new(mut app App, pos vec.Vec2[int], size vec.Vec2[int], rot Rotation, color gg.Color) ComponentBase {
 	return ComponentBase{
+		comp_id:  app.sim.global_id_counter++
 		pos:      pos
 		size:     size
 		rotation: rot
@@ -82,3 +87,9 @@ pub fn (c ComponentBase) get_aabb() AABB {
 }
 
 pub fn (mut c ComponentBase) interact() {}
+
+pub fn (mut c ComponentBase) open_component_window() {
+	c.component_window_open = true
+}
+
+pub fn (mut c ComponentBase) draw_component_window(mut app App) {}

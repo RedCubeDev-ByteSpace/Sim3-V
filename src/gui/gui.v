@@ -9,6 +9,11 @@ pub fn draw_ui(mut app data.App) {
 
 	draw_debug_window(mut app)
 	draw_color_window(mut app)
+
+	for mut comp in app.sim.components {
+		comp.draw_component_window(mut app)
+	}
+
 	app.mu.end()
 	app.mu.render()
 }

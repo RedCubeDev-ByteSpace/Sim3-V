@@ -13,6 +13,23 @@ pub fn handle_input(evt gg.Event, mut app data.App) {
 		&& app.bench.bench_state != .selecting {
 		// if so: pass anything and everything else on to microui
 		app.mu.handle_input_event(evt)
+
+		// important! keep track of if this was a mouse down
+		// if so -> microui needs a mouse up after a mouse down but it wont always automatically be routed there because
+		// if you close a window its input capture will immediately end without waiting for the release
+		if evt.typ == .mouse_down && evt.mouse_button == .left {
+			app.input.mui_needs_mouse_up = true
+		}
+		if evt.typ == .mouse_up && evt.mouse_button == .left {
+			app.input.mui_needs_mouse_up = false
+		}
+
+		return
+	}
+
+	if evt.typ == .mouse_up && evt.mouse_button == .left && app.input.mui_needs_mouse_up {
+		app.input.mui_needs_mouse_up = false
+		app.mu.handle_input_event(evt)
 		return
 	}
 
@@ -58,6 +75,20 @@ fn handle_component_interaction(evt gg.Event, mut app data.App) bool {
 			if utils.is_point_inside_aabb(comp.get_aabb(), mouse_pos_in_world_space)
 				&& comp !in app.bench.selected_components {
 				comp.interact()
+				return true
+			}
+		}
+	}
+
+	// is the workbench currently unused and theres been a RIGHT mouse click...
+	if app.bench.bench_state == .idle && evt.typ == .mouse_down && evt.mouse_button == .right {
+		// ... check if we've clicked on a component
+		mouse_pos_in_world_space := utils.screenspace_to_worldspace(app, app.input.mouse_pos)
+		for mut comp in app.sim.components {
+			// if yes AND component is not currectly selected -> open component window
+			if utils.is_point_inside_aabb(comp.get_aabb(), mouse_pos_in_world_space)
+				&& comp !in app.bench.selected_components {
+				comp.open_component_window()
 				return true
 			}
 		}
