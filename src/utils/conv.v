@@ -30,7 +30,7 @@ pub fn screenspace_to_worldspace[T](app data.App, screen_space vec.Vec2[T]) vec.
 }
 
 pub fn get_drawing_variables(app data.App, c data.ComponentBase) (vec.Vec2[f32], f32) {
-	pos := c.get_position()
+	pos := c.get_position().add(c.get_offset())
 	top_left := worldspace_to_screenspace(app, vec.vec2[f32](pos.x, pos.y))
 	zoomed_unit := data.one_simspace_unit_in_px * app.view.zoom
 	return top_left, zoomed_unit

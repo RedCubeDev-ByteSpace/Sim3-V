@@ -9,6 +9,8 @@ pub const zoom_lerp_cutoff = 0.001
 pub const zoom_trail_cutoff = 0.005
 pub const max_zoom = 12
 pub const min_zoom = 0.2
+pub const step_marching_ants_every_frames = 3
+pub const marching_ants_segment_size = 6
 
 // App -----------------------------------------------------------------------------------------------------------------
 // keeps track of all the state used in this application
@@ -43,10 +45,10 @@ pub mut:
 	// anything and everything concerning input
 	input struct {
 	pub mut:
-		mouse_pos vec.Vec2[f32]
-
-		is_moving_view        bool
-		view_moving_start_pos vec.Vec2[f32]
+		mouse_pos                vec.Vec2[f32]
+		view_moving_start_pos    vec.Vec2[f32]
+		selecting_start_pos      vec.Vec2[f32]
+		component_move_start_pos vec.Vec2[f32]
 
 		target_zoom f32 = 1
 	}
@@ -62,6 +64,10 @@ pub mut:
 	// everything concerning the circuit workbench
 	bench struct {
 	pub mut:
-		current_selected_color_idx int
+		bench_state                  BenchState
+		current_selected_color_idx   int
+		selected_components          []IComponent = []
+		marching_ants_starting_point int          = 0
+		marching_ants_frame_counter  int          = 0
 	}
 }

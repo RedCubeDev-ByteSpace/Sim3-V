@@ -21,3 +21,13 @@ pub fn do_aabbs_intersect(a data.AABB, b data.AABB) bool {
 	return a.x < b.x + b.width && a.x + a.width > b.x && a.y < b.y + b.height
 		&& a.y + a.height > b.y
 }
+
+pub fn is_aabb_inside_aabb(outer data.AABB, inner data.AABB) bool {
+	return inner.x > outer.x && inner.x + inner.width < outer.x + outer.width && inner.y > outer.y
+		&& inner.y + inner.height < outer.y + outer.height
+}
+
+pub fn is_point_inside_aabb(outer data.AABB, point vec.Vec2[f32]) bool {
+	return point.x > outer.x && point.x < outer.x + outer.width && point.y > outer.y
+		&& point.y < outer.y + outer.height
+}

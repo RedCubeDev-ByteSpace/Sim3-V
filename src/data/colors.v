@@ -5,6 +5,8 @@ import gg
 pub const grid_color = gg.Color{0, 0, 0, 255}
 pub const component_color = gg.Color{0, 0, 0, 255}
 pub const aabb_color = gg.Color{255, 0, 0, 255}
+pub const selection_color_high = gg.Color{0, 0, 0, 255}
+pub const selection_color_low = gg.Color{38, 51, 82, 255}
 pub const wire_colors = [
 	gg.Color{84, 110, 122, 255}, // Slate Gray    #546E7A
 	gg.Color{198, 40, 40, 255}, // Deep Red      #C62828

@@ -8,6 +8,7 @@ import simview
 import input
 import components
 import math.vec
+import utils
 
 // ---------------------------------------------------------------------------------------------------------------------
 // constants for initial window configuration
@@ -37,6 +38,9 @@ fn main() {
 
 		// set the window background to a nice blinding white
 		bg_color: gg.rgb(230, 230, 230) // its 23:24 right now, my retinas are burning up
+
+		// font config :)
+		font_bytes_normal: $embed_file('./res/tahoma.ttf').to_bytes()
 	)
 
 	app.mu = microui.new_context(mut app.gg) or { panic('Failed to initialize microui!') }
@@ -45,6 +49,9 @@ fn main() {
 	mut style := app.mu.get_style()
 
 	// set the font spacing to 1
+	style.font = gg.TextCfg{
+		size: 15
+	}
 	style.size.y = 1
 
 	// change some of the colors
@@ -57,7 +64,13 @@ fn main() {
 
 	app.mu.set_style(style)
 
+	// initialize the camera so its pointing at 0,0
+	app.view.camera_position = vec.vec2[f32](initial_window_width / data.one_simspace_unit_in_px / 2,
+		initial_window_height / data.one_simspace_unit_in_px / 2)
+
 	app.sim.components << components.Switch.new(vec.vec2[int](0, 0), .up, data.wire_colors[0],
+		false)
+	app.sim.components << components.Switch.new(vec.vec2[int](5, 5), .up, data.wire_colors[0],
 		false)
 
 	// run the main draw loop!
@@ -77,10 +90,12 @@ fn on_frame(mut app data.App) {
 	app.gg.begin()
 
 	// draw all the components that are currently in view
+	simview.step_marching_ants(mut app)
 	simview.draw_view(app)
 
 	// draw the ui last so its always on top
 	gui.draw_ui(mut app)
 
+	app.gg.show_fps()
 	app.gg.end()
 }
