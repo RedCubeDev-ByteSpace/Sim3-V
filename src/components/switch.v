@@ -22,6 +22,9 @@ pub fn Switch.new(mut app data.App, pos vec.Vec2[int], rot data.Rotation, color 
 	// initialize the component base with all the standardized data
 	s.ComponentBase = data.ComponentBase.new(mut app, pos, vec.vec2[int](2, 2), rot, color)
 
+	// create a dummy name for this component
+	s.comp_name = 'Switch ${s.comp_id}'
+
 	// done :)
 	return s
 }
@@ -73,11 +76,16 @@ fn (mut s Switch) draw_component_window(mut app data.App) {
 	}
 
 	pos_in_screen_space := utils.worldspace_to_screenspace(app, s.pos)
-	if app.mu.begin_window_ex_bool_controlled('Switch (id: ${s.comp_id})', gg.Rect{pos_in_screen_space.x, pos_in_screen_space.y, 100, 50},
+	if app.mu.begin_window_ex_bool_controlled('Switch (id: ${s.comp_id})', gg.Rect{pos_in_screen_space.x, pos_in_screen_space.y, 200, 85},
 		.noscroll | .noresize, s.component_window_open)
 	{
-		app.mu.layout_row([-1], 0)
-		app.mu.checkbox('State', s.state)
+		app.mu.layout_row([50, -1], 0)
+
+		app.mu.label('Name')
+		app.mu.textbox(s.comp_name)
+
+		app.mu.label('State')
+		app.mu.checkbox('', s.state)
 
 		app.mu.end_window_bool_controlled(s.component_window_open)
 	}

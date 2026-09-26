@@ -20,7 +20,7 @@ pub fn draw_ui(mut app data.App) {
 
 fn draw_debug_window(mut app data.App) {
 	if app.mu.begin_window_ex('Debug Window', gg.Rect{0, 0, 200, 145}, .noclose) {
-		app.mu.layout_row([-1], 0)
+		app.mu.layout_row([-1], 10)
 
 		camera_pos := app.view.camera_position.add(app.view.camera_offset.div_scalar(app.view.zoom * data.one_simspace_unit_in_px))
 		app.mu.label('MUi Input Capture: ${if app.mu.wants_input_capture() { 'yes' } else { 'no' }}')

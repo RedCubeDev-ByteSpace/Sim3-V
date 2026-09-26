@@ -52,7 +52,6 @@ fn main() {
 	style.font = gg.TextCfg{
 		size: 15
 	}
-	style.size.y = 1
 
 	// change some of the colors
 	style.colors[microui.Color.text] = gg.Color{50, 50, 50, 255}
@@ -61,6 +60,7 @@ fn main() {
 	style.colors[microui.Color.windowbg] = gg.Color{230, 230, 230, 255}
 	style.colors[microui.Color.base] = gg.Color{255, 255, 255, 255}
 	style.colors[microui.Color.basehover] = gg.Color{240, 240, 240, 255}
+	style.colors[microui.Color.basefocus] = gg.Color{220, 220, 220, 255}
 
 	app.mu.set_style(style)
 

@@ -27,6 +27,7 @@ pub struct ComponentBase {
 mut:
 	// base component properties
 	comp_id               i64
+	comp_name             string
 	pos                   vec.Vec2[int]
 	offset                vec.Vec2[int] = vec.vec2[int](0, 0)
 	size                  vec.Vec2[int]
