@@ -6,6 +6,8 @@ import gui
 import data
 import simview
 import input
+import components
+import math.vec
 
 // ---------------------------------------------------------------------------------------------------------------------
 // constants for initial window configuration
@@ -38,6 +40,8 @@ fn main() {
 	)
 
 	app.mu = microui.new_context(mut app.gg) or { panic('Failed to initialize microui!') }
+	app.sim.components << components.Switch.new(vec.vec2[int](0, 0), .up, data.wire_colors[0],
+		false)
 
 	// run the main draw loop!
 	app.gg.run()

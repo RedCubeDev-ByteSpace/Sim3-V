@@ -10,4 +10,12 @@ import data
 pub fn draw_view(app data.App) {
 	// first: draw the background grid
 	draw_grid(app)
+
+	draw_components(app)
+}
+
+fn draw_components(app data.App) {
+	for comp in app.sim.components {
+		comp.draw(app)
+	}
 }

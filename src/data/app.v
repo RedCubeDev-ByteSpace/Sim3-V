@@ -28,7 +28,14 @@ pub mut:
 	pub mut:
 		mouse_pos vec.Vec2[f32]
 
-		is_moving_view        bool = false
+		is_moving_view        bool
 		view_moving_start_pos vec.Vec2[f32]
+	}
+
+	// sim -------------------------------------------------------------------------------------------------------------
+	// everything concerning the simulation
+	sim struct {
+	pub mut:
+		components []IComponent = []
 	}
 }

@@ -73,9 +73,9 @@ pub fn handle_simview_zoom(evt gg.Event, mut app data.App) bool {
 
 	mouse_pos_in_world_space_before_zoom := utils.screenspace_to_worldspace(app, app.input.mouse_pos)
 	if evt.scroll_y > 0 {
-		app.view.zoom *= 1.01
+		app.view.zoom *= 1.5
 	} else {
-		app.view.zoom *= 0.99
+		app.view.zoom /= 1.5
 	}
 	mouse_pos_in_world_space_after_zoom := utils.screenspace_to_worldspace(app, app.input.mouse_pos)
 

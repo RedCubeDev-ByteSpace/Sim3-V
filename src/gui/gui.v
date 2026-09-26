@@ -2,7 +2,6 @@ module gui
 
 import gg
 import data
-import microui
 
 pub fn draw_ui(mut app data.App) {
 	app.mu.begin()
