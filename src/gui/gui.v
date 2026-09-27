@@ -1,6 +1,6 @@
 module gui
 
-import gg
+import raylib as rl
 import data
 import math
 
@@ -19,7 +19,7 @@ pub fn draw_ui(mut app data.App) {
 }
 
 fn draw_debug_window(mut app data.App) {
-	if app.mu.begin_window_ex('Debug Window', gg.Rect{0, 0, 200, 145}, .noclose) {
+	if app.mu.begin_window_ex('Debug Window', rl.Rectangle{0, 0, 200, 145}, .noclose) {
 		app.mu.layout_row([-1], 10)
 
 		camera_pos := app.view.camera_position.add(app.view.camera_offset.div_scalar(app.view.zoom * data.one_simspace_unit_in_px))
@@ -49,17 +49,21 @@ fn draw_debug_window(mut app data.App) {
 	}
 
 	// keep the window on the top right of the screen
-	window_size := app.gg.window_size()
-	mut debug_window_rect := app.mu.get_container_rect('Debug Window')
-	debug_window_rect.x = window_size.width - debug_window_rect.width - 10
-	debug_window_rect.y = 10
-	app.mu.set_container_rect('Debug Window', debug_window_rect)
+	window_width := rl.get_screen_width()
+	debug_window_rect_old := app.mu.get_container_rect('Debug Window')
+	debug_window_rect_new := rl.Rectangle{
+		...debug_window_rect_old
+		x: window_width - debug_window_rect_old.width - 10
+		y: 10
+	}
+
+	app.mu.set_container_rect('Debug Window', debug_window_rect_new)
 }
 
 fn draw_color_window(mut app data.App) {
 	window_width := data.wire_colors.len * 30 + data.wire_colors.len * 5
 
-	if app.mu.begin_window_ex('Colors', gg.Rect{10, 10, window_width, 65}, .noclose | .noresize | .noscroll) {
+	if app.mu.begin_window_ex('Colors', rl.Rectangle{10, 10, window_width, 65}, .noclose | .noresize | .noscroll) {
 		mut widths := []int{}
 		for _ in data.wire_colors {
 			widths << 30
@@ -75,14 +79,14 @@ fn draw_color_window(mut app data.App) {
 			}
 
 			if i == app.bench.current_selected_color_idx {
-				app.mu.draw_rect(rect, gg.Color{0, 0, 0, 255})
-				app.mu.draw_rect(gg.Rect{
+				app.mu.draw_rect(rect, rl.Color{0, 0, 0, 255})
+				app.mu.draw_rect(rl.Rectangle{
 					x:      rect.x + 1
 					y:      rect.y + 1
 					width:  rect.width - 2
 					height: rect.height - 2
-				}, gg.Color{255, 255, 255, 255})
-				app.mu.draw_rect(gg.Rect{
+				}, rl.Color{255, 255, 255, 255})
+				app.mu.draw_rect(rl.Rectangle{
 					x:      rect.x + 2
 					y:      rect.y + 2
 					width:  rect.width - 4

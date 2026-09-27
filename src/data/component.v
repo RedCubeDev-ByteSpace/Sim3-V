@@ -1,23 +1,23 @@
 module data
 
 import math.vec
-import gg
+import raylib as rl
 
-pub type AABB = gg.Rect
+pub type AABB = C.Rectangle
 
 pub interface IComponent {
 	get_position() vec.Vec2[int]
 	get_offset() vec.Vec2[int]
 	get_aabb() AABB
 	get_rotation() Rotation
-	get_color() gg.Color
+	get_color() rl.Color
 
 	draw(app App)
 mut:
 	set_position(pos vec.Vec2[int])
 	set_offset(pos vec.Vec2[int])
 	set_rotation(rot Rotation)
-	set_color(color gg.Color)
+	set_color(color rl.Color)
 	interact()
 	open_component_window()
 	draw_component_window(mut app App)
@@ -33,11 +33,11 @@ mut:
 	offset                vec.Vec2[int] = vec.vec2[int](0, 0)
 	size                  vec.Vec2[int]
 	rotation              Rotation
-	color                 gg.Color
+	color                 rl.Color
 	component_window_open bool
 }
 
-pub fn ComponentBase.new(mut app App, pos vec.Vec2[int], size vec.Vec2[int], rot Rotation, color gg.Color) ComponentBase {
+pub fn ComponentBase.new(mut app App, pos vec.Vec2[int], size vec.Vec2[int], rot Rotation, color rl.Color) ComponentBase {
 	return ComponentBase{
 		comp_id:  app.sim.global_id_counter++
 		pos:      pos
@@ -71,11 +71,11 @@ pub fn (mut c ComponentBase) set_rotation(rot Rotation) {
 	c.rotation = rot
 }
 
-pub fn (c ComponentBase) get_color() gg.Color {
+pub fn (c ComponentBase) get_color() rl.Color {
 	return c.color
 }
 
-pub fn (mut c ComponentBase) set_color(color gg.Color) {
+pub fn (mut c ComponentBase) set_color(color rl.Color) {
 	c.color = color
 }
 

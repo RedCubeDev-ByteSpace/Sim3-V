@@ -1,6 +1,6 @@
 module main
 
-import gg
+import raylib as rl
 import microui // look mom its my wrapper!
 import gui
 import data
@@ -8,7 +8,7 @@ import simview
 import input
 import components
 import math.vec
-import utils
+import fonts
 
 // ---------------------------------------------------------------------------------------------------------------------
 // constants for initial window configuration
@@ -22,45 +22,34 @@ fn main() {
 	// create a new state object for our application
 	mut app := &data.App{}
 
-	// create a new gg window
-	app.gg = gg.new_context(
-		// configure the window using our initial values
-		width:        initial_window_width
-		height:       initial_window_height
-		window_title: window_title
+	// create a new raylib window
+	rl.init_window(initial_window_width, initial_window_height, window_title)
+	rl.set_target_fps(60)
 
-		// remember our application data across all events
-		user_data: app
+	// load fonts
+	fonts.init(mut app)
 
-		// define callbacks for frame drawing and input events
-		frame_fn: on_frame
-		event_fn: on_event
-
-		// set the window background to a nice blinding white
-		bg_color: gg.rgb(230, 230, 230) // its 23:24 right now, my retinas are burning up
-
-		// font config :)
-		font_bytes_normal: $embed_file('./res/tahoma.ttf').to_bytes()
-	)
-
-	app.mu = microui.new_context(mut app.gg) or { panic('Failed to initialize microui!') }
+	// ----------------------------------------------------------------------------------------------------------------
+	// initialize microui
+	app.mu = microui.new_context()
 
 	// customize the microui style
 	mut style := app.mu.get_style()
 
 	// set the font spacing to 1
-	style.font = gg.TextCfg{
+	style.font = microui.SizedFont{
 		size: 15
+		font: rl.load_font_ex('./src/res/tahoma.ttf', 15, unsafe { nil }, unsafe { nil })
 	}
 
 	// change some of the colors
-	style.colors[microui.Color.text] = gg.Color{50, 50, 50, 255}
-	style.colors[microui.Color.titletext] = gg.Color{50, 50, 50, 255}
-	style.colors[microui.Color.titlebg] = gg.Color{255, 255, 255, 255}
-	style.colors[microui.Color.windowbg] = gg.Color{230, 230, 230, 255}
-	style.colors[microui.Color.base] = gg.Color{255, 255, 255, 255}
-	style.colors[microui.Color.basehover] = gg.Color{240, 240, 240, 255}
-	style.colors[microui.Color.basefocus] = gg.Color{220, 220, 220, 255}
+	style.colors[microui.Color.text] = rl.Color{50, 50, 50, 255}
+	style.colors[microui.Color.titletext] = rl.Color{50, 50, 50, 255}
+	style.colors[microui.Color.titlebg] = rl.Color{255, 255, 255, 255}
+	style.colors[microui.Color.windowbg] = rl.Color{230, 230, 230, 255}
+	style.colors[microui.Color.base] = rl.Color{255, 255, 255, 255}
+	style.colors[microui.Color.basehover] = rl.Color{240, 240, 240, 255}
+	style.colors[microui.Color.basefocus] = rl.Color{220, 220, 220, 255}
 
 	app.mu.set_style(style)
 
@@ -70,28 +59,30 @@ fn main() {
 
 	app.sim.components << components.FixedContact.new(mut app, vec.vec2[int](0, 0), .left,
 		data.wire_colors[0], false)
-	app.sim.components << components.FixedContact.new(mut app, vec.vec2[int](3, 0), .up,
-		data.wire_colors[0], true)
-	app.sim.components << components.FixedContact.new(mut app, vec.vec2[int](6, 0), .right,
-		data.wire_colors[0], false)
-	app.sim.components << components.FixedContact.new(mut app, vec.vec2[int](10, 0), .down,
-		data.wire_colors[0], false)
+	// app.sim.components << components.FixedContact.new(mut app, vec.vec2[int](3, 0), .up,
+	// 	data.wire_colors[0], true)
+	// app.sim.components << components.FixedContact.new(mut app, vec.vec2[int](6, 0), .right,
+	// 	data.wire_colors[0], false)
+	// app.sim.components << components.FixedContact.new(mut app, vec.vec2[int](10, 0), .down,
+	// 	data.wire_colors[0], false)
 
 	// run the main draw loop!
-	app.gg.run()
-}
+	for !rl.window_should_close() {
+		on_frame(mut app)
+	}
 
-// on_event ------------------------------------------------------------------------------------------------------------
-// all input events end up here
-fn on_event(e &gg.Event, mut app data.App) {
-	input.handle_input(e, mut app)
+	// clean up
+	rl.close_window()
 }
 
 // on_frame ------------------------------------------------------------------------------------------------------------
 // draw a new frame!
 fn on_frame(mut app data.App) {
+	input.handle_input(mut app)
 	input.sync_zoom(mut app)
-	app.gg.begin()
+
+	rl.begin_drawing()
+	rl.clear_background(data.background_color)
 
 	// draw all the components that are currently in view
 	simview.step_marching_ants(mut app)
@@ -100,6 +91,6 @@ fn on_frame(mut app data.App) {
 	// draw the ui last so its always on top
 	gui.draw_ui(mut app)
 
-	app.gg.show_fps()
-	app.gg.end()
+	rl.draw_fps(0, 0)
+	rl.end_drawing()
 }

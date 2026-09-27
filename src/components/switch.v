@@ -1,7 +1,7 @@
 module components
 
+import raylib as rl
 import math.vec
-import gg
 import data
 import utils
 
@@ -13,7 +13,7 @@ mut:
 	state bool
 }
 
-pub fn Switch.new(mut app data.App, pos vec.Vec2[int], rot data.Rotation, color gg.Color, state bool) Switch {
+pub fn Switch.new(mut app data.App, pos vec.Vec2[int], rot data.Rotation, color rl.Color, state bool) Switch {
 	// initialize a new component with all its unique data
 	mut s := Switch{
 		state: state
@@ -38,34 +38,35 @@ fn (s &Switch) draw(app data.App) {
 
 	low_color := data.get_low_color_from_high_color(s.color)
 
-	app.gg.draw_rect_empty(top_left.x, top_left.y, zoomed_unit * 2, zoomed_unit * 2, low_color)
-	app.gg.draw_circle_filled(top_left.x + zoomed_unit, top_left.y + zoomed_unit, zoomed_unit / 2,
+	rl.draw_rectangle_lines(int(top_left.x), int(top_left.y), int(zoomed_unit * 2), int(zoomed_unit * 2),
+		low_color)
+	rl.draw_circle(int(top_left.x + zoomed_unit), int(top_left.y + zoomed_unit), int(zoomed_unit / 2),
 		if s.state { s.color } else { low_color })
 
 	match s.rotation {
 		.left {
-			app.gg.draw_line(top_left.x, top_left.y + zoomed_unit, top_left.x - zoomed_unit,
-				top_left.y + zoomed_unit, low_color)
-			app.gg.draw_circle_empty(top_left.x - zoomed_unit, top_left.y + zoomed_unit,
-				zoomed_unit / 4, low_color)
+			rl.draw_line(int(top_left.x), int(top_left.y + zoomed_unit), int(top_left.x - zoomed_unit),
+				int(top_left.y + zoomed_unit), low_color)
+			rl.draw_circle_lines(int(top_left.x - zoomed_unit), int(top_left.y + zoomed_unit),
+				int(zoomed_unit / 4), low_color)
 		}
 		.up {
-			app.gg.draw_line(top_left.x + zoomed_unit, top_left.y, top_left.x + zoomed_unit,
-				top_left.y - zoomed_unit, low_color)
-			app.gg.draw_circle_empty(top_left.x + zoomed_unit, top_left.y - zoomed_unit,
-				zoomed_unit / 4, low_color)
+			rl.draw_line(int(top_left.x + zoomed_unit), int(top_left.y), int(top_left.x +
+				zoomed_unit), int(top_left.y - zoomed_unit), low_color)
+			rl.draw_circle_lines(int(top_left.x + zoomed_unit), int(top_left.y - zoomed_unit),
+				int(zoomed_unit / 4), low_color)
 		}
 		.right {
-			app.gg.draw_line(top_left.x + zoomed_unit * 2, top_left.y + zoomed_unit, top_left.x +
-				zoomed_unit * 3, top_left.y + zoomed_unit, low_color)
-			app.gg.draw_circle_empty(top_left.x + zoomed_unit * 3, top_left.y + zoomed_unit,
-				zoomed_unit / 4, low_color)
+			rl.draw_line(int(top_left.x + zoomed_unit * 2), int(top_left.y + zoomed_unit),
+				int(top_left.x + zoomed_unit * 3), int(top_left.y + zoomed_unit), low_color)
+			rl.draw_circle_lines(int(top_left.x + zoomed_unit * 3), int(top_left.y + zoomed_unit),
+				int(zoomed_unit / 4), low_color)
 		}
 		.down {
-			app.gg.draw_line(top_left.x + zoomed_unit, top_left.y + zoomed_unit * 2, top_left.x +
-				zoomed_unit, top_left.y + zoomed_unit * 3, low_color)
-			app.gg.draw_circle_empty(top_left.x + zoomed_unit, top_left.y + zoomed_unit * 3,
-				zoomed_unit / 4, low_color)
+			rl.draw_line(int(top_left.x + zoomed_unit), int(top_left.y + zoomed_unit * 2),
+				int(top_left.x + zoomed_unit), int(top_left.y + zoomed_unit * 3), low_color)
+			rl.draw_circle_lines(int(top_left.x + zoomed_unit), int(top_left.y + zoomed_unit * 3),
+				int(zoomed_unit / 4), low_color)
 		}
 	}
 }
@@ -76,7 +77,7 @@ fn (mut s Switch) draw_component_window(mut app data.App) {
 	}
 
 	pos_in_screen_space := utils.worldspace_to_screenspace(app, s.pos)
-	if app.mu.begin_window_ex_bool_controlled('Switch (id: ${s.comp_id})', gg.Rect{pos_in_screen_space.x, pos_in_screen_space.y, 200, 85},
+	if app.mu.begin_window_ex_bool_controlled('Switch (id: ${s.comp_id})', rl.Rectangle{pos_in_screen_space.x, pos_in_screen_space.y, 200, 85},
 		.noscroll | .noresize, s.component_window_open)
 	{
 		app.mu.layout_row([50, -1], 0)

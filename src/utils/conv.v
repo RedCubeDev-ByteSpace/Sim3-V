@@ -2,7 +2,6 @@ module utils
 
 import math.vec
 import data
-import gg
 
 // worldspace_to_screenspace
 // converts the coordinates of a point in world space into coordinates of that point in screen space

@@ -1,73 +1,74 @@
 module input
 
-import gg
+import raylib as rl
 import data
 import math.vec
 import utils
 import math
 
-pub fn handle_input(evt gg.Event, mut app data.App) {
+pub fn handle_input(mut app data.App) {
 	// first: share our current cursor position with microui and check if it wants to capture our input
-	app.mu.update_mouse_position(evt)
+	app.mu.update_mouse_position()
 	if app.mu.wants_input_capture() && app.bench.bench_state != .moving_view
 		&& app.bench.bench_state != .selecting {
 		// if so: pass anything and everything else on to microui
-		app.mu.handle_input_event(evt)
+		app.mu.handle_input_event()
 
 		// important! keep track of if this was a mouse down
 		// if so -> microui needs a mouse up after a mouse down but it wont always automatically be routed there because
 		// if you close a window its input capture will immediately end without waiting for the release
-		if evt.typ == .mouse_down && evt.mouse_button == .left {
+		if rl.is_mouse_button_pressed(int(rl.MouseButton.mouse_button_left)) {
 			app.input.mui_needs_mouse_up = true
 		}
-		if evt.typ == .mouse_up && evt.mouse_button == .left {
+		if rl.is_mouse_button_released(int(rl.MouseButton.mouse_button_left)) {
 			app.input.mui_needs_mouse_up = false
 		}
 
 		return
 	}
 
-	if evt.typ == .mouse_up && evt.mouse_button == .left && app.input.mui_needs_mouse_up {
+	if rl.is_mouse_button_released(int(rl.MouseButton.mouse_button_left))
+		&& app.input.mui_needs_mouse_up {
 		app.input.mui_needs_mouse_up = false
-		app.mu.handle_input_event(evt)
+		app.mu.handle_input_event()
 		return
 	}
 
 	// otherwise: treat it as input for the simview
 
-	if evt.typ == .mouse_move {
-		app.input.mouse_pos = vec.vec2[f32](evt.mouse_x, evt.mouse_y)
-	}
+	mouse_pos := rl.get_mouse_position()
+	app.input.mouse_pos = vec.vec2[f32](mouse_pos.x, mouse_pos.y)
 
 	// first: are we trying to interact with a component
-	if handle_component_interaction(evt, mut app) {
+	if handle_component_interaction(mut app) {
 		return
 	}
 
 	// second: is this event something about the movement of the view?
-	if handle_simview_movement(evt, mut app) {
+	if handle_simview_movement(mut app) {
 		return
 	}
 
 	// third: is this movement a zoom in or out?
-	if handle_simview_zoom(evt, mut app) {
+	if handle_simview_zoom(mut app) {
 		return
 	}
 
 	// fourth: are we trying to move something?
-	if handle_component_move(evt, mut app) {
+	if handle_component_move(mut app) {
 		return
 	}
 
 	// fifth: are we trying to select something?
-	if handle_rectangle_select(evt, mut app) {
+	if handle_rectangle_select(mut app) {
 		return
 	}
 }
 
-fn handle_component_interaction(evt gg.Event, mut app data.App) bool {
+fn handle_component_interaction(mut app data.App) bool {
 	// is the workbench currently unused and theres been a mouse click...
-	if app.bench.bench_state == .idle && evt.typ == .mouse_down && evt.mouse_button == .left {
+	if app.bench.bench_state == .idle
+		&& rl.is_mouse_button_pressed(int(rl.MouseButton.mouse_button_left)) {
 		// ... check if we've clicked on a component
 		mouse_pos_in_world_space := utils.screenspace_to_worldspace(app, app.input.mouse_pos)
 		for mut comp in app.sim.components {
@@ -81,7 +82,8 @@ fn handle_component_interaction(evt gg.Event, mut app data.App) bool {
 	}
 
 	// is the workbench currently unused and theres been a RIGHT mouse click...
-	if app.bench.bench_state == .idle && evt.typ == .mouse_down && evt.mouse_button == .right {
+	if app.bench.bench_state == .idle
+		&& rl.is_mouse_button_pressed(int(rl.MouseButton.mouse_button_right)) {
 		// ... check if we've clicked on a component
 		mouse_pos_in_world_space := utils.screenspace_to_worldspace(app, app.input.mouse_pos)
 		for mut comp in app.sim.components {
@@ -97,16 +99,14 @@ fn handle_component_interaction(evt gg.Event, mut app data.App) bool {
 	return false
 }
 
-fn handle_simview_movement(evt gg.Event, mut app data.App) bool {
+fn handle_simview_movement(mut app data.App) bool {
 	// when we're not already moving the view and the user pressed their right mouse button
 	// -> start a new view movement
-	if app.bench.bench_state == .idle && evt.typ == .mouse_down && evt.mouse_button == .right {
+	if app.bench.bench_state == .idle
+		&& rl.is_mouse_button_pressed(int(rl.MouseButton.mouse_button_right)) {
 		// set the view movement flag and remember where the move started
 		app.bench.bench_state = .moving_view
-		app.input.view_moving_start_pos = vec.Vec2[f32]{
-			x: evt.mouse_x
-			y: evt.mouse_y
-		}
+		app.input.view_moving_start_pos = app.input.mouse_pos
 
 		// dont process any input after this
 		return true
@@ -116,23 +116,18 @@ fn handle_simview_movement(evt gg.Event, mut app data.App) bool {
 	// if we're already moving the view...
 	if app.bench.bench_state == .moving_view {
 		// ... and theres a mouse movement -> recalculate the view offset
-		if evt.typ == .mouse_move {
-			// remember the last offset for drawing grid movement trails
-			app.view.grid.draw_grid_movement_trails = true
-			app.view.grid.prev_camera_offset = app.view.camera_offset
+		// remember the last offset for drawing grid movement trails
+		app.view.grid.draw_grid_movement_trails = true
+		app.view.grid.prev_camera_offset = app.view.camera_offset
 
-			// update the camera offset
-			app.view.camera_offset = vec.Vec2[f32]{
-				x: evt.mouse_x - app.input.view_moving_start_pos.x
-				y: evt.mouse_y - app.input.view_moving_start_pos.y
-			}
-
-			// dont process any input after this
-			return true
+		// update the camera offset
+		app.view.camera_offset = vec.Vec2[f32]{
+			x: app.input.mouse_pos.x - app.input.view_moving_start_pos.x
+			y: app.input.mouse_pos.y - app.input.view_moving_start_pos.y
 		}
 
 		// ... and the user has stopped pressing the button -> apply the offset onto the actual camera position
-		if evt.typ == .mouse_up && evt.mouse_button == .right {
+		if rl.is_mouse_button_released(int(rl.MouseButton.mouse_button_right)) {
 			app.view.camera_position = app.view.camera_position.add(app.view.camera_offset.div_scalar[f32](app.view.zoom * data.one_simspace_unit_in_px))
 			app.view.camera_offset.zero()
 
@@ -151,13 +146,13 @@ fn handle_simview_movement(evt gg.Event, mut app data.App) bool {
 	return false
 }
 
-fn handle_simview_zoom(evt gg.Event, mut app data.App) bool {
-	// make sure this is a scroll event
-	if evt.typ != .mouse_scroll {
+fn handle_simview_zoom(mut app data.App) bool {
+	scroll := rl.get_mouse_wheel_move_v().y
+	if scroll == 0 {
 		return false
 	}
 
-	if evt.scroll_y > 0 {
+	if scroll > 0 {
 		new_zoom := app.input.target_zoom * 1.5
 		if new_zoom < data.max_zoom {
 			app.input.target_zoom = new_zoom
@@ -207,10 +202,11 @@ pub fn sync_zoom(mut app data.App) {
 	app.view.camera_position = app.view.camera_position.add(mouse_pos_in_world_space_after_zoom.sub(mouse_pos_in_world_space_before_zoom))
 }
 
-fn handle_component_move(evt gg.Event, mut app data.App) bool {
+fn handle_component_move(mut app data.App) bool {
 	// is the bench current unused, this is a mouse down AND we're currently hovering a selected component?
 	// -> begin selection
-	if app.bench.bench_state == .idle && evt.typ == .mouse_down && evt.mouse_button == .left {
+	if app.bench.bench_state == .idle
+		&& rl.is_mouse_button_pressed(int(rl.MouseButton.mouse_button_left)) {
 		mouse_pos_in_world_space := utils.screenspace_to_worldspace(app, app.input.mouse_pos)
 		for comp in app.bench.selected_components {
 			if !utils.is_point_inside_aabb(comp.get_aabb(), mouse_pos_in_world_space) {
@@ -226,20 +222,18 @@ fn handle_component_move(evt gg.Event, mut app data.App) bool {
 	}
 
 	// if we're current in a move -> recalculate all component's offsets
-	if app.bench.bench_state == .moving_components && evt.typ == .mouse_move {
+	if app.bench.bench_state == .moving_components {
 		mouse_pos_in_world_space := utils.screenspace_to_worldspace(app, app.input.mouse_pos)
 		new_offset := mouse_pos_in_world_space.sub(app.input.component_move_start_pos)
 
 		for mut comp in app.bench.selected_components {
 			comp.set_offset(vec.vec2[int](int(new_offset.x), int(new_offset.y)))
 		}
-
-		return true
 	}
 
 	// if we're currently moving and theres a mouse up -> end and commit movement
-	if app.bench.bench_state == .moving_components && evt.typ == .mouse_up
-		&& evt.mouse_button == .left {
+	if app.bench.bench_state == .moving_components
+		&& rl.is_mouse_button_released(int(rl.MouseButton.mouse_button_left)) {
 		for mut comp in app.bench.selected_components {
 			// add the offest onto the position and reset it
 			comp.set_position(comp.get_position().add(comp.get_offset()))
@@ -253,10 +247,11 @@ fn handle_component_move(evt gg.Event, mut app data.App) bool {
 	return false
 }
 
-fn handle_rectangle_select(evt gg.Event, mut app data.App) bool {
+fn handle_rectangle_select(mut app data.App) bool {
 	// is the bench current unused and this is a mouse down?
 	// -> begin selection
-	if app.bench.bench_state == .idle && evt.typ == .mouse_down && evt.mouse_button == .left {
+	if app.bench.bench_state == .idle
+		&& rl.is_mouse_button_pressed(int(rl.MouseButton.mouse_button_left)) {
 		app.bench.bench_state = .selecting
 		app.input.selecting_start_pos = app.input.mouse_pos
 
@@ -264,7 +259,8 @@ fn handle_rectangle_select(evt gg.Event, mut app data.App) bool {
 	}
 
 	// if we're currently selecting and theres a mouse up -> end selecting
-	if app.bench.bench_state == .selecting && evt.typ == .mouse_up && evt.mouse_button == .left {
+	if app.bench.bench_state == .selecting
+		&& rl.is_mouse_button_released(int(rl.MouseButton.mouse_button_left)) {
 		// clear the selection list
 		app.bench.selected_components = []
 

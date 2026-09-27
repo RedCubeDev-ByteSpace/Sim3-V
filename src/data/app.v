@@ -1,7 +1,6 @@
 module data
 
 import microui
-import gg
 import math.vec
 
 pub const one_simspace_unit_in_px = 20
@@ -16,7 +15,6 @@ pub const marching_ants_segment_size = 6
 // keeps track of all the state used in this application
 pub struct App {
 pub mut:
-	gg &gg.Context = unsafe { nil }
 	mu microui.Context
 
 	// view ------------------------------------------------------------------------------------------------------------
@@ -71,5 +69,12 @@ pub mut:
 		selected_components          []IComponent = []
 		marching_ants_starting_point int          = 0
 		marching_ants_frame_counter  int          = 0
+	}
+
+	// fonts -----------------------------------------------------------------------------------------------------------
+	// preloaded fonts for different use cases and sizes
+	fonts struct {
+	pub mut:
+		fonts []microui.SizedFont
 	}
 }

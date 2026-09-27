@@ -2,8 +2,9 @@ module components
 
 import data
 import math.vec
-import gg
+import raylib as rl
 import utils
+import fonts
 
 struct FixedContact {
 	data.ComponentBase
@@ -12,7 +13,7 @@ mut:
 	state bool
 }
 
-pub fn FixedContact.new(mut app data.App, pos vec.Vec2[int], rot data.Rotation, color gg.Color, state bool) FixedContact {
+pub fn FixedContact.new(mut app data.App, pos vec.Vec2[int], rot data.Rotation, color rl.Color, state bool) FixedContact {
 	// initialize a new component with all its unique data
 	mut s := FixedContact{
 		state: state
@@ -36,39 +37,40 @@ fn (s &FixedContact) draw(app data.App) {
 
 	low_color := data.get_low_color_from_high_color(s.color)
 
-	app.gg.draw_rect_empty(top_left.x + 0.5 * zoomed_unit, top_left.y + 0.5 * zoomed_unit,
-		zoomed_unit, zoomed_unit, low_color)
+	rl.draw_rectangle_lines(int(top_left.x + 0.5 * zoomed_unit), int(top_left.y + 0.5 * zoomed_unit),
+		int(zoomed_unit), int(zoomed_unit), low_color)
 
 	state := if s.state { '1' } else { '0' }
-	app.gg.set_text_cfg(gg.TextCfg{ size: int(zoomed_unit * 0.75) })
-	width := app.gg.text_width(state)
-	app.gg.draw_text(int(top_left.x + zoomed_unit - width / 2) + 1, int(top_left.y +
-		0.625 * zoomed_unit), state, gg.TextCfg{ size: int(zoomed_unit * 0.75) })
+	font_size := int(zoomed_unit * 0.75)
+	font := fonts.get_font_for_size(app, font_size)
+	text_size := rl.measure_text_ex(font, state, font_size, 1)
+	rl.draw_text_ex(font, state, rl.Vector2{int(top_left.x + zoomed_unit) - text_size.x / 2, int(
+		top_left.y + zoomed_unit) - text_size.y / 2}, font_size, 1, low_color)
 
 	match s.rotation {
 		.left {
-			app.gg.draw_line(top_left.x + 0.5 * zoomed_unit, top_left.y + zoomed_unit,
-				top_left.x, top_left.y + zoomed_unit, low_color)
-			app.gg.draw_circle_empty(top_left.x, top_left.y + zoomed_unit, zoomed_unit / 4,
+			rl.draw_line(int(top_left.x + 0.5 * zoomed_unit), int(top_left.y + zoomed_unit),
+				int(top_left.x), int(top_left.y + zoomed_unit), low_color)
+			rl.draw_circle_lines(int(top_left.x), int(top_left.y + zoomed_unit), int(zoomed_unit / 4),
 				low_color)
 		}
 		.up {
-			app.gg.draw_line(top_left.x + zoomed_unit, top_left.y + zoomed_unit * 0.5,
-				top_left.x + zoomed_unit, top_left.y, low_color)
-			app.gg.draw_circle_empty(top_left.x + zoomed_unit, top_left.y, zoomed_unit / 4,
+			rl.draw_line(int(top_left.x + zoomed_unit), int(top_left.y + zoomed_unit * 0.5),
+				int(top_left.x + zoomed_unit), int(top_left.y), low_color)
+			rl.draw_circle_lines(int(top_left.x + zoomed_unit), int(top_left.y), int(zoomed_unit / 4),
 				low_color)
 		}
 		.right {
-			app.gg.draw_line(top_left.x + zoomed_unit * 1.5, top_left.y + zoomed_unit,
-				top_left.x + zoomed_unit * 2, top_left.y + zoomed_unit, low_color)
-			app.gg.draw_circle_empty(top_left.x + zoomed_unit * 2, top_left.y + zoomed_unit,
-				zoomed_unit / 4, low_color)
+			rl.draw_line(int(top_left.x + zoomed_unit * 1.5), int(top_left.y + zoomed_unit),
+				int(top_left.x + zoomed_unit * 2), int(top_left.y + zoomed_unit), low_color)
+			rl.draw_circle_lines(int(top_left.x + zoomed_unit * 2), int(top_left.y + zoomed_unit),
+				int(zoomed_unit / 4), low_color)
 		}
 		.down {
-			app.gg.draw_line(top_left.x + zoomed_unit, top_left.y + zoomed_unit * 1.5,
-				top_left.x + zoomed_unit, top_left.y + zoomed_unit * 2, low_color)
-			app.gg.draw_circle_empty(top_left.x + zoomed_unit, top_left.y + zoomed_unit * 2,
-				zoomed_unit / 4, low_color)
+			rl.draw_line(int(top_left.x + zoomed_unit), int(top_left.y + zoomed_unit * 1.5),
+				int(top_left.x + zoomed_unit), int(top_left.y + zoomed_unit * 2), low_color)
+			rl.draw_circle_lines(int(top_left.x + zoomed_unit), int(top_left.y + zoomed_unit * 2),
+				int(zoomed_unit / 4), low_color)
 		}
 	}
 }
@@ -79,7 +81,7 @@ fn (mut s FixedContact) draw_component_window(mut app data.App) {
 	}
 
 	pos_in_screen_space := utils.worldspace_to_screenspace(app, s.pos)
-	if app.mu.begin_window_ex_bool_controlled('Fixed Contact (id: ${s.comp_id})', gg.Rect{pos_in_screen_space.x, pos_in_screen_space.y, 200, 85},
+	if app.mu.begin_window_ex_bool_controlled('Fixed Contact (id: ${s.comp_id})', rl.Rectangle{pos_in_screen_space.x, pos_in_screen_space.y, 200, 85},
 		.noscroll | .noresize, s.component_window_open)
 	{
 		app.mu.layout_row([50, -1], 0)

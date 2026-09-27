@@ -1,13 +1,14 @@
 module utils
 
-import gg
+import raylib as rl
 import math.vec
 import data
 
 pub fn get_viewport_aabb(app data.App) data.AABB {
-	screen_size := app.gg.window_size()
+	screen_width := rl.get_screen_width()
+	screen_height := rl.get_screen_height()
 	top_left := screenspace_to_worldspace(app, vec.vec2[f32](0, 0))
-	bottom_right := screenspace_to_worldspace(app, vec.vec2[f32](screen_size.width, screen_size.height))
+	bottom_right := screenspace_to_worldspace(app, vec.vec2[f32](screen_width, screen_height))
 
 	return data.AABB{
 		x:      top_left.x

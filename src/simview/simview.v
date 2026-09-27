@@ -2,9 +2,8 @@ module simview
 
 import data
 import utils
-import gg
+import raylib as rl
 import math.vec
-import math
 
 // simview -------------------------------------------------------------------------------------------------------------
 // this module is all about the drawing side of things
@@ -35,11 +34,11 @@ fn draw_components(app data.App) {
 	}
 }
 
-fn draw_aabb(app data.App, aabb data.AABB, color gg.Color) {
+fn draw_aabb(app data.App, aabb data.AABB, color rl.Color) {
 	top_left := utils.worldspace_to_screenspace(app, vec.vec2[f32](aabb.x, aabb.y))
 	zoomed_unit := data.one_simspace_unit_in_px * app.view.zoom
-	app.gg.draw_rect_empty(top_left.x, top_left.y, aabb.width * zoomed_unit, aabb.height * zoomed_unit,
-		color)
+	rl.draw_rectangle_lines(int(top_left.x), int(top_left.y), int(aabb.width * zoomed_unit),
+		int(aabb.height * zoomed_unit), color)
 }
 
 fn draw_selection(app data.App) {
@@ -60,7 +59,7 @@ fn draw_selection(app data.App) {
 		x1, x2 = x2, x1
 	}
 
-	draw_marching_ants(app, gg.Rect{x1, y1, x2 - x1, y2 - y1}, data.selection_color_high)
+	draw_marching_ants(app, rl.Rectangle{x1, y1, x2 - x1, y2 - y1}, data.selection_color_high)
 }
 
 fn draw_selected_component_outlines(app data.App) {
@@ -68,7 +67,7 @@ fn draw_selected_component_outlines(app data.App) {
 		aabb := comp.get_aabb()
 		top_left := utils.worldspace_to_screenspace(app, vec.vec2[f32](aabb.x, aabb.y))
 		zoomed_unit := data.one_simspace_unit_in_px * app.view.zoom
-		draw_marching_ants(app, gg.Rect{top_left.x, top_left.y, aabb.width * zoomed_unit, aabb.height * zoomed_unit},
+		draw_marching_ants(app, rl.Rectangle{top_left.x, top_left.y, aabb.width * zoomed_unit, aabb.height * zoomed_unit},
 			data.selection_color_low)
 	}
 }
@@ -82,20 +81,20 @@ pub fn step_marching_ants(mut app data.App) {
 	}
 }
 
-fn draw_marching_ants(app data.App, rect gg.Rect, color gg.Color) {
+fn draw_marching_ants(app data.App, rect rl.Rectangle, color rl.Color) {
 	// draw the rectangle in the low color as the base
 	mut offset := app.bench.marching_ants_starting_point
-	offset = draw_marching_ants_line(app, color, offset, rect.x, rect.x + rect.width,
-		rect.y, false, false)
-	offset = draw_marching_ants_line(app, color, offset, rect.y, rect.y + rect.height,
-		rect.x + rect.width, true, true)
-	offset = draw_marching_ants_line(app, color, offset, rect.x, rect.x + rect.width,
-		rect.y + rect.height, false, false)
-	draw_marching_ants_line(app, color, offset, rect.y, rect.y + rect.height, rect.x,
-		true, true)
+	offset = draw_marching_ants_line(app, color, offset, int(rect.x), int(rect.x + rect.width),
+		int(rect.y), false, false)
+	offset = draw_marching_ants_line(app, color, offset, int(rect.y), int(rect.y + rect.height),
+		int(rect.x + rect.width), true, true)
+	offset = draw_marching_ants_line(app, color, offset, int(rect.x), int(rect.x + rect.width),
+		int(rect.y + rect.height), false, false)
+	draw_marching_ants_line(app, color, offset, int(rect.y), int(rect.y + rect.height),
+		int(rect.x), true, true)
 }
 
-fn draw_marching_ants_line(app data.App, color gg.Color, off int, s f32, e f32, level f32, vertical bool, reverse bool) int {
+fn draw_marching_ants_line(app data.App, color rl.Color, off int, s int, e int, level int, vertical bool, reverse bool) int {
 	mut start := s
 	mut end := e
 	if start > end {
@@ -107,10 +106,10 @@ fn draw_marching_ants_line(app data.App, color gg.Color, off int, s f32, e f32, 
 	mut active := if offset < data.marching_ants_segment_size { true } else { false }
 	if !active {
 		if !vertical {
-			app.gg.draw_line(start, level, start + offset % data.marching_ants_segment_size,
+			rl.draw_line(start, level, start + offset % data.marching_ants_segment_size,
 				level, color)
 		} else {
-			app.gg.draw_line(level, start, level, start + offset % data.marching_ants_segment_size,
+			rl.draw_line(level, start, level, start + offset % data.marching_ants_segment_size,
 				color)
 		}
 	}
@@ -120,10 +119,10 @@ fn draw_marching_ants_line(app data.App, color gg.Color, off int, s f32, e f32, 
 	for i in 0 .. num_segments {
 		if active {
 			if !vertical {
-				app.gg.draw_line(start + data.marching_ants_segment_size * i, level, start +
+				rl.draw_line(start + data.marching_ants_segment_size * i, level, start +
 					data.marching_ants_segment_size * (i + 1), level, color)
 			} else {
-				app.gg.draw_line(level, start + data.marching_ants_segment_size * i, level,
+				rl.draw_line(level, start + data.marching_ants_segment_size * i, level,
 					start + data.marching_ants_segment_size * (i + 1), color)
 			}
 		}
@@ -132,11 +131,11 @@ fn draw_marching_ants_line(app data.App, color gg.Color, off int, s f32, e f32, 
 
 	if active {
 		if !vertical {
-			app.gg.draw_line(start + data.marching_ants_segment_size * num_segments, level,
+			rl.draw_line(start + data.marching_ants_segment_size * num_segments, level,
 				start + data.marching_ants_segment_size * num_segments +
 				int(end - start) % data.marching_ants_segment_size, level, color)
 		} else {
-			app.gg.draw_line(level, start + data.marching_ants_segment_size * num_segments,
+			rl.draw_line(level, start + data.marching_ants_segment_size * num_segments,
 				level, start + data.marching_ants_segment_size * num_segments +
 				int(end - start) % data.marching_ants_segment_size, color)
 		}
