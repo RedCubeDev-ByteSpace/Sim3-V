@@ -29,6 +29,7 @@ mut:
 	comp_id               i64
 	comp_name             string
 	pos                   vec.Vec2[int]
+	aabb_offset           vec.Vec2[f32] = vec.vec2[f32](0, 0)
 	offset                vec.Vec2[int] = vec.vec2[int](0, 0)
 	size                  vec.Vec2[int]
 	rotation              Rotation
@@ -80,8 +81,8 @@ pub fn (mut c ComponentBase) set_color(color gg.Color) {
 
 pub fn (c ComponentBase) get_aabb() AABB {
 	return AABB{
-		x:      f32(c.pos.x + c.offset.x) - 0.2
-		y:      f32(c.pos.y + c.offset.y) - 0.2
+		x:      f32(c.pos.x + c.offset.x) + c.aabb_offset.x - 0.2
+		y:      f32(c.pos.y + c.offset.y) + c.aabb_offset.y - 0.2
 		width:  f32(c.size.x) + 0.4
 		height: f32(c.size.y) + 0.4
 	}
