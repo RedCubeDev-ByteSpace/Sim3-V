@@ -25,6 +25,9 @@ pub fn Switch.new(mut app data.App, pos vec.Vec2[int], rot data.Rotation, color 
 	// create a dummy name for this component
 	s.comp_name = 'Switch ${s.comp_id}'
 
+	// add this wire to the global component list
+	app.sim.components << s
+
 	// done :)
 	return s
 }

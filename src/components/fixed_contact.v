@@ -15,21 +15,24 @@ mut:
 
 pub fn FixedContact.new(mut app data.App, pos vec.Vec2[int], rot data.Rotation, color rl.Color, state bool) FixedContact {
 	// initialize a new component with all its unique data
-	mut s := FixedContact{
+	mut c := FixedContact{
 		state: state
 	}
 
 	// initialize the component base with all the standardized data
-	s.ComponentBase = data.ComponentBase.new(mut app, pos, vec.vec2[int](1, 1), rot, color)
+	c.ComponentBase = data.ComponentBase.new(mut app, pos, vec.vec2[int](1, 1), rot, color)
 
 	// create a dummy name for this component
-	s.comp_name = 'Fixed Contact ${s.comp_id}'
+	c.comp_name = 'Fixed Contact ${c.comp_id}'
 
 	// offset the aabb by half of a unit
-	s.aabb_offset = vec.vec2[f32](0.5, 0.5)
+	c.aabb_offset = vec.vec2[f32](0.5, 0.5)
+
+	// add this wire to the global component list
+	app.sim.components << c
 
 	// done :)
-	return s
+	return c
 }
 
 fn (s &FixedContact) draw(app data.App) {
@@ -94,12 +97,4 @@ fn (mut s FixedContact) draw_component_window(mut app data.App) {
 
 		app.mu.end_window_bool_controlled(s.component_window_open)
 	}
-}
-
-pub fn (mut c FixedContact) on_move() {
-	println('old position: ${c.pos}')
-}
-
-pub fn (mut c FixedContact) on_moved() {
-	println('new position: ${c.pos}')
 }

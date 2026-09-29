@@ -19,8 +19,8 @@ mut:
 	set_rotation(rot Rotation)
 	set_color(color rl.Color)
 
-	on_move()
-	on_moved()
+	on_move(mut app App)
+	on_moved(mut app App)
 
 	interact()
 	open_component_window()
@@ -92,9 +92,9 @@ pub fn (c ComponentBase) get_aabb() AABB {
 	}
 }
 
-pub fn (mut c ComponentBase) on_move() {}
+pub fn (mut c ComponentBase) on_move(mut app App) {}
 
-pub fn (mut c ComponentBase) on_moved() {}
+pub fn (mut c ComponentBase) on_moved(mut app App) {}
 
 pub fn (mut c ComponentBase) interact() {}
 

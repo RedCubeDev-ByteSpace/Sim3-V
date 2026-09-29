@@ -9,6 +9,7 @@ import input
 import components
 import math.vec
 import fonts
+import sim
 
 $if emscripten ? {
 	#include <emscripten/emscripten.h>
@@ -63,8 +64,10 @@ fn main() {
 	app.view.camera_position = vec.vec2[f32](initial_window_width / data.one_simspace_unit_in_px / 2,
 		initial_window_height / data.one_simspace_unit_in_px / 2)
 
-	app.sim.components << components.FixedContact.new(mut app, vec.vec2[int](0, 0), .left,
-		data.wire_colors[0], false)
+	components.Wire.new(mut app, vec.vec2[int](0, 0), vec.vec2[int](3, 5), data.wire_colors[0])
+	components.Wire.new(mut app, vec.vec2[int](3, 5), vec.vec2[int](5, 5), data.wire_colors[1])
+	components.Wire.new(mut app, vec.vec2[int](3, 5), vec.vec2[int](-1, 2), data.wire_colors[2])
+	components.Wire.new(mut app, vec.vec2[int](-1, 2), vec.vec2[int](-1, -1), data.wire_colors[3])
 	// app.sim.components << components.FixedContact.new(mut app, vec.vec2[int](3, 0), .up,
 	// 	data.wire_colors[0], true)
 	// app.sim.components << components.FixedContact.new(mut app, vec.vec2[int](6, 0), .right,
@@ -90,6 +93,8 @@ fn main() {
 fn on_frame(mut app data.App) {
 	input.handle_input(mut app)
 	input.sync_zoom(mut app)
+
+	sim.recalculate_wire_meshes(mut app)
 
 	rl.begin_drawing()
 	rl.clear_background(data.background_color)
