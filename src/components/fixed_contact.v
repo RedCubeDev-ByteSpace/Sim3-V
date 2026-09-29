@@ -68,7 +68,9 @@ fn (mut s FixedContact) draw_component_window(mut app data.App) {
 		app.mu.textbox(s.comp_name)
 
 		app.mu.label('State')
-		app.mu.checkbox('', s.state)
+		if app.mu.checkbox('', s.state) {
+			// s.contact_point = data.ContactPoint.new(mut app, if state { .high } else { .low })
+		}
 
 		app.mu.end_window_bool_controlled(s.component_window_open)
 	}

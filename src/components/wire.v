@@ -6,7 +6,7 @@ import raylib as rl
 import utils
 import fonts
 
-struct Wire {
+pub struct Wire {
 	data.ComponentBase
 mut:
 	// properties for this wire component
@@ -19,7 +19,7 @@ pub fn Wire.new(mut app data.App, wire_from vec.Vec2[int], wire_to vec.Vec2[int]
 	// initialize a new component with all its unique data
 	mut w := Wire{
 		wire_to: wire_to
-		state:   .high
+		state:   .low
 	}
 
 	// initialize the component base with all the standardized data
@@ -51,22 +51,33 @@ pub fn Wire.new(mut app data.App, wire_from vec.Vec2[int], wire_to vec.Vec2[int]
 	return w
 }
 
+pub fn (mut w Wire) set_state(wire_state data.WireState) {
+	w.state = wire_state
+}
+
 fn (w &Wire) draw(app data.App) {
 	wire_from, zoomed_unit := utils.get_drawing_variables(app, w.ComponentBase)
 	wire_to := utils.worldspace_to_screenspace(app, w.wire_to)
-	wire_color := match w.state {
+
+	if w.state == .error {
+		rl.draw_line_ex(utils.vec_to_rl(wire_from), utils.vec_to_rl(wire_to), 2 * data.component_line_thickness,
+			data.wire_error_color)
+	}
+
+	wire_thickness := match w.state {
 		.low {
-			data.get_low_color_from_high_color(w.color)
+			data.component_line_thickness
 		}
 		.high {
-			w.color
+			data.component_line_thickness * 1.5
 		}
 		.error {
-			data.wire_error_color
+			0
 		}
 	}
 
-	rl.draw_line_ex(utils.vec_to_rl(wire_from), utils.vec_to_rl(wire_to), 2, wire_color)
+	rl.draw_line_ex(utils.vec_to_rl(wire_from), utils.vec_to_rl(wire_to), int(wire_thickness),
+		w.color)
 }
 
 fn (mut w Wire) draw_component_window(mut app data.App) {

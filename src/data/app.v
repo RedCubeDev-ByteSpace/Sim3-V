@@ -57,13 +57,15 @@ pub mut:
 	// everything concerning the simulation
 	sim struct {
 	pub mut:
-		global_id_counter       i64
-		wire_mesh_recalc_needed bool         = false
-		components              []IComponent = []
-		wire_table              map[i64]WireTableEntry // comp_id -> wire
-		wire_positions          map[string][]i64       // vec2 -> comp_id
-		wire_meshes             []WireMesh = []
-		contact_point_positions map[string]&ContactPoint
+		global_id_counter            i64
+		wire_mesh_recalc_needed      bool         = false
+		components                   []IComponent = []
+		wire_table                   map[i64]WireTableEntry // comp_id -> wire
+		wire_positions               map[string][]i64       // vec2 -> comp_id
+		wire_meshes                  []WireMesh = []
+		global_contact_point_counter i64
+		contact_point_table          map[i64]&ContactPoint
+		contact_point_positions      map[string][]i64
 	}
 
 	// bench -----------------------------------------------------------------------------------------------------------

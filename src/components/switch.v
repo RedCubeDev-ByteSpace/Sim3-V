@@ -10,7 +10,8 @@ struct Switch {
 	data.ComponentBase
 mut:
 	// properties for this switch component
-	state bool
+	state         bool
+	contact_point data.ContactPoint
 }
 
 pub fn Switch.new(mut app data.App, pos vec.Vec2[int], rot data.Rotation, color rl.Color, state bool) Switch {
@@ -28,6 +29,11 @@ pub fn Switch.new(mut app data.App, pos vec.Vec2[int], rot data.Rotation, color 
 	// calculate where this components bounding box is based on its rotation
 	s.aabb_offset = utils.get_aabb_offset_for_rotation(-1, -3, 2, 2, rot)
 
+	// create a new contact point where wires can connect to
+	s.contact_point = data.ContactPoint.new(mut app, if state { .high } else { .low })
+	app.sim.contact_point_table[s.contact_point.cont_id] = &s.contact_point
+	utils.register_contact_point(mut app, s.pos, s.contact_point.cont_id)
+
 	// add this wire to the global component list
 	app.sim.components << s
 
@@ -37,6 +43,16 @@ pub fn Switch.new(mut app data.App, pos vec.Vec2[int], rot data.Rotation, color 
 
 fn (mut s Switch) interact() {
 	s.state = !s.state
+	s.contact_point.output_state = if s.state { .high } else { .low }
+}
+
+pub fn (mut s Switch) on_move(mut app data.App) {
+	utils.unregister_contact_point(mut app, s.pos, s.contact_point.cont_id)
+}
+
+pub fn (mut s Switch) on_moved(mut app data.App) {
+	utils.register_contact_point(mut app, s.pos, s.contact_point.cont_id)
+	app.sim.wire_mesh_recalc_needed = true
 }
 
 fn (s &Switch) draw(app data.App) {
@@ -47,13 +63,13 @@ fn (s &Switch) draw(app data.App) {
 		low_color)
 
 	utils.draw_contact_line(contact_point.x, contact_point.y, zoomed_unit, 0, 0, 0, -1,
-		s.rotation, s.color)
+		s.rotation, low_color)
 
 	utils.draw_component_rectangle(contact_point.x, contact_point.y, zoomed_unit, -1,
-		-3, 2, 2, s.rotation, s.color)
+		-3, 2, 2, s.rotation, low_color)
 
 	utils.draw_circle_filled(contact_point.x, contact_point.y, zoomed_unit, 0, -2, 0.5,
-		s.rotation, s.color)
+		s.rotation, if s.state { s.color } else { low_color })
 }
 
 fn (mut s Switch) draw_component_window(mut app data.App) {
@@ -71,7 +87,9 @@ fn (mut s Switch) draw_component_window(mut app data.App) {
 		app.mu.textbox(s.comp_name)
 
 		app.mu.label('State')
-		app.mu.checkbox('', s.state)
+		if app.mu.checkbox('', s.state) {
+			s.contact_point.output_state = if s.state { .high } else { .low }
+		}
 
 		app.mu.end_window_bool_controlled(s.component_window_open)
 	}
