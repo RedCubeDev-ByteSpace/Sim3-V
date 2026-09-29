@@ -10,6 +10,12 @@ import components
 import math.vec
 import fonts
 
+$if emscripten ? {
+	#include <emscripten/emscripten.h>
+}
+
+fn C.emscripten_set_main_loop_arg(func fn (&data.App), arg &data.App, fps int, simulate_infinite_loop int)
+
 // ---------------------------------------------------------------------------------------------------------------------
 // constants for initial window configuration
 const initial_window_width = 1600
@@ -67,8 +73,12 @@ fn main() {
 	// 	data.wire_colors[0], false)
 
 	// run the main draw loop!
-	for !rl.window_should_close() {
-		on_frame(mut app)
+	$if emscripten ? {
+		C.emscripten_set_main_loop_arg(on_frame, app, 0, 1)
+	} $else {
+		for !rl.window_should_close() {
+			on_frame(mut app)
+		}
 	}
 
 	// clean up

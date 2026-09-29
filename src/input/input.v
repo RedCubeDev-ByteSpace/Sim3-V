@@ -235,9 +235,15 @@ fn handle_component_move(mut app data.App) bool {
 	if app.bench.bench_state == .moving_components
 		&& rl.is_mouse_button_released(int(rl.MouseButton.mouse_button_left)) {
 		for mut comp in app.bench.selected_components {
+			// prepare the component for its move
+			comp.on_move()
+
 			// add the offest onto the position and reset it
 			comp.set_position(comp.get_position().add(comp.get_offset()))
 			comp.set_offset(vec.vec2[int](0, 0))
+
+			// inform the component that its been moved
+			comp.on_moved()
 		}
 
 		app.bench.bench_state = .idle

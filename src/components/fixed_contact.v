@@ -95,3 +95,11 @@ fn (mut s FixedContact) draw_component_window(mut app data.App) {
 		app.mu.end_window_bool_controlled(s.component_window_open)
 	}
 }
+
+pub fn (mut c FixedContact) on_move() {
+	println('old position: ${c.pos}')
+}
+
+pub fn (mut c FixedContact) on_moved() {
+	println('new position: ${c.pos}')
+}

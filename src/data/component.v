@@ -18,6 +18,10 @@ mut:
 	set_offset(pos vec.Vec2[int])
 	set_rotation(rot Rotation)
 	set_color(color rl.Color)
+
+	on_move()
+	on_moved()
+
 	interact()
 	open_component_window()
 	draw_component_window(mut app App)
@@ -87,6 +91,10 @@ pub fn (c ComponentBase) get_aabb() AABB {
 		height: f32(c.size.y) + 0.4
 	}
 }
+
+pub fn (mut c ComponentBase) on_move() {}
+
+pub fn (mut c ComponentBase) on_moved() {}
 
 pub fn (mut c ComponentBase) interact() {}
 

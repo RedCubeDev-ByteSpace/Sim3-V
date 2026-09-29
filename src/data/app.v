@@ -56,7 +56,7 @@ pub mut:
 	// everything concerning the simulation
 	sim struct {
 	pub mut:
-		global_id_counter i64          = 0
+		global_id_counter i64
 		components        []IComponent = []
 	}
 
@@ -67,8 +67,8 @@ pub mut:
 		bench_state                  BenchState
 		current_selected_color_idx   int
 		selected_components          []IComponent = []
-		marching_ants_starting_point int          = 0
-		marching_ants_frame_counter  int          = 0
+		marching_ants_starting_point int
+		marching_ants_frame_counter  int
 	}
 
 	// fonts -----------------------------------------------------------------------------------------------------------
