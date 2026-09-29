@@ -25,6 +25,9 @@ pub fn Switch.new(mut app data.App, pos vec.Vec2[int], rot data.Rotation, color 
 	// create a dummy name for this component
 	s.comp_name = 'Switch ${s.comp_id}'
 
+	// calculate where this components bounding box is based on its rotation
+	s.aabb_offset = utils.get_aabb_offset_for_rotation(-1, -3, 2, 2, rot)
+
 	// add this wire to the global component list
 	app.sim.components << s
 
@@ -37,41 +40,20 @@ fn (mut s Switch) interact() {
 }
 
 fn (s &Switch) draw(app data.App) {
-	top_left, zoomed_unit := utils.get_drawing_variables(app, s.ComponentBase)
-
+	contact_point, zoomed_unit := utils.get_drawing_variables(app, s.ComponentBase)
 	low_color := data.get_low_color_from_high_color(s.color)
 
-	rl.draw_rectangle_lines(int(top_left.x), int(top_left.y), int(zoomed_unit * 2), int(zoomed_unit * 2),
+	rl.draw_circle_lines(int(contact_point.x), int(contact_point.y), int(zoomed_unit / 4),
 		low_color)
-	rl.draw_circle(int(top_left.x + zoomed_unit), int(top_left.y + zoomed_unit), int(zoomed_unit / 2),
-		if s.state { s.color } else { low_color })
 
-	match s.rotation {
-		.left {
-			rl.draw_line(int(top_left.x), int(top_left.y + zoomed_unit), int(top_left.x - zoomed_unit),
-				int(top_left.y + zoomed_unit), low_color)
-			rl.draw_circle_lines(int(top_left.x - zoomed_unit), int(top_left.y + zoomed_unit),
-				int(zoomed_unit / 4), low_color)
-		}
-		.up {
-			rl.draw_line(int(top_left.x + zoomed_unit), int(top_left.y), int(top_left.x +
-				zoomed_unit), int(top_left.y - zoomed_unit), low_color)
-			rl.draw_circle_lines(int(top_left.x + zoomed_unit), int(top_left.y - zoomed_unit),
-				int(zoomed_unit / 4), low_color)
-		}
-		.right {
-			rl.draw_line(int(top_left.x + zoomed_unit * 2), int(top_left.y + zoomed_unit),
-				int(top_left.x + zoomed_unit * 3), int(top_left.y + zoomed_unit), low_color)
-			rl.draw_circle_lines(int(top_left.x + zoomed_unit * 3), int(top_left.y + zoomed_unit),
-				int(zoomed_unit / 4), low_color)
-		}
-		.down {
-			rl.draw_line(int(top_left.x + zoomed_unit), int(top_left.y + zoomed_unit * 2),
-				int(top_left.x + zoomed_unit), int(top_left.y + zoomed_unit * 3), low_color)
-			rl.draw_circle_lines(int(top_left.x + zoomed_unit), int(top_left.y + zoomed_unit * 3),
-				int(zoomed_unit / 4), low_color)
-		}
-	}
+	utils.draw_contact_line(contact_point.x, contact_point.y, zoomed_unit, 0, 0, 0, -1,
+		s.rotation, s.color)
+
+	utils.draw_component_rectangle(contact_point.x, contact_point.y, zoomed_unit, -1,
+		-3, 2, 2, s.rotation, s.color)
+
+	utils.draw_circle_filled(contact_point.x, contact_point.y, zoomed_unit, 0, -2, 0.5,
+		s.rotation, s.color)
 }
 
 fn (mut s Switch) draw_component_window(mut app data.App) {

@@ -25,8 +25,8 @@ pub fn FixedContact.new(mut app data.App, pos vec.Vec2[int], rot data.Rotation, 
 	// create a dummy name for this component
 	c.comp_name = 'Fixed Contact ${c.comp_id}'
 
-	// offset the aabb by half of a unit
-	c.aabb_offset = vec.vec2[f32](0.5, 0.5)
+	// calculate where this components bounding box is based on its rotation
+	c.aabb_offset = utils.get_aabb_offset_for_rotation(-0.5, -1.5, 1, 1, rot)
 
 	// add this wire to the global component list
 	app.sim.components << c
@@ -35,47 +35,22 @@ pub fn FixedContact.new(mut app data.App, pos vec.Vec2[int], rot data.Rotation, 
 	return c
 }
 
-fn (s &FixedContact) draw(app data.App) {
-	top_left, zoomed_unit := utils.get_drawing_variables(app, s.ComponentBase)
+fn (f &FixedContact) draw(app data.App) {
+	contact_point, zoomed_unit := utils.get_drawing_variables(app, f.ComponentBase)
+	low_color := data.get_low_color_from_high_color(f.color)
 
-	low_color := data.get_low_color_from_high_color(s.color)
+	rl.draw_circle_lines(int(contact_point.x), int(contact_point.y), int(zoomed_unit / 4),
+		low_color)
 
-	rl.draw_rectangle_lines(int(top_left.x + 0.5 * zoomed_unit), int(top_left.y + 0.5 * zoomed_unit),
-		int(zoomed_unit), int(zoomed_unit), low_color)
+	utils.draw_contact_line(contact_point.x, contact_point.y, zoomed_unit, 0, 0, 0, -0.5,
+		f.rotation, f.color)
 
-	state := if s.state { '1' } else { '0' }
-	font_size := int(zoomed_unit * 0.75)
-	font := fonts.get_font_for_size(app, font_size)
-	text_size := rl.measure_text_ex(font, state, font_size, 1)
-	rl.draw_text_ex(font, state, rl.Vector2{int(top_left.x + zoomed_unit) - text_size.x / 2, int(
-		top_left.y + zoomed_unit) - text_size.y / 2}, font_size, 1, low_color)
+	utils.draw_component_rectangle(contact_point.x, contact_point.y, zoomed_unit, -0.5,
+		-1.5, 1, 1, f.rotation, f.color)
 
-	match s.rotation {
-		.left {
-			rl.draw_line(int(top_left.x + 0.5 * zoomed_unit), int(top_left.y + zoomed_unit),
-				int(top_left.x), int(top_left.y + zoomed_unit), low_color)
-			rl.draw_circle_lines(int(top_left.x), int(top_left.y + zoomed_unit), int(zoomed_unit / 4),
-				low_color)
-		}
-		.up {
-			rl.draw_line(int(top_left.x + zoomed_unit), int(top_left.y + zoomed_unit * 0.5),
-				int(top_left.x + zoomed_unit), int(top_left.y), low_color)
-			rl.draw_circle_lines(int(top_left.x + zoomed_unit), int(top_left.y), int(zoomed_unit / 4),
-				low_color)
-		}
-		.right {
-			rl.draw_line(int(top_left.x + zoomed_unit * 1.5), int(top_left.y + zoomed_unit),
-				int(top_left.x + zoomed_unit * 2), int(top_left.y + zoomed_unit), low_color)
-			rl.draw_circle_lines(int(top_left.x + zoomed_unit * 2), int(top_left.y + zoomed_unit),
-				int(zoomed_unit / 4), low_color)
-		}
-		.down {
-			rl.draw_line(int(top_left.x + zoomed_unit), int(top_left.y + zoomed_unit * 1.5),
-				int(top_left.x + zoomed_unit), int(top_left.y + zoomed_unit * 2), low_color)
-			rl.draw_circle_lines(int(top_left.x + zoomed_unit), int(top_left.y + zoomed_unit * 2),
-				int(zoomed_unit / 4), low_color)
-		}
-	}
+	state := if f.state { '1' } else { '0' }
+	utils.draw_centered_text(app, contact_point.x, contact_point.y, zoomed_unit, 0, -1,
+		state, 0.75, f.rotation, f.color)
 }
 
 fn (mut s FixedContact) draw_component_window(mut app data.App) {

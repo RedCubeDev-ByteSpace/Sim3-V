@@ -24,7 +24,7 @@ pub fn Wire.new(mut app data.App, wire_from vec.Vec2[int], wire_to vec.Vec2[int]
 
 	// initialize the component base with all the standardized data
 	w.ComponentBase = data.ComponentBase.new(mut app, wire_from, vec.vec2[int](1, 1),
-		.left, color)
+		.up, color)
 
 	// create a dummy name for this component
 	w.comp_name = 'Wire ${w.comp_id}'

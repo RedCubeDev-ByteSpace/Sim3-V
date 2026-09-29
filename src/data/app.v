@@ -4,6 +4,7 @@ import microui
 import math.vec
 
 pub const one_simspace_unit_in_px = 20
+pub const component_line_thickness = 2
 pub const zoom_lerp_cutoff = 0.001
 pub const zoom_trail_cutoff = 0.005
 pub const max_zoom = 12
