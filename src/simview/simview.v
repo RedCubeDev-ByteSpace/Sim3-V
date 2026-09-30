@@ -188,7 +188,7 @@ fn draw_marching_ants_line(app data.App, color rl.Color, off int, s int, e int, 
 }
 
 fn draw_preview_of_component_being_placed(app data.App) {
-	if app.bench.selected_component_type == .none {
+	if app.bench.placement.selected_component_type == .none {
 		return
 	}
 
@@ -206,13 +206,28 @@ fn draw_preview_of_component_being_placed(app data.App) {
 	}
 
 	// draw the preview using the components static draw function
-	match app.bench.selected_component_type {
+	match app.bench.placement.selected_component_type {
 		.none {}
 		.switch {
-			components.Switch.draw(pos, zoomed_unit, color, false, app.bench.rotation)
+			components.Switch.draw(pos, zoomed_unit, color, false, app.bench.placement.rotation)
 		}
 		.fixed_contact {
-			components.FixedContact.draw(app, pos, zoomed_unit, color, false, app.bench.rotation)
+			components.FixedContact.draw(app, pos, zoomed_unit, color, false, app.bench.placement.rotation)
+		}
+		.wire {
+			if !app.bench.placement.placed_wire_starting_point {
+				rl.draw_circle_lines(comp_pos_screen_space.x, comp_pos_screen_space.y,
+					5, color)
+			} else {
+				start_pos := data.worldspace_to_screenspace(app, app.input.wire_place_start_pos)
+				rl.draw_line_ex(rl.Vector2{
+					x: start_pos.x
+					y: start_pos.y
+				}, rl.Vector2{
+					x: pos.x
+					y: pos.y
+				}, 2, color)
+			}
 		}
 	}
 }

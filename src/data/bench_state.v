@@ -11,6 +11,7 @@ pub enum BenchState {
 
 pub enum SelectedComponentType {
 	none
+	wire
 	switch
 	fixed_contact
 }

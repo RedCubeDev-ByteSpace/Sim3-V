@@ -154,7 +154,7 @@ fn handle_simview_movement(mut app data.App) bool {
 			app.view.camera_position = app.view.camera_position.add(app.view.camera_offset.div_scalar[f32](app.view.zoom * data.one_simspace_unit_in_px))
 			app.view.camera_offset.zero()
 
-			if app.bench.selected_component_type != .none {
+			if app.bench.placement.selected_component_type != .none {
 				app.bench.bench_state = .placing_component
 			} else {
 				app.bench.bench_state = .idle
@@ -437,7 +437,7 @@ fn handle_component_placement(mut app data.App) bool {
 
 	// if R is pressed while placing -> rotate the component
 	if rl.is_key_pressed(int(rl.KeyboardKey.key_q)) {
-		app.bench.rotation = match app.bench.rotation {
+		app.bench.placement.rotation = match app.bench.placement.rotation {
 			.left { .up }
 			.up { .right }
 			.right { .down }
@@ -451,15 +451,25 @@ fn handle_component_placement(mut app data.App) bool {
 		mouse_pos_in_world_space := data.screenspace_to_worldspace(app, app.input.mouse_pos)
 		placement_pos := vec.vec2(int(mouse_pos_in_world_space.x), int(mouse_pos_in_world_space.y))
 		color := data.wire_colors[app.bench.current_selected_color_idx]
-		rotation := app.bench.rotation
+		rotation := app.bench.placement.rotation
 
-		match app.bench.selected_component_type {
+		match app.bench.placement.selected_component_type {
 			.none {}
 			.switch {
 				components.Switch.new(mut app, placement_pos, rotation, color, false)
 			}
 			.fixed_contact {
 				components.FixedContact.new(mut app, placement_pos, rotation, color, false)
+			}
+			.wire {
+				if !app.bench.placement.placed_wire_starting_point {
+					app.input.wire_place_start_pos = placement_pos
+					app.bench.placement.placed_wire_starting_point = true
+				} else {
+					components.Wire.new(mut app, app.input.wire_place_start_pos, placement_pos,
+						color)
+					app.bench.placement.placed_wire_starting_point = false
+				}
 			}
 		}
 	}

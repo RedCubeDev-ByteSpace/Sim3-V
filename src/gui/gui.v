@@ -108,8 +108,8 @@ fn draw_color_window(mut app data.App) {
 }
 
 fn draw_components_window(mut app data.App) {
-	if app.mu.begin_window_ex('Components', rl.Rectangle{10, 80, 100, 65}, .noclose | .noresize | .noscroll) {
-		app.mu.layout_row([30, 30], 30)
+	if app.mu.begin_window_ex('Components', rl.Rectangle{10, 80, 110, 65}, .noclose | .noresize | .noscroll) {
+		app.mu.layout_row([30, 30, 30], 30)
 
 		style := app.mu.get_style()
 		border_color := style.colors[microui.Color.border]
@@ -119,12 +119,41 @@ fn draw_components_window(mut app data.App) {
 		fg_color := style.colors[microui.Color.text]
 
 		// -------------------------------------------------------------------------------------------------------------
+		// Wire button
+
+		// determine the background color for this button
+		rect_wire := app.mu.layout_next()
+		mut bg_wire := bg_color
+		if app.bench.placement.selected_component_type == .wire {
+			bg_wire = focus_color
+		} else if app.mu.mouse_over(rect_wire) {
+			bg_wire = hover_color
+		}
+
+		// when clicked: toggle this component being selected
+		if app.mu.mouse_over(rect_wire) && app.mu.is_mouse_pressed(.left) {
+			utils.toggle_component_placement(mut app, .wire)
+			app.bench.placement.placed_wire_starting_point = false
+		}
+
+		// draw the button
+		app.mu.draw_custom(rect_wire, app, fn [fg_color, bg_wire, border_color] (rect rl.Rectangle, _ voidptr) {
+			rl.draw_rectangle(int(rect.x), int(rect.y), int(rect.width), int(rect.height),
+				bg_wire)
+			rl.draw_rectangle_lines_ex(rect, 1, border_color)
+
+			margin := 5
+			rl.draw_line_ex(rl.Vector2{rect.x + margin, rect.y + margin}, rl.Vector2{rect.x +
+				rect.width - margin, rect.y + rect.width - margin}, 2, fg_color)
+		})
+
+		// -------------------------------------------------------------------------------------------------------------
 		// Switch component button
 
 		// determine the background color for this button
 		rect_switch := app.mu.layout_next()
 		mut bg_switch := bg_color
-		if app.bench.selected_component_type == .switch {
+		if app.bench.placement.selected_component_type == .switch {
 			bg_switch = focus_color
 		} else if app.mu.mouse_over(rect_switch) {
 			bg_switch = hover_color
@@ -159,7 +188,7 @@ fn draw_components_window(mut app data.App) {
 		// determine the background color for this button
 		rect_fixed_contact := app.mu.layout_next()
 		mut bg_fixed_contact := bg_color
-		if app.bench.selected_component_type == .fixed_contact {
+		if app.bench.placement.selected_component_type == .fixed_contact {
 			bg_fixed_contact = focus_color
 		} else if app.mu.mouse_over(rect_fixed_contact) {
 			bg_fixed_contact = hover_color

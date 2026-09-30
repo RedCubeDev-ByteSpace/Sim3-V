@@ -50,6 +50,7 @@ pub mut:
 		selecting_start_pos      vec.Vec2[f32]
 		component_move_start_pos vec.Vec2[f32]
 		wire_move_start_pos      vec.Vec2[f32]
+		wire_place_start_pos     vec.Vec2[int]
 		mui_needs_mouse_up       bool
 
 		target_zoom f32 = 1
@@ -87,8 +88,12 @@ pub mut:
 			draw_hover_box bool
 		}
 
-		selected_component_type SelectedComponentType
-		rotation                Rotation
+		placement struct {
+		pub mut:
+			selected_component_type    SelectedComponentType
+			rotation                   Rotation
+			placed_wire_starting_point bool
+		}
 	}
 
 	// fonts -----------------------------------------------------------------------------------------------------------
