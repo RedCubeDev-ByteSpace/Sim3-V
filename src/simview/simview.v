@@ -203,8 +203,7 @@ fn draw_preview_of_component_being_placed(app data.App) {
 
 	// figure out where to draw this preview of a component
 	mouse_pos_world_space := data.screenspace_to_worldspace(app, app.input.mouse_pos)
-	comp_pos_screen_space := data.worldspace_to_screenspace(app, vec.vec2(int(mouse_pos_world_space.x),
-		int(mouse_pos_world_space.y)))
+	comp_pos_screen_space := data.worldspace_to_screenspace(app, utils.roundificate_to_whole_point(mouse_pos_world_space))
 
 	// prepare the variables needed for drawing any components
 	pos := vec.vec2(f32(comp_pos_screen_space.x), f32(comp_pos_screen_space.y))

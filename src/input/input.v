@@ -335,7 +335,7 @@ fn handle_wire_move(mut app data.App) bool {
 	// if we're current in a move -> recalculate the wire ends offset
 	if app.bench.bench_state == .moving_wire {
 		new_offset_f := mouse_pos_in_world_space.sub(app.input.wire_move_start_pos)
-		new_offset := vec.vec2[int](int(new_offset_f.x), int(new_offset_f.y))
+		new_offset := utils.roundificate_to_whole_point(new_offset_f)
 
 		mut comp := app.bench.wire_moving.wire
 		match app.bench.wire_moving.wire_end {
@@ -449,7 +449,7 @@ fn handle_component_placement(mut app data.App) bool {
 	// if the left mouse button was pressed -> place the component
 	if rl.is_mouse_button_pressed(int(rl.MouseButton.mouse_button_left)) {
 		mouse_pos_in_world_space := data.screenspace_to_worldspace(app, app.input.mouse_pos)
-		placement_pos := vec.vec2(int(mouse_pos_in_world_space.x), int(mouse_pos_in_world_space.y))
+		placement_pos := utils.roundificate_to_whole_point(mouse_pos_in_world_space)
 		color := data.wire_colors[app.bench.current_selected_color_idx]
 		rotation := app.bench.placement.rotation
 
