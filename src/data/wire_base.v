@@ -26,6 +26,10 @@ pub fn WireBase.new(mut app App, wire_from vec.Vec2[int], wire_to vec.Vec2[int],
 	}
 }
 
+pub fn (c WireBase) get_comp_id() i64 {
+	return c.comp_id
+}
+
 pub fn (w WireBase) get_wire_from() vec.Vec2[int] {
 	return w.wire_from
 }

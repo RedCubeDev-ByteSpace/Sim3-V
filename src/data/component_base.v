@@ -30,6 +30,10 @@ pub fn ComponentBase.new(mut app App, pos vec.Vec2[int], size vec.Vec2[int], rot
 	}
 }
 
+pub fn (c ComponentBase) get_comp_id() i64 {
+	return c.comp_id
+}
+
 pub fn (c ComponentBase) get_position() vec.Vec2[int] {
 	return c.pos
 }

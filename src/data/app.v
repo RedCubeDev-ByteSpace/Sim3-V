@@ -86,6 +86,9 @@ pub mut:
 			wire_end       WireEnd
 			draw_hover_box bool
 		}
+
+		selected_component_type SelectedComponentType
+		rotation                Rotation
 	}
 
 	// fonts -----------------------------------------------------------------------------------------------------------

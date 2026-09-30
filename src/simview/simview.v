@@ -17,6 +17,7 @@ pub fn draw_view(app data.App) {
 	draw_components(app)
 	draw_selected_component_outlines(app)
 	draw_wire_movement_handles(app)
+	draw_preview_of_component_being_placed(app)
 }
 
 fn draw_components(app data.App) {
@@ -182,6 +183,36 @@ fn draw_marching_ants_line(app data.App, color rl.Color, off int, s int, e int, 
 			data.marching_ants_segment_size
 		} else {
 			0
+		}
+	}
+}
+
+fn draw_preview_of_component_being_placed(app data.App) {
+	if app.bench.selected_component_type == .none {
+		return
+	}
+
+	// figure out where to draw this preview of a component
+	mouse_pos_world_space := data.screenspace_to_worldspace(app, app.input.mouse_pos)
+	comp_pos_screen_space := data.worldspace_to_screenspace(app, vec.vec2(int(mouse_pos_world_space.x),
+		int(mouse_pos_world_space.y)))
+
+	// prepare the variables needed for drawing any components
+	pos := vec.vec2(f32(comp_pos_screen_space.x), f32(comp_pos_screen_space.y))
+	zoomed_unit := data.one_simspace_unit_in_px * app.view.zoom
+	color := rl.Color{
+		...data.wire_colors[app.bench.current_selected_color_idx]
+		a: 150
+	}
+
+	// draw the preview using the components static draw function
+	match app.bench.selected_component_type {
+		.none {}
+		.switch {
+			components.Switch.draw(pos, zoomed_unit, color, false, app.bench.rotation)
+		}
+		.fixed_contact {
+			components.FixedContact.draw(app, pos, zoomed_unit, color, false, app.bench.rotation)
 		}
 	}
 }

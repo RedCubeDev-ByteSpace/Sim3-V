@@ -4,6 +4,7 @@ import math.vec
 import raylib as rl
 
 pub interface IComponent {
+	get_comp_id() i64
 	get_aabb() AABB
 	hit_test(pos vec.Vec2[f32]) bool
 	get_rotation() Rotation
@@ -23,6 +24,7 @@ mut:
 
 	on_move(mut app App)
 	on_moved(mut app App)
+	on_delete(mut app App)
 
 	interact()
 	open_component_window()

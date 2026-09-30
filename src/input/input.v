@@ -55,6 +55,16 @@ pub fn handle_input(mut app data.App) {
 		return
 	}
 
+	// are we trying to place a component?
+	if handle_component_placement(mut app) {
+		return
+	}
+
+	// are we trying to delete selected components?
+	if handle_component_deletion(mut app) {
+		return
+	}
+
 	// are we trying to move something?
 	if handle_component_move(mut app) {
 		return
@@ -115,7 +125,7 @@ fn handle_component_interaction(mut app data.App) bool {
 fn handle_simview_movement(mut app data.App) bool {
 	// when we're not already moving the view and the user pressed their right mouse button
 	// -> start a new view movement
-	if app.bench.bench_state == .idle
+	if (app.bench.bench_state == .idle || app.bench.bench_state == .placing_component)
 		&& rl.is_mouse_button_pressed(int(rl.MouseButton.mouse_button_right)) {
 		// set the view movement flag and remember where the move started
 		app.bench.bench_state = .moving_view
@@ -144,7 +154,11 @@ fn handle_simview_movement(mut app data.App) bool {
 			app.view.camera_position = app.view.camera_position.add(app.view.camera_offset.div_scalar[f32](app.view.zoom * data.one_simspace_unit_in_px))
 			app.view.camera_offset.zero()
 
-			app.bench.bench_state = .idle
+			if app.bench.selected_component_type != .none {
+				app.bench.bench_state = .placing_component
+			} else {
+				app.bench.bench_state = .idle
+			}
 
 			// stop any grid movement trails
 			app.view.grid.draw_grid_movement_trails = false
@@ -408,4 +422,72 @@ fn handle_rectangle_select(mut app data.App) bool {
 	}
 
 	return false
+}
+
+fn handle_component_placement(mut app data.App) bool {
+	if app.bench.bench_state != .placing_component {
+		return false
+	}
+
+	// if ESC is pressed while placing -> exit the placement mode
+	if rl.is_key_pressed(int(rl.KeyboardKey.key_escape)) {
+		utils.exit_component_placement(mut app)
+		return true
+	}
+
+	// if R is pressed while placing -> rotate the component
+	if rl.is_key_pressed(int(rl.KeyboardKey.key_q)) {
+		app.bench.rotation = match app.bench.rotation {
+			.left { .up }
+			.up { .right }
+			.right { .down }
+			.down { .left }
+		}
+		return true
+	}
+
+	// if the left mouse button was pressed -> place the component
+	if rl.is_mouse_button_pressed(int(rl.MouseButton.mouse_button_left)) {
+		mouse_pos_in_world_space := data.screenspace_to_worldspace(app, app.input.mouse_pos)
+		placement_pos := vec.vec2(int(mouse_pos_in_world_space.x), int(mouse_pos_in_world_space.y))
+		color := data.wire_colors[app.bench.current_selected_color_idx]
+		rotation := app.bench.rotation
+
+		match app.bench.selected_component_type {
+			.none {}
+			.switch {
+				components.Switch.new(mut app, placement_pos, rotation, color, false)
+			}
+			.fixed_contact {
+				components.FixedContact.new(mut app, placement_pos, rotation, color, false)
+			}
+		}
+	}
+
+	return true
+}
+
+fn handle_component_deletion(mut app data.App) bool {
+	if app.bench.selected_components.len == 0 {
+		return false
+	}
+
+	// allow both DEL and Backspace for deleting components
+	if rl.is_key_pressed(int(rl.KeyboardKey.key_delete))
+		|| rl.is_key_pressed(int(rl.KeyboardKey.key_backspace)) {
+		for mut comp in app.bench.selected_components {
+			comp.on_delete(mut app)
+
+			// look this component up in the main list and delete it
+			for i, lookup in app.sim.components {
+				if lookup.get_comp_id() == comp.get_comp_id() {
+					app.sim.components.delete(i)
+					break
+				}
+			}
+		}
+		app.bench.selected_components.clear()
+	}
+
+	return true
 }

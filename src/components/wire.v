@@ -51,6 +51,30 @@ pub fn (mut w Wire) set_state(wire_state data.WireState) {
 	w.state = wire_state
 }
 
+pub fn (mut w Wire) on_move(mut app data.App) {
+	utils.unregister_wire(mut app, w.wire_from, w.comp_id)
+	utils.unregister_wire(mut app, w.wire_to, w.comp_id)
+}
+
+pub fn (mut w Wire) on_moved(mut app data.App) {
+	utils.register_wire(mut app, w.wire_from, w.comp_id)
+	utils.register_wire(mut app, w.wire_to, w.comp_id)
+	app.sim.wire_table[w.comp_id] = data.WireTableEntry{
+		comp_id:       w.comp_id
+		component:     w
+		wire_from_pos: utils.vec_to_str(w.wire_from)
+		wire_to_pos:   utils.vec_to_str(w.wire_to)
+	}
+	app.sim.wire_mesh_recalc_needed = true
+}
+
+pub fn (mut w Wire) on_delete(mut app data.App) {
+	utils.unregister_wire(mut app, w.wire_from, w.comp_id)
+	utils.unregister_wire(mut app, w.wire_to, w.comp_id)
+	app.sim.wire_table.delete(w.comp_id)
+	app.sim.wire_mesh_recalc_needed = true
+}
+
 fn (w &Wire) draw(app data.App) {
 	wire_from := data.worldspace_to_screenspace(app, w.wire_from.add(w.offset_from))
 	wire_to := data.worldspace_to_screenspace(app, w.wire_to.add(w.offset_to))
@@ -92,21 +116,4 @@ fn (mut w Wire) draw_component_window(mut app data.App) {
 
 		app.mu.end_window_bool_controlled(w.component_window_open)
 	}
-}
-
-pub fn (mut w Wire) on_move(mut app data.App) {
-	utils.unregister_wire(mut app, w.wire_from, w.comp_id)
-	utils.unregister_wire(mut app, w.wire_to, w.comp_id)
-}
-
-pub fn (mut w Wire) on_moved(mut app data.App) {
-	utils.register_wire(mut app, w.wire_from, w.comp_id)
-	utils.register_wire(mut app, w.wire_to, w.comp_id)
-	app.sim.wire_table[w.comp_id] = data.WireTableEntry{
-		comp_id:       w.comp_id
-		component:     w
-		wire_from_pos: utils.vec_to_str(w.wire_from)
-		wire_to_pos:   utils.vec_to_str(w.wire_to)
-	}
-	app.sim.wire_mesh_recalc_needed = true
 }

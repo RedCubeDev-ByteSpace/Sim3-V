@@ -32,6 +32,7 @@ fn main() {
 	// create a new raylib window
 	rl.init_window(initial_window_width, initial_window_height, window_title)
 	rl.set_target_fps(60)
+	rl.set_exit_key(0)
 
 	// load fonts
 	fonts.init(mut app)

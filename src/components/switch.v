@@ -37,6 +37,7 @@ pub fn Switch.new(mut app data.App, pos vec.Vec2[int], rot data.Rotation, color 
 
 	// add this wire to the global component list
 	app.sim.components << s
+	app.sim.wire_mesh_recalc_needed = true
 
 	// done :)
 	return s
@@ -56,21 +57,31 @@ pub fn (mut s Switch) on_moved(mut app data.App) {
 	app.sim.wire_mesh_recalc_needed = true
 }
 
+pub fn (mut s Switch) on_delete(mut app data.App) {
+	utils.unregister_contact_point(mut app, s.pos, s.contact_point.cont_id)
+	app.sim.contact_point_table.delete(s.contact_point.cont_id)
+	app.sim.wire_mesh_recalc_needed = true
+}
+
 fn (s &Switch) draw(app data.App) {
 	contact_point, zoomed_unit := utils.get_drawing_variables(app, s.ComponentBase)
-	low_color := data.get_low_color_from_high_color(s.color)
+	Switch.draw(contact_point, zoomed_unit, s.color, s.state, s.rotation)
+}
+
+pub fn Switch.draw(contact_point vec.Vec2[f32], zoomed_unit f32, color rl.Color, state bool, rot data.Rotation) {
+	low_color := data.get_low_color_from_high_color(color)
 
 	rl.draw_circle_lines(int(contact_point.x), int(contact_point.y), int(zoomed_unit / 4),
 		low_color)
 
 	utils.draw_contact_line(contact_point.x, contact_point.y, zoomed_unit, 0, 0, 0, -1,
-		s.rotation, low_color)
+		rot, low_color)
 
 	utils.draw_component_rectangle(contact_point.x, contact_point.y, zoomed_unit, -1,
-		-3, 2, 2, s.rotation, low_color)
+		-3, 2, 2, rot, low_color)
 
 	utils.draw_circle_filled(contact_point.x, contact_point.y, zoomed_unit, 0, -2, 0.5,
-		s.rotation, if s.state { s.color } else { low_color })
+		rot, if state { color } else { low_color })
 }
 
 fn (mut s Switch) draw_component_window(mut app data.App) {
