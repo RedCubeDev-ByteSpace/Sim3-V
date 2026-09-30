@@ -21,3 +21,11 @@ pub fn vec_to_rl[T](v vec.Vec2[T]) raylib.Vector2 {
 pub fn vec_to_str(v vec.Vec2[int]) string {
 	return '${v.x};${v.y}'
 }
+
+pub fn str_to_vec(s string) vec.Vec2[int] {
+	parts := s.split(';')
+	return vec.Vec2[int]{
+		x: parts[0].i32()
+		y: parts[1].i32()
+	}
+}

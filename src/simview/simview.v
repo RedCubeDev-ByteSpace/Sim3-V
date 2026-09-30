@@ -15,6 +15,7 @@ pub fn draw_view(app data.App) {
 	draw_grid(app)
 	draw_selection(app)
 	draw_components(app)
+	draw_wire_connection_markers(app)
 	draw_selected_component_outlines(app)
 	draw_wire_movement_handles(app)
 	draw_preview_of_component_being_placed(app)
@@ -34,6 +35,14 @@ fn draw_components(app data.App) {
 				draw_aabb(app, comp.get_aabb(), data.aabb_color)
 			}
 		}
+	}
+}
+
+fn draw_wire_connection_markers(app data.App) {
+	for marker in app.sim.wire_branching_points {
+		marker_pos := data.worldspace_to_screenspace(app, marker.pos)
+
+		rl.draw_circle(marker_pos.x, marker_pos.y, app.view.zoom * 4, marker.color)
 	}
 }
 

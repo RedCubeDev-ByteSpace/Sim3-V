@@ -497,7 +497,8 @@ fn handle_component_deletion(mut app data.App) bool {
 			}
 		}
 		app.bench.selected_components.clear()
+		return true
 	}
 
-	return true
+	return false
 }

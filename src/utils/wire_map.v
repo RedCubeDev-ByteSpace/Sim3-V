@@ -2,6 +2,7 @@ module utils
 
 import math.vec
 import data
+import raylib
 
 pub fn register_wire(mut app data.App, pos vec.Vec2[int], wire_comp_id i64) {
 	key := vec_to_str(pos)
@@ -37,4 +38,15 @@ pub fn unregister_wire(mut app data.App, pos vec.Vec2[int], wire_comp_id i64) {
 	}
 
 	panic('Could not delete wire registration!')
+}
+
+@[inline]
+pub fn add_wire_branching_point(mut app data.App, wire_positions map[string][]i64, pos string) {
+	if wire_positions[pos].len > 2 {
+		wire := app.sim.wire_table[wire_positions[pos][0]]
+		app.sim.wire_branching_points << data.WireBranchingPoint{
+			pos:   str_to_vec(pos)
+			color: wire.component.get_color()
+		}
+	}
 }

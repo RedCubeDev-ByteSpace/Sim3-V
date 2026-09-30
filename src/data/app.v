@@ -69,6 +69,7 @@ pub mut:
 		global_contact_point_counter i64
 		contact_point_table          map[i64]&ContactPoint
 		contact_point_positions      map[string][]i64
+		wire_branching_points        []WireBranchingPoint = []
 	}
 
 	// bench -----------------------------------------------------------------------------------------------------------

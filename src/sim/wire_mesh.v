@@ -2,6 +2,7 @@ module sim
 
 import data
 import components
+import utils
 
 pub fn recalculate_wire_meshes(mut app data.App) {
 	if !app.sim.wire_mesh_recalc_needed {
@@ -14,6 +15,7 @@ pub fn recalculate_wire_meshes(mut app data.App) {
 	// firstly: clear out all previously generated wire meshes
 	// when this function is called something in the simulation space has changes and its no longer accurate
 	app.sim.wire_meshes.clear()
+	app.sim.wire_branching_points.clear()
 
 	// -----------------------------------------------------------------------------------------------------------------
 	// then: regenerate it
@@ -34,6 +36,11 @@ pub fn recalculate_wire_meshes(mut app data.App) {
 
 		// start with the current first entry in the positions map
 		first_key := current_wire_positions.keys()[0]
+
+		// if there are more than two wires at this location -> add a connection marker
+		utils.add_wire_branching_point(mut app, current_wire_positions, first_key)
+
+		// enqueue all wires at this point
 		wires_to_visit_queue << current_wire_positions[first_key]
 		current_wire_positions.delete(first_key)
 
@@ -59,10 +66,16 @@ pub fn recalculate_wire_meshes(mut app data.App) {
 
 			// add any wires it was connected to
 			if wire.wire_from_pos in current_wire_positions {
+				// if there are more than two wires at this location -> add a connection marker
+				utils.add_wire_branching_point(mut app, current_wire_positions, wire.wire_from_pos)
+
 				wires_to_visit_queue << current_wire_positions[wire.wire_from_pos]
 				current_wire_positions.delete(wire.wire_from_pos)
 			}
 			if wire.wire_to_pos in current_wire_positions {
+				// if there are more than two wires at this location -> add a connection marker
+				utils.add_wire_branching_point(mut app, current_wire_positions, wire.wire_to_pos)
+
 				wires_to_visit_queue << current_wire_positions[wire.wire_to_pos]
 				current_wire_positions.delete(wire.wire_to_pos)
 			}
