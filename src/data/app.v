@@ -9,6 +9,7 @@ pub const zoom_lerp_cutoff = 0.001
 pub const zoom_trail_cutoff = 0.005
 pub const max_zoom = 12
 pub const min_zoom = 0.2
+pub const aabb_padding = 0.2
 pub const step_marching_ants_every_frames = 3
 pub const marching_ants_segment_size = 6
 

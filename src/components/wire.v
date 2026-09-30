@@ -7,24 +7,20 @@ import utils
 import fonts
 
 pub struct Wire {
-	data.ComponentBase
+	data.WireBase
 mut:
 	// properties for this wire component
-	// the component position functions as the starting point of the wire
-	wire_to vec.Vec2[int] // this is the endpoint of the wire
-	state   data.WireState
+	state data.WireState
 }
 
 pub fn Wire.new(mut app data.App, wire_from vec.Vec2[int], wire_to vec.Vec2[int], color rl.Color) Wire {
 	// initialize a new component with all its unique data
 	mut w := Wire{
-		wire_to: wire_to
-		state:   .low
+		state: .low
 	}
 
 	// initialize the component base with all the standardized data
-	w.ComponentBase = data.ComponentBase.new(mut app, wire_from, vec.vec2[int](1, 1),
-		.up, color)
+	w.WireBase = data.WireBase.new(mut app, wire_from, wire_to, color)
 
 	// create a dummy name for this component
 	w.comp_name = 'Wire ${w.comp_id}'
@@ -36,12 +32,12 @@ pub fn Wire.new(mut app data.App, wire_from vec.Vec2[int], wire_to vec.Vec2[int]
 	app.sim.wire_table[w.comp_id] = data.WireTableEntry{
 		comp_id:       w.comp_id
 		component:     &w
-		wire_from_pos: utils.vec_to_str(w.pos)
+		wire_from_pos: utils.vec_to_str(w.wire_from)
 		wire_to_pos:   utils.vec_to_str(w.wire_to)
 	}
 
 	// register this wire on the map
-	utils.register_wire(mut app, w.pos, w.comp_id)
+	utils.register_wire(mut app, w.wire_from, w.comp_id)
 	utils.register_wire(mut app, w.wire_to, w.comp_id)
 
 	// new wire! recalculate the meshes
@@ -56,8 +52,8 @@ pub fn (mut w Wire) set_state(wire_state data.WireState) {
 }
 
 fn (w &Wire) draw(app data.App) {
-	wire_from, zoomed_unit := utils.get_drawing_variables(app, w.ComponentBase)
-	wire_to := utils.worldspace_to_screenspace(app, w.wire_to)
+	wire_from := data.worldspace_to_screenspace(app, w.wire_from.add(w.get_offset()))
+	wire_to := data.worldspace_to_screenspace(app, w.wire_to.add(w.get_offset()))
 
 	if w.state == .error {
 		rl.draw_line_ex(utils.vec_to_rl(wire_from), utils.vec_to_rl(wire_to), 2 * data.component_line_thickness,
@@ -85,7 +81,7 @@ fn (mut w Wire) draw_component_window(mut app data.App) {
 		return
 	}
 
-	pos_in_screen_space := utils.worldspace_to_screenspace(app, w.pos)
+	pos_in_screen_space := data.worldspace_to_screenspace(app, w.wire_from.add(w.wire_to).div_scalar[f32](2))
 	if app.mu.begin_window_ex_bool_controlled('Wire (id: ${w.comp_id})', rl.Rectangle{pos_in_screen_space.x, pos_in_screen_space.y, 200, 85},
 		.noscroll | .noresize, w.component_window_open)
 	{
@@ -99,17 +95,17 @@ fn (mut w Wire) draw_component_window(mut app data.App) {
 }
 
 pub fn (mut w Wire) on_move(mut app data.App) {
-	utils.unregister_wire(mut app, w.pos, w.comp_id)
+	utils.unregister_wire(mut app, w.wire_from, w.comp_id)
 	utils.unregister_wire(mut app, w.wire_to, w.comp_id)
 }
 
 pub fn (mut w Wire) on_moved(mut app data.App) {
-	utils.register_wire(mut app, w.pos, w.comp_id)
+	utils.register_wire(mut app, w.wire_from, w.comp_id)
 	utils.register_wire(mut app, w.wire_to, w.comp_id)
 	app.sim.wire_table[w.comp_id] = data.WireTableEntry{
 		comp_id:       w.comp_id
 		component:     w
-		wire_from_pos: utils.vec_to_str(w.pos)
+		wire_from_pos: utils.vec_to_str(w.wire_from)
 		wire_to_pos:   utils.vec_to_str(w.wire_to)
 	}
 	app.sim.wire_mesh_recalc_needed = true

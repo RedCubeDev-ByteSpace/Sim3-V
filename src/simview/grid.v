@@ -49,9 +49,9 @@ pub fn draw_grid(app data.App) {
 			// if we're zoomed in and grid movement trails are enabled
 			// -> draw them!
 			if zoom > 1 && app.view.grid.draw_grid_movement_trails {
-				pixel_pos_in_world_space := utils.screenspace_to_worldspace(app, vec.vec2(x,
+				pixel_pos_in_world_space := data.screenspace_to_worldspace(app, vec.vec2(x,
 					y))
-				pixel_pos_in_prev_screen_space := utils.worldspace_to_previous_screenspace(app,
+				pixel_pos_in_prev_screen_space := data.worldspace_to_previous_screenspace(app,
 					pixel_pos_in_world_space)
 
 				// draw a line between this grid points position in this frame and where it would have been in the last

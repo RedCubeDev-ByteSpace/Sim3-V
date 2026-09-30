@@ -3,30 +3,6 @@ module data
 import math.vec
 import raylib as rl
 
-pub type AABB = C.Rectangle
-
-pub interface IComponent {
-	get_position() vec.Vec2[int]
-	get_offset() vec.Vec2[int]
-	get_aabb() AABB
-	get_rotation() Rotation
-	get_color() rl.Color
-
-	draw(app App)
-mut:
-	set_position(pos vec.Vec2[int])
-	set_offset(pos vec.Vec2[int])
-	set_rotation(rot Rotation)
-	set_color(color rl.Color)
-
-	on_move(mut app App)
-	on_moved(mut app App)
-
-	interact()
-	open_component_window()
-	draw_component_window(mut app App)
-}
-
 pub struct ComponentBase {
 mut:
 	// base component properties
@@ -85,11 +61,15 @@ pub fn (mut c ComponentBase) set_color(color rl.Color) {
 
 pub fn (c ComponentBase) get_aabb() AABB {
 	return AABB{
-		x:      f32(c.pos.x + c.offset.x) + c.aabb_offset.x - 0.2
-		y:      f32(c.pos.y + c.offset.y) + c.aabb_offset.y - 0.2
-		width:  f32(c.size.x) + 0.4
-		height: f32(c.size.y) + 0.4
+		x:      f32(c.pos.x + c.offset.x) + c.aabb_offset.x - aabb_padding
+		y:      f32(c.pos.y + c.offset.y) + c.aabb_offset.y - aabb_padding
+		width:  f32(c.size.x) + aabb_padding * 2
+		height: f32(c.size.y) + aabb_padding * 2
 	}
+}
+
+pub fn (c ComponentBase) hit_test(pos vec.Vec2[f32]) bool {
+	return is_point_inside_aabb(c.get_aabb(), pos)
 }
 
 pub fn (mut c ComponentBase) on_move(mut app App) {}

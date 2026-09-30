@@ -70,11 +70,10 @@ fn handle_component_interaction(mut app data.App) bool {
 	if app.bench.bench_state == .idle
 		&& rl.is_mouse_button_pressed(int(rl.MouseButton.mouse_button_left)) {
 		// ... check if we've clicked on a component
-		mouse_pos_in_world_space := utils.screenspace_to_worldspace(app, app.input.mouse_pos)
+		mouse_pos_in_world_space := data.screenspace_to_worldspace(app, app.input.mouse_pos)
 		for mut comp in app.sim.components {
 			// if yes AND component is not currectly selected -> interact
-			if utils.is_point_inside_aabb(comp.get_aabb(), mouse_pos_in_world_space)
-				&& comp !in app.bench.selected_components {
+			if comp.hit_test(mouse_pos_in_world_space) && comp !in app.bench.selected_components {
 				comp.interact()
 				return true
 			}
@@ -85,11 +84,10 @@ fn handle_component_interaction(mut app data.App) bool {
 	if app.bench.bench_state == .idle
 		&& rl.is_mouse_button_pressed(int(rl.MouseButton.mouse_button_right)) {
 		// ... check if we've clicked on a component
-		mouse_pos_in_world_space := utils.screenspace_to_worldspace(app, app.input.mouse_pos)
+		mouse_pos_in_world_space := data.screenspace_to_worldspace(app, app.input.mouse_pos)
 		for mut comp in app.sim.components {
 			// if yes AND component is not currectly selected -> open component window
-			if utils.is_point_inside_aabb(comp.get_aabb(), mouse_pos_in_world_space)
-				&& comp !in app.bench.selected_components {
+			if comp.hit_test(mouse_pos_in_world_space) && comp !in app.bench.selected_components {
 				comp.open_component_window()
 				return true
 			}
@@ -178,7 +176,7 @@ pub fn sync_zoom(mut app data.App) {
 	app.view.grid.prev_zoom = app.view.zoom
 
 	// otherwise: lerp the zoom towards the target
-	mouse_pos_in_world_space_before_zoom := utils.screenspace_to_worldspace(app, app.input.mouse_pos)
+	mouse_pos_in_world_space_before_zoom := data.screenspace_to_worldspace(app, app.input.mouse_pos)
 
 	app.view.zoom = utils.lerp(app.view.zoom, app.input.target_zoom, 0.2)
 
@@ -196,7 +194,7 @@ pub fn sync_zoom(mut app data.App) {
 		app.view.grid.draw_grid_movement_trails = false
 	}
 
-	mouse_pos_in_world_space_after_zoom := utils.screenspace_to_worldspace(app, app.input.mouse_pos)
+	mouse_pos_in_world_space_after_zoom := data.screenspace_to_worldspace(app, app.input.mouse_pos)
 
 	// adjust the camera position to zoom into where the cursor is positioned
 	app.view.camera_position = app.view.camera_position.add(mouse_pos_in_world_space_after_zoom.sub(mouse_pos_in_world_space_before_zoom))
@@ -204,12 +202,12 @@ pub fn sync_zoom(mut app data.App) {
 
 fn handle_component_move(mut app data.App) bool {
 	// is the bench current unused, this is a mouse down AND we're currently hovering a selected component?
-	// -> begin selection
+	// -> begin moving the selected components
 	if app.bench.bench_state == .idle
 		&& rl.is_mouse_button_pressed(int(rl.MouseButton.mouse_button_left)) {
-		mouse_pos_in_world_space := utils.screenspace_to_worldspace(app, app.input.mouse_pos)
+		mouse_pos_in_world_space := data.screenspace_to_worldspace(app, app.input.mouse_pos)
 		for comp in app.bench.selected_components {
-			if !utils.is_point_inside_aabb(comp.get_aabb(), mouse_pos_in_world_space) {
+			if !comp.hit_test(mouse_pos_in_world_space) {
 				continue
 			}
 
@@ -223,7 +221,7 @@ fn handle_component_move(mut app data.App) bool {
 
 	// if we're current in a move -> recalculate all component's offsets
 	if app.bench.bench_state == .moving_components {
-		mouse_pos_in_world_space := utils.screenspace_to_worldspace(app, app.input.mouse_pos)
+		mouse_pos_in_world_space := data.screenspace_to_worldspace(app, app.input.mouse_pos)
 		new_offset := mouse_pos_in_world_space.sub(app.input.component_move_start_pos)
 
 		for mut comp in app.bench.selected_components {
@@ -284,10 +282,9 @@ fn handle_rectangle_select(mut app data.App) bool {
 			x1, x2 = x2, x1
 		}
 
-		start_pos_world_space := utils.screenspace_to_worldspace(app, vec.vec2[f32](x1,
+		start_pos_world_space := data.screenspace_to_worldspace(app, vec.vec2[f32](x1,
 			y1))
-		end_pos_world_space := utils.screenspace_to_worldspace(app, vec.vec2[f32](x2,
-			y2))
+		end_pos_world_space := data.screenspace_to_worldspace(app, vec.vec2[f32](x2, y2))
 
 		selection_aabb := data.AABB{
 			x:      start_pos_world_space.x
@@ -297,7 +294,7 @@ fn handle_rectangle_select(mut app data.App) bool {
 		}
 
 		for comp in app.sim.components {
-			if utils.is_aabb_inside_aabb(selection_aabb, comp.get_aabb()) {
+			if data.is_aabb_inside_aabb(selection_aabb, comp.get_aabb()) {
 				app.bench.selected_components << comp
 			}
 		}

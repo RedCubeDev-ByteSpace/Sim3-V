@@ -19,11 +19,11 @@ pub fn draw_view(app data.App) {
 
 fn draw_components(app data.App) {
 	// get the AABB for the current viewport
-	view_aabb := utils.get_viewport_aabb(app)
+	view_aabb := data.get_viewport_aabb(app)
 
 	for comp in app.sim.components {
 		// only draw components that are touching the current viewports aabb
-		if utils.do_aabbs_intersect(view_aabb, comp.get_aabb()) {
+		if data.do_aabbs_intersect(view_aabb, comp.get_aabb()) {
 			comp.draw(app)
 
 			// if enabled: draw bounding boxes
@@ -35,7 +35,7 @@ fn draw_components(app data.App) {
 }
 
 fn draw_aabb(app data.App, aabb data.AABB, color rl.Color) {
-	top_left := utils.worldspace_to_screenspace(app, vec.vec2[f32](aabb.x, aabb.y))
+	top_left := data.worldspace_to_screenspace(app, vec.vec2[f32](aabb.x, aabb.y))
 	zoomed_unit := data.one_simspace_unit_in_px * app.view.zoom
 	rl.draw_rectangle_lines(int(top_left.x), int(top_left.y), int(aabb.width * zoomed_unit),
 		int(aabb.height * zoomed_unit), color)
@@ -65,7 +65,7 @@ fn draw_selection(app data.App) {
 fn draw_selected_component_outlines(app data.App) {
 	for comp in app.bench.selected_components {
 		aabb := comp.get_aabb()
-		top_left := utils.worldspace_to_screenspace(app, vec.vec2[f32](aabb.x, aabb.y))
+		top_left := data.worldspace_to_screenspace(app, vec.vec2[f32](aabb.x, aabb.y))
 		zoomed_unit := data.one_simspace_unit_in_px * app.view.zoom
 		draw_marching_ants(app, rl.Rectangle{top_left.x, top_left.y, aabb.width * zoomed_unit, aabb.height * zoomed_unit},
 			data.selection_color_low)

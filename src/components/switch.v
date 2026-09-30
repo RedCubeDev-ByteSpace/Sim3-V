@@ -77,7 +77,7 @@ fn (mut s Switch) draw_component_window(mut app data.App) {
 		return
 	}
 
-	pos_in_screen_space := utils.worldspace_to_screenspace(app, s.pos)
+	pos_in_screen_space := data.worldspace_to_screenspace(app, s.pos)
 	if app.mu.begin_window_ex_bool_controlled('Switch (id: ${s.comp_id})', rl.Rectangle{pos_in_screen_space.x, pos_in_screen_space.y, 200, 85},
 		.noscroll | .noresize, s.component_window_open)
 	{
