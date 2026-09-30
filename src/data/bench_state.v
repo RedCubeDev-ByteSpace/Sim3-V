@@ -5,4 +5,5 @@ pub enum BenchState {
 	moving_view
 	selecting
 	moving_components
+	moving_wire
 }

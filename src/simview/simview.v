@@ -4,6 +4,7 @@ import data
 import utils
 import raylib as rl
 import math.vec
+import components
 
 // simview -------------------------------------------------------------------------------------------------------------
 // this module is all about the drawing side of things
@@ -15,6 +16,7 @@ pub fn draw_view(app data.App) {
 	draw_selection(app)
 	draw_components(app)
 	draw_selected_component_outlines(app)
+	draw_wire_movement_handles(app)
 }
 
 fn draw_components(app data.App) {
@@ -69,6 +71,34 @@ fn draw_selected_component_outlines(app data.App) {
 		zoomed_unit := data.one_simspace_unit_in_px * app.view.zoom
 		draw_marching_ants(app, rl.Rectangle{top_left.x, top_left.y, aabb.width * zoomed_unit, aabb.height * zoomed_unit},
 			data.selection_color_low)
+	}
+}
+
+fn draw_wire_movement_handles(app data.App) {
+	if !app.bench.wire_moving.draw_hover_box {
+		return
+	}
+
+	wire := app.bench.wire_moving.wire
+	if wire is components.Wire {
+		rect_world := if app.bench.wire_moving.wire_end == .from {
+			wire.get_from_aabb()
+		} else {
+			wire.get_to_aabb()
+		}
+		offset := if app.bench.wire_moving.wire_end == .from {
+			wire.get_offset_from()
+		} else {
+			wire.get_offset_to()
+		}
+		offset_rect_world := rl.Rectangle{
+			...rect_world
+			x: rect_world.x + offset.x
+			y: rect_world.y + offset.y
+		}
+
+		rect_screen := data.rect_worldspace_to_screenspace(app, offset_rect_world)
+		rl.draw_rectangle_lines_ex(rect_screen, 1, data.wire_handle_color)
 	}
 }
 

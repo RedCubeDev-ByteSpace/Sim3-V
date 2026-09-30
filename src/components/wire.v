@@ -52,8 +52,8 @@ pub fn (mut w Wire) set_state(wire_state data.WireState) {
 }
 
 fn (w &Wire) draw(app data.App) {
-	wire_from := data.worldspace_to_screenspace(app, w.wire_from.add(w.get_offset()))
-	wire_to := data.worldspace_to_screenspace(app, w.wire_to.add(w.get_offset()))
+	wire_from := data.worldspace_to_screenspace(app, w.wire_from.add(w.offset_from))
+	wire_to := data.worldspace_to_screenspace(app, w.wire_to.add(w.offset_to))
 
 	if w.state == .error {
 		rl.draw_line_ex(utils.vec_to_rl(wire_from), utils.vec_to_rl(wire_to), 2 * data.component_line_thickness,

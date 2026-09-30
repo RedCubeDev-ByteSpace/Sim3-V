@@ -49,6 +49,7 @@ pub mut:
 		view_moving_start_pos    vec.Vec2[f32]
 		selecting_start_pos      vec.Vec2[f32]
 		component_move_start_pos vec.Vec2[f32]
+		wire_move_start_pos      vec.Vec2[f32]
 		mui_needs_mouse_up       bool
 
 		target_zoom f32 = 1
@@ -78,6 +79,13 @@ pub mut:
 		selected_components          []IComponent = []
 		marching_ants_starting_point int
 		marching_ants_frame_counter  int
+
+		wire_moving struct {
+		pub mut:
+			wire           &IComponent = unsafe { nil }
+			wire_end       WireEnd
+			draw_hover_box bool
+		}
 	}
 
 	// fonts -----------------------------------------------------------------------------------------------------------

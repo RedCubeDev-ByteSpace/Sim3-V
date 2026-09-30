@@ -5,6 +5,7 @@ import data
 import math.vec
 import utils
 import math
+import components
 
 pub fn handle_input(mut app data.App) {
 	// first: share our current cursor position with microui and check if it wants to capture our input
@@ -39,27 +40,37 @@ pub fn handle_input(mut app data.App) {
 	mouse_pos := rl.get_mouse_position()
 	app.input.mouse_pos = vec.vec2[f32](mouse_pos.x, mouse_pos.y)
 
-	// first: are we trying to interact with a component
+	// are we trying to interact with a component?
 	if handle_component_interaction(mut app) {
 		return
 	}
 
-	// second: is this event something about the movement of the view?
+	// is this event something about the movement of the view?
 	if handle_simview_movement(mut app) {
 		return
 	}
 
-	// third: is this movement a zoom in or out?
+	// is this movement a zoom in or out?
 	if handle_simview_zoom(mut app) {
 		return
 	}
 
-	// fourth: are we trying to move something?
+	// are we trying to move something?
 	if handle_component_move(mut app) {
 		return
 	}
 
-	// fifth: are we trying to select something?
+	// are we trying to move part of a wire?
+	if handle_wire_move(mut app) {
+		return
+	}
+
+	// are we trying to move a wire?
+	if handle_component_move(mut app) {
+		return
+	}
+
+	// are we trying to select something?
 	if handle_rectangle_select(mut app) {
 		return
 	}
@@ -72,6 +83,10 @@ fn handle_component_interaction(mut app data.App) bool {
 		// ... check if we've clicked on a component
 		mouse_pos_in_world_space := data.screenspace_to_worldspace(app, app.input.mouse_pos)
 		for mut comp in app.sim.components {
+			if !comp.has_interaction() {
+				continue
+			}
+
 			// if yes AND component is not currectly selected -> interact
 			if comp.hit_test(mouse_pos_in_world_space) && comp !in app.bench.selected_components {
 				comp.interact()
@@ -237,12 +252,101 @@ fn handle_component_move(mut app data.App) bool {
 			comp.on_move(mut app)
 
 			// add the offest onto the position and reset it
-			comp.set_position(comp.get_position().add(comp.get_offset()))
-			comp.set_offset(vec.vec2[int](0, 0))
+			comp.translate_by_offset()
 
 			// inform the component that its been moved
 			comp.on_moved(mut app)
 		}
+
+		app.bench.bench_state = .idle
+		return true
+	}
+
+	return false
+}
+
+fn handle_wire_move(mut app data.App) bool {
+	mouse_pos_in_world_space := data.screenspace_to_worldspace(app, app.input.mouse_pos)
+
+	// when the bench isnt busy right now
+	// -> check if we're hovering a wire movement handle
+	if app.bench.bench_state == .idle {
+		wire_table := app.sim.wire_table.values()
+		app.bench.wire_moving.draw_hover_box = false
+
+		// are we currently hovering a movement box of a wire?
+		for wire_table_entry in wire_table {
+			wire := wire_table_entry.component
+
+			// dont target any wires that are already selected, moving the entire wire takes precedence over moving only
+			// one of its points
+			if wire in app.bench.selected_components {
+				continue
+			}
+
+			if wire is components.Wire {
+				// if the mouse cursor is inside the "from" movement handle
+				if data.is_point_inside_aabb(wire.get_from_aabb(), mouse_pos_in_world_space) {
+					// -> draw a box around it
+					app.bench.wire_moving.wire = wire
+					app.bench.wire_moving.wire_end = .from
+					app.bench.wire_moving.draw_hover_box = true
+					break
+				}
+
+				// if the mouse cursor is inside the "to" movement handle
+				if data.is_point_inside_aabb(wire.get_to_aabb(), mouse_pos_in_world_space) {
+					// -> draw a box around it
+					app.bench.wire_moving.wire = wire
+					app.bench.wire_moving.wire_end = .to
+					app.bench.wire_moving.draw_hover_box = true
+					break
+				}
+			}
+		}
+	}
+
+	// is the bench current unused, this is a mouse down AND we're currently hovering a wire handle
+	// -> begin moving the wire end
+	if app.bench.bench_state == .idle
+		&& rl.is_mouse_button_pressed(int(rl.MouseButton.mouse_button_left))
+		&& app.bench.wire_moving.draw_hover_box {
+		// remember the starting point of the move
+		app.input.wire_move_start_pos = mouse_pos_in_world_space
+		app.bench.bench_state = .moving_wire
+
+		return true
+	}
+
+	// if we're current in a move -> recalculate the wire ends offset
+	if app.bench.bench_state == .moving_wire {
+		new_offset_f := mouse_pos_in_world_space.sub(app.input.wire_move_start_pos)
+		new_offset := vec.vec2[int](int(new_offset_f.x), int(new_offset_f.y))
+
+		mut comp := app.bench.wire_moving.wire
+		match app.bench.wire_moving.wire_end {
+			.from {
+				comp.set_offset_from(new_offset)
+			}
+			.to {
+				comp.set_offset_to(new_offset)
+			}
+		}
+	}
+
+	// if we're currently moving and theres a mouse up -> end and commit movement
+	if app.bench.bench_state == .moving_wire
+		&& rl.is_mouse_button_released(int(rl.MouseButton.mouse_button_left)) {
+		mut comp := app.bench.wire_moving.wire
+
+		// prepare the component for its move
+		comp.on_move(mut app)
+
+		// add the offest onto the position and reset it
+		comp.translate_by_offset()
+
+		// inform the component that its been moved
+		comp.on_moved(mut app)
 
 		app.bench.bench_state = .idle
 		return true

@@ -21,7 +21,8 @@ pub fn Switch.new(mut app data.App, pos vec.Vec2[int], rot data.Rotation, color 
 	}
 
 	// initialize the component base with all the standardized data
-	s.ComponentBase = data.ComponentBase.new(mut app, pos, vec.vec2[int](2, 2), rot, color)
+	s.ComponentBase = data.ComponentBase.new(mut app, pos, vec.vec2[int](2, 2), rot, color,
+		true)
 
 	// create a dummy name for this component
 	s.comp_name = 'Switch ${s.comp_id}'

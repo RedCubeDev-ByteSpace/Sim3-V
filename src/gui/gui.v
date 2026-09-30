@@ -29,6 +29,7 @@ fn draw_debug_window(mut app data.App) {
 			.moving_view { 'moving_view' }
 			.selecting { 'selecting' }
 			.moving_components { 'moving_components' }
+			.moving_wire { 'moving_wire' }
 		}}')
 		app.mu.label('Camera: ${camera_pos.x:.2f}, ${camera_pos.y:.2f}')
 		app.mu.label('Mouse: ${app.input.mouse_pos.x:.0}, ${app.input.mouse_pos.y:.0}')

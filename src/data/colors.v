@@ -9,6 +9,7 @@ pub const aabb_color = rl.Color{255, 0, 0, 255}
 pub const selection_color_high = rl.Color{0, 0, 0, 255}
 pub const selection_color_low = rl.Color{38, 51, 82, 255}
 pub const wire_error_color = rl.Color{255, 0, 0, 255}
+pub const wire_handle_color = rl.Color{0, 0, 0, 255}
 pub const wire_colors = [
 	rl.Color{84, 110, 122, 255}, // Slate Gray    #546E7A
 	rl.Color{198, 40, 40, 255}, // Deep Red      #C62828

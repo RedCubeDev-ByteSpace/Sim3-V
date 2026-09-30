@@ -3,6 +3,7 @@ module data
 import math.vec
 import raylib as rl
 
+@[heap]
 pub struct ComponentBase {
 mut:
 	// base component properties
@@ -14,16 +15,18 @@ mut:
 	size                  vec.Vec2[int]
 	rotation              Rotation
 	color                 rl.Color
+	has_interaction       bool
 	component_window_open bool
 }
 
-pub fn ComponentBase.new(mut app App, pos vec.Vec2[int], size vec.Vec2[int], rot Rotation, color rl.Color) ComponentBase {
+pub fn ComponentBase.new(mut app App, pos vec.Vec2[int], size vec.Vec2[int], rot Rotation, color rl.Color, has_interaction bool) ComponentBase {
 	return ComponentBase{
-		comp_id:  app.sim.global_id_counter++
-		pos:      pos
-		size:     size
-		rotation: rot
-		color:    color
+		comp_id:         app.sim.global_id_counter++
+		pos:             pos
+		size:            size
+		rotation:        rot
+		color:           color
+		has_interaction: has_interaction
 	}
 }
 
@@ -41,6 +44,15 @@ pub fn (c ComponentBase) get_offset() vec.Vec2[int] {
 
 pub fn (mut c ComponentBase) set_offset(offset vec.Vec2[int]) {
 	c.offset = offset
+}
+
+pub fn (mut c ComponentBase) set_offset_from(offset vec.Vec2[int]) {}
+
+pub fn (mut c ComponentBase) set_offset_to(offset vec.Vec2[int]) {}
+
+pub fn (mut c ComponentBase) translate_by_offset() {
+	c.pos = c.pos.add(c.offset)
+	c.offset = vec.vec2[int](0, 0)
 }
 
 pub fn (c ComponentBase) get_rotation() Rotation {
@@ -75,6 +87,10 @@ pub fn (c ComponentBase) hit_test(pos vec.Vec2[f32]) bool {
 pub fn (mut c ComponentBase) on_move(mut app App) {}
 
 pub fn (mut c ComponentBase) on_moved(mut app App) {}
+
+pub fn (c ComponentBase) has_interaction() bool {
+	return c.has_interaction
+}
 
 pub fn (mut c ComponentBase) interact() {}
 

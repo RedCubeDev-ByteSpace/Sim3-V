@@ -20,7 +20,8 @@ pub fn FixedContact.new(mut app data.App, pos vec.Vec2[int], rot data.Rotation, 
 	}
 
 	// initialize the component base with all the standardized data
-	c.ComponentBase = data.ComponentBase.new(mut app, pos, vec.vec2[int](1, 1), rot, color)
+	c.ComponentBase = data.ComponentBase.new(mut app, pos, vec.vec2[int](1, 1), rot, color,
+		false)
 
 	// create a dummy name for this component
 	c.comp_name = 'Fixed Contact ${c.comp_id}'

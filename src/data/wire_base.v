@@ -3,6 +3,7 @@ module data
 import math.vec
 import raylib as rl
 
+@[heap]
 pub struct WireBase {
 mut:
 	// base component properties
@@ -10,7 +11,8 @@ mut:
 	comp_name             string
 	wire_from             vec.Vec2[int]
 	wire_to               vec.Vec2[int]
-	offset                vec.Vec2[int] = vec.vec2[int](0, 0)
+	offset_from           vec.Vec2[int] = vec.vec2[int](0, 0)
+	offset_to             vec.Vec2[int] = vec.vec2[int](0, 0)
 	color                 rl.Color
 	component_window_open bool
 }
@@ -24,23 +26,48 @@ pub fn WireBase.new(mut app App, wire_from vec.Vec2[int], wire_to vec.Vec2[int],
 	}
 }
 
-pub fn (w WireBase) get_position() vec.Vec2[int] {
+pub fn (w WireBase) get_wire_from() vec.Vec2[int] {
 	return w.wire_from
 }
 
-pub fn (mut w WireBase) set_position(pos vec.Vec2[int]) {
-	// update position of both wire ends
-	delta := pos - w.wire_from
+pub fn (mut w WireBase) set_wire_from(pos vec.Vec2[int]) {
 	w.wire_from = pos
-	w.wire_to = w.wire_to + delta
 }
 
-pub fn (w WireBase) get_offset() vec.Vec2[int] {
-	return w.offset
+pub fn (w WireBase) get_wire_to() vec.Vec2[int] {
+	return w.wire_to
+}
+
+pub fn (mut w WireBase) set_wire_to(pos vec.Vec2[int]) {
+	w.wire_to = pos
+}
+
+pub fn (w WireBase) get_offset_from() vec.Vec2[int] {
+	return w.offset_from
+}
+
+pub fn (mut w WireBase) set_offset_from(offset vec.Vec2[int]) {
+	w.offset_from = offset
+}
+
+pub fn (w WireBase) get_offset_to() vec.Vec2[int] {
+	return w.offset_to
+}
+
+pub fn (mut w WireBase) set_offset_to(offset vec.Vec2[int]) {
+	w.offset_to = offset
 }
 
 pub fn (mut w WireBase) set_offset(offset vec.Vec2[int]) {
-	w.offset = offset
+	w.offset_from = offset
+	w.offset_to = offset
+}
+
+pub fn (mut w WireBase) translate_by_offset() {
+	w.wire_from = w.wire_from.add(w.offset_from)
+	w.wire_to = w.wire_to.add(w.offset_to)
+	w.offset_from = vec.vec2[int](0, 0)
+	w.offset_to = vec.vec2[int](0, 0)
 }
 
 pub fn (w WireBase) get_rotation() Rotation {
@@ -58,10 +85,10 @@ pub fn (mut w WireBase) set_color(color rl.Color) {
 }
 
 pub fn (w WireBase) get_aabb() AABB {
-	mut x1 := f32(w.wire_from.x)
-	mut y1 := f32(w.wire_from.y)
-	mut x2 := f32(w.wire_to.x)
-	mut y2 := f32(w.wire_to.y)
+	mut x1 := f32(w.wire_from.x + w.offset_from.x)
+	mut y1 := f32(w.wire_from.y + w.offset_from.y)
+	mut x2 := f32(w.wire_to.x + w.offset_to.x)
+	mut y2 := f32(w.wire_to.y + w.offset_to.y)
 
 	if x1 > x2 {
 		x1, x2 = x2, x1
@@ -72,10 +99,28 @@ pub fn (w WireBase) get_aabb() AABB {
 	}
 
 	return AABB{
-		x:      int(x1 - aabb_padding + w.offset.x)
-		y:      int(y1 - aabb_padding + w.offset.y)
-		width:  int(x2 - x1 + aabb_padding * 2)
-		height: int(y2 - y1 + aabb_padding * 2)
+		x:      x1 - aabb_padding
+		y:      y1 - aabb_padding
+		width:  x2 - x1 + aabb_padding * 2
+		height: y2 - y1 + aabb_padding * 2
+	}
+}
+
+pub fn (w WireBase) get_from_aabb() AABB {
+	return AABB{
+		x:      f32(w.wire_from.x) - aabb_padding
+		y:      f32(w.wire_from.y) - aabb_padding
+		width:  aabb_padding * 2
+		height: aabb_padding * 2
+	}
+}
+
+pub fn (w WireBase) get_to_aabb() AABB {
+	return AABB{
+		x:      f32(w.wire_to.x) - aabb_padding
+		y:      f32(w.wire_to.y) - aabb_padding
+		width:  aabb_padding * 2
+		height: aabb_padding * 2
 	}
 }
 
@@ -86,6 +131,10 @@ pub fn (w WireBase) hit_test(pos vec.Vec2[f32]) bool {
 pub fn (mut w WireBase) on_move(mut app App) {}
 
 pub fn (mut w WireBase) on_moved(mut app App) {}
+
+pub fn (w WireBase) has_interaction() bool {
+	return false
+}
 
 pub fn (mut w WireBase) interact() {}
 
