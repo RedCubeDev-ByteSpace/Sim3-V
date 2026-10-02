@@ -14,6 +14,7 @@ import components
 pub fn draw_view(app data.App) {
 	draw_grid(app)
 	draw_selection(app)
+	draw_wires(app)
 	draw_components(app)
 	draw_wire_branching_points(app)
 	draw_selected_component_outlines(app)
@@ -21,11 +22,36 @@ pub fn draw_view(app data.App) {
 	draw_preview_of_component_being_placed(app)
 }
 
+fn draw_wires(app data.App) {
+	// get the AABB for the current viewport
+	view_aabb := data.get_viewport_aabb(app)
+
+	for comp in app.sim.components.values() {
+		if comp !is data.IWireBase {
+			continue
+		}
+
+		// only draw components that are touching the current viewports aabb
+		if data.do_aabbs_intersect(view_aabb, comp.get_aabb()) {
+			comp.draw(app)
+
+			// if enabled: draw bounding boxes
+			if app.view.debug.show_aabb {
+				draw_aabb(app, comp.get_aabb(), data.aabb_color)
+			}
+		}
+	}
+}
+
 fn draw_components(app data.App) {
 	// get the AABB for the current viewport
 	view_aabb := data.get_viewport_aabb(app)
 
 	for comp in app.sim.components.values() {
+		if comp is data.IWireBase {
+			continue
+		}
+
 		// only draw components that are touching the current viewports aabb
 		if data.do_aabbs_intersect(view_aabb, comp.get_aabb()) {
 			comp.draw(app)
