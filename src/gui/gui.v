@@ -23,10 +23,11 @@ pub fn draw_ui(mut app data.App) {
 }
 
 fn draw_debug_window(mut app data.App) {
-	if app.mu.begin_window_ex('Debug Window', rl.Rectangle{0, 0, 200, 145}, .noclose) {
-		app.mu.layout_row([-1], 10)
+	if app.mu.begin_window_ex('Debug Window', rl.Rectangle{0, 0, 220, 180}, .noclose) {
+		app.mu.layout_row([-1], 12)
 
 		camera_pos := app.view.camera_position.add(app.view.camera_offset.div_scalar(app.view.zoom * data.one_simspace_unit_in_px))
+		app.mu.label('FPS: ${rl.get_fps()}')
 		app.mu.label('MUi Input Capture: ${if app.mu.wants_input_capture() { 'yes' } else { 'no' }}')
 		app.mu.label('Bench state: ${match app.bench.bench_state {
 			.idle { 'idle' }
@@ -108,8 +109,8 @@ fn draw_color_window(mut app data.App) {
 }
 
 fn draw_components_window(mut app data.App) {
-	if app.mu.begin_window_ex('Components', rl.Rectangle{10, 80, 110, 65}, .noclose | .noresize | .noscroll) {
-		app.mu.layout_row([30, 30, 30], 30)
+	if app.mu.begin_window_ex('Components', rl.Rectangle{10, 80, 145, 65}, .noclose | .noresize | .noscroll) {
+		app.mu.layout_row([30, 30, 30, 30], 30)
 
 		style := app.mu.get_style()
 		border_color := style.colors[microui.Color.border]
@@ -220,6 +221,38 @@ fn draw_components_window(mut app data.App) {
 				x: rect.x + rect.width / 2 - text_size.x / 2
 				y: rect.y + rect.height / 2 - text_size.y / 2 + 1
 			}, font_size, 1, fg_color)
+		})
+
+		// -------------------------------------------------------------------------------------------------------------
+		// LED component button
+
+		// determine the background color for this button
+		rect_led := app.mu.layout_next()
+		mut bg_led := bg_color
+		if app.bench.placement.selected_component_type == .led {
+			bg_led = focus_color
+		} else if app.mu.mouse_over(rect_led) {
+			bg_led = hover_color
+		}
+
+		// when clicked: toggle this component being selected
+		if app.mu.mouse_over(rect_led) && app.mu.is_mouse_pressed(.left) {
+			utils.toggle_component_placement(mut app, .led)
+		}
+
+		// draw the button
+		app.mu.draw_custom(rect_led, app, fn [fg_color, bg_led, border_color] (rect rl.Rectangle, mut app data.App) {
+			rl.draw_rectangle(int(rect.x), int(rect.y), int(rect.width), int(rect.height),
+				bg_led)
+			rl.draw_rectangle_lines_ex(rect, 1, border_color)
+
+			rl.draw_circle(int(rect.x + rect.width / 2), int(rect.y + rect.height / 2),
+				5, fg_color)
+
+			rl.draw_circle_lines(int(rect.x + rect.width / 2), int(rect.y + rect.height / 2),
+				8, fg_color)
+			rl.draw_circle_lines(int(rect.x + rect.width / 2), int(rect.y + rect.height / 2),
+				8.5, fg_color)
 		})
 
 		app.mu.end_window()

@@ -222,6 +222,9 @@ fn draw_preview_of_component_being_placed(app data.App) {
 		.fixed_contact {
 			components.FixedContact.draw(app, pos, zoomed_unit, color, false, app.bench.placement.rotation)
 		}
+		.led {
+			components.LED.draw(pos, zoomed_unit, color, false, app.bench.placement.rotation)
+		}
 		.wire {
 			if !app.bench.placement.placed_wire_starting_point {
 				rl.draw_circle_lines(comp_pos_screen_space.x, comp_pos_screen_space.y,

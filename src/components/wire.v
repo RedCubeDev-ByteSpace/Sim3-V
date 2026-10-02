@@ -92,7 +92,7 @@ fn (w &Wire) draw(app data.App) {
 			data.component_line_thickness * 1.5
 		}
 		.error {
-			0
+			data.component_line_thickness
 		}
 	}
 

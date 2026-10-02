@@ -104,7 +104,7 @@ pub fn draw_circle_filled(init_x_f f32, init_y_f f32, unit f32, x f32, y f32, ra
 
 	sized_x := int(x * unit)
 	sized_y := int(y * unit)
-	sized_radius := int(radius * unit)
+	sized_radius := radius * unit
 
 	mut draw_x := 0
 	mut draw_y := 0
@@ -129,6 +129,39 @@ pub fn draw_circle_filled(init_x_f f32, init_y_f f32, unit f32, x f32, y f32, ra
 	}
 
 	rl.draw_circle(draw_x, draw_y, sized_radius, color)
+}
+
+pub fn draw_circle_lines(init_x_f f32, init_y_f f32, unit f32, x f32, y f32, radius f32, rot data.Rotation, color rl.Color) {
+	init_x := int(init_x_f)
+	init_y := int(init_y_f)
+
+	sized_x := int(x * unit)
+	sized_y := int(y * unit)
+	sized_radius := radius * unit
+
+	mut draw_x := 0
+	mut draw_y := 0
+
+	match rot {
+		.up {
+			draw_x = init_x + sized_x
+			draw_y = init_y + sized_y
+		}
+		.down {
+			draw_x = init_x + sized_x
+			draw_y = init_y - sized_y
+		}
+		.right {
+			draw_x = init_x - sized_y
+			draw_y = init_y - sized_x
+		}
+		.left {
+			draw_x = init_x + sized_y
+			draw_y = init_y + sized_x
+		}
+	}
+
+	rl.draw_circle_lines(draw_x, draw_y, sized_radius, color)
 }
 
 pub fn draw_centered_text(app data.App, init_x_f f32, init_y_f f32, unit f32, x f32, y f32, text string, font_size f32, rot data.Rotation, color rl.Color) {

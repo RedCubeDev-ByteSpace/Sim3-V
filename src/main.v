@@ -30,9 +30,11 @@ fn main() {
 	mut app := &data.App{}
 
 	// create a new raylib window
+	rl.set_config_flags(rl.ConfigFlags.flag_msaa_4x_hint)
 	rl.init_window(initial_window_width, initial_window_height, window_title)
 	rl.set_target_fps(60)
 	rl.set_exit_key(0)
+	rl.set_window_state(.flag_window_resizable)
 
 	// load fonts
 	fonts.init(mut app)
@@ -108,6 +110,5 @@ fn on_frame(mut app data.App) {
 	// draw the ui last so its always on top
 	gui.draw_ui(mut app)
 
-	rl.draw_fps(0, 0)
 	rl.end_drawing()
 }

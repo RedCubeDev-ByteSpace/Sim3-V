@@ -14,4 +14,5 @@ pub enum SelectedComponentType {
 	wire
 	switch
 	fixed_contact
+	led
 }

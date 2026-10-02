@@ -461,6 +461,9 @@ fn handle_component_placement(mut app data.App) bool {
 			.fixed_contact {
 				components.FixedContact.new(mut app, placement_pos, rotation, color, false)
 			}
+			.led {
+				components.LED.new(mut app, placement_pos, rotation, color)
+			}
 			.wire {
 				if !app.bench.placement.placed_wire_starting_point {
 					app.input.wire_place_start_pos = placement_pos

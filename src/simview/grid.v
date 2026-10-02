@@ -8,6 +8,11 @@ import math.vec
 
 pub fn draw_grid(app data.App) {
 	zoom := app.view.zoom
+
+	if zoom < 0.4 {
+		return
+	}
+
 	zoomed_grid_spacing := data.one_simspace_unit_in_px * zoom
 	camera_pos := app.view.camera_position.mul_scalar(data.one_simspace_unit_in_px * app.view.zoom).add(app.view.camera_offset)
 
