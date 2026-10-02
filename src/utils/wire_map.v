@@ -14,8 +14,6 @@ pub fn register_wire(mut app data.App, pos vec.Vec2[int], wire_comp_id i64) {
 
 	// add this wire to the list at this position
 	app.sim.wire_positions[key] << wire_comp_id
-
-	println("registered wire at '${key}' (now ${app.sim.wire_positions[key].len})")
 }
 
 pub fn unregister_wire(mut app data.App, pos vec.Vec2[int], wire_comp_id i64) {
@@ -33,7 +31,6 @@ pub fn unregister_wire(mut app data.App, pos vec.Vec2[int], wire_comp_id i64) {
 
 		// delete this wire
 		app.sim.wire_positions[key].delete(i)
-		println("unregistered wire at '${key}' (now ${app.sim.wire_positions[key].len})")
 		return
 	}
 

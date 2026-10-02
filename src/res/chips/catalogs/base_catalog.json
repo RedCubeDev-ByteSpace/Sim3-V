@@ -1,0 +1,247 @@
+[
+  {
+    "unique_id": "SIM3-74LS00",
+    "name": "74LS00",
+    "group": "Stateless Chips",
+    "description": "4x 2-Input NAND Gates",
+    "pins": [
+      { "label": "A1"  },
+      { "label": "B1"  },
+      { "label": "Y1"  },
+      { "label": "A2"  },
+      { "label": "B2"  },
+      { "label": "Y2"  },
+      { "label": "GND", "is_power": true },
+      { "label": "Y3"  },
+      { "label": "A3"  },
+      { "label": "B3"  },
+      { "label": "Y4"  },
+      { "label": "A4"  },
+      { "label": "B4"  },
+      { "label": "VCC", "is_power": true }
+    ],
+    "script": {
+      "source": "stateless/74LS00.script",
+      "has_state": false
+    }
+  },
+  {
+    "unique_id": "SIM3-74LS02",
+    "name": "74LS02",
+    "group": "Stateless Chips",
+    "description": "4x 2-Input NOR Gates",
+    "pins": [
+      { "label": "Y1"  },
+      { "label": "A1"  },
+      { "label": "B1"  },
+      { "label": "Y2"  },
+      { "label": "A2"  },
+      { "label": "B2"  },
+      { "label": "GND", "is_power": true },
+      { "label": "A3"  },
+      { "label": "B3"  },
+      { "label": "Y3"  },
+      { "label": "A4"  },
+      { "label": "B4"  },
+      { "label": "Y4"  },
+      { "label": "VCC", "is_power": true }
+    ],
+    "script": {
+      "source": "stateless/74LS02.script",
+      "has_state": false
+    }
+  },
+  {
+    "unique_id": "SIM3-74LS04",
+    "name": "74LS04",
+    "group": "Stateless Chips",
+    "description": "6x 1-Input NOT Gates",
+    "pins": [
+      { "label": "A1"  },
+      { "label": "Y1"  },
+      { "label": "A2"  },
+      { "label": "Y2"  },
+      { "label": "A3"  },
+      { "label": "Y3"  },
+      { "label": "GND", "is_power": true },
+      { "label": "Y4"  },
+      { "label": "A4"  },
+      { "label": "Y5"  },
+      { "label": "A5"  },
+      { "label": "Y6"  },
+      { "label": "A6"  },
+      { "label": "VCC", "is_power": true }
+    ],
+    "script": {
+      "source": "stateless/74LS04.script",
+      "has_state": false
+    }
+  },
+  {
+    "unique_id": "SIM3-74LS08",
+    "name": "74LS08",
+    "group": "Stateless Chips",
+    "description": "4x 2-Input AND Gates",
+    "pins": [
+      { "label": "A1"  },
+      { "label": "B1"  },
+      { "label": "Y1"  },
+      { "label": "A2"  },
+      { "label": "B2"  },
+      { "label": "Y2"  },
+      { "label": "GND", "is_power": true },
+      { "label": "Y3"  },
+      { "label": "A3"  },
+      { "label": "B3"  },
+      { "label": "Y4"  },
+      { "label": "A4"  },
+      { "label": "B4"  },
+      { "label": "VCC", "is_power": true }
+    ],
+    "script": {
+      "source": "stateless/74LS08.script",
+      "has_state": false
+    }
+  },
+  {
+    "unique_id": "SIM3-74LS32",
+    "name": "74LS32",
+    "group": "Stateless Chips",
+    "description": "4x 2-Input OR Gates",
+    "pins": [
+      { "label": "A1"  },
+      { "label": "B1"  },
+      { "label": "Y1"  },
+      { "label": "A2"  },
+      { "label": "B2"  },
+      { "label": "Y2"  },
+      { "label": "GND", "is_power": true },
+      { "label": "Y3"  },
+      { "label": "A3"  },
+      { "label": "B3"  },
+      { "label": "Y4"  },
+      { "label": "A4"  },
+      { "label": "B4"  },
+      { "label": "VCC", "is_power": true }
+    ],
+    "script": {
+      "source": "stateless/74LS32.script",
+      "has_state": false
+    }
+  },
+  {
+    "unique_id": "SIM3-74LS48",
+    "name": "74LS48",
+    "group": "Stateless Chips",
+    "description": "BCD to 7 Segment Display Decoder",
+    "pins": [
+      { "label": "B"   },
+      { "label": "C"   },
+      { "label": "LT"  , "is_active_low": true  },
+      { "label": "BIRB", "is_active_low": true  },
+      { "label": "RBI",  "is_active_low": true  },
+      { "label": "D"   },
+      { "label": "A"   },
+      { "label": "GND", "is_power": true },
+      { "label": "e"   },
+      { "label": "d"   },
+      { "label": "c"   },
+      { "label": "b"   },
+      { "label": "a"   },
+      { "label": "g"   },
+      { "label": "f"   },
+      { "label": "VCC", "is_power": true }
+    ],
+    "script": {
+      "source": "stateless/74LS48.script",
+      "has_state": false
+    }
+  },
+  {
+    "unique_id": "SIM3-74LS161",
+    "name": "74LS161",
+    "group": "Stateful Chips",
+    "description": "4-Bit Counter",
+    "pins": [
+      { "label": "CLR", "is_active_low": true },
+      { "label": "CLK" },
+      { "label": "A"   },
+      { "label": "B"   },
+      { "label": "C"   },
+      { "label": "D"   },
+      { "label": "ENP" },
+      { "label": "GND", "is_power": true },
+      { "label": "LOAD", "is_active_low": true },
+      { "label": "ENT" },
+      { "label": "QD"  },
+      { "label": "QC"  },
+      { "label": "QB"  },
+      { "label": "QA"  },
+      { "label": "RCO" },
+      { "label": "VCC", "is_power": true }
+    ],
+    "script": {
+      "source": "stateful/74LS161.script",
+      "has_state": true,
+      "ClockPin": 2
+    }
+  },
+  {
+    "unique_id": "SIM3-74LS162",
+    "name": "74LS162",
+    "group": "Stateful Chips",
+    "description": "4-Bit Decade Counter",
+    "pins": [
+      { "label": "CLR", "is_active_low": true },
+      { "label": "CLK" },
+      { "label": "A"   },
+      { "label": "B"   },
+      { "label": "C"   },
+      { "label": "D"   },
+      { "label": "ENP" },
+      { "label": "GND", "is_power": true },
+      { "label": "LOAD", "is_active_low": true },
+      { "label": "ENT" },
+      { "label": "QD"  },
+      { "label": "QC"  },
+      { "label": "QB"  },
+      { "label": "QA"  },
+      { "label": "RCO" },
+      { "label": "VCC", "is_power": true }
+    ],
+    "script": {
+      "source": "stateful/74LS162.script",
+      "has_state": true,
+      "ClockPin": 2
+    }
+  },
+  {
+    "unique_id": "SIM3-74LS164",
+    "name": "74LS164",
+    "group": "Stateful Chips",
+    "description": "8-Bit SIPO Shift Register",
+    "pins": [
+      { "label": "CLR", "is_active_low": true },
+      { "label": "CLK" },
+      { "label": "A"   },
+      { "label": "B"   },
+      { "label": "C"   },
+      { "label": "D"   },
+      { "label": "ENP" },
+      { "label": "GND", "is_power": true },
+      { "label": "LOAD", "is_active_low": true },
+      { "label": "ENT" },
+      { "label": "QD"  },
+      { "label": "QC"  },
+      { "label": "QB"  },
+      { "label": "QA"  },
+      { "label": "RCO" },
+      { "label": "VCC", "is_power": true }
+    ],
+    "script": {
+      "source": "stateful/74LS162.script",
+      "has_state": true,
+      "ClockPin": 2
+    }
+  }
+]

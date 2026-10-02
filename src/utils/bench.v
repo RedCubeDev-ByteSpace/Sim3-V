@@ -4,17 +4,21 @@ import data
 import math.vec
 
 pub fn toggle_component_placement(mut app data.App, component data.SelectedComponentType) {
-	if app.bench.placement.selected_component_type == component {
-		app.bench.placement.selected_component_type = .none
+	if app.bench.placement.current_selected_component_type == component {
+		app.bench.placement.current_selected_component_type = .none
 		app.bench.bench_state = .idle
 	} else {
-		app.bench.placement.selected_component_type = component
+		app.bench.placement.current_selected_component_type = component
 		app.bench.bench_state = .placing_component
+
+		if component == .wire {
+			app.bench.placement.placed_wire_starting_point = false
+		}
 	}
 }
 
 pub fn exit_component_placement(mut app data.App) {
-	app.bench.placement.selected_component_type = .none
+	app.bench.placement.current_selected_component_type = .none
 	app.bench.bench_state = .idle
 }
 

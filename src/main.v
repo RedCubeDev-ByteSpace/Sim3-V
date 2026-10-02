@@ -10,6 +10,11 @@ import components
 import math.vec
 import fonts
 import sim
+import chip_catalog
+
+$if tinyc {
+	#flag @VMODROOT/hacks/tcc.c
+}
 
 $if emscripten ? {
 	#include <emscripten/emscripten.h>
@@ -39,6 +44,11 @@ fn main() {
 	// load fonts
 	fonts.init(mut app)
 
+	// load the chips!!! wow i really need to clean up my initialization jesus
+	app.catalog.chips, app.catalog.groups = chip_catalog.load_catalogs('./src/res/chips/catalogs') or {
+		panic('Unable to load any catalogs! Did SOMEONE mess up the path?')
+	}
+
 	// ----------------------------------------------------------------------------------------------------------------
 	// initialize microui
 	app.mu = microui.new_context()
@@ -59,7 +69,12 @@ fn main() {
 	style.colors[microui.Color.windowbg] = rl.Color{230, 230, 230, 255}
 	style.colors[microui.Color.base] = rl.Color{255, 255, 255, 255}
 	style.colors[microui.Color.basehover] = rl.Color{240, 240, 240, 255}
-	style.colors[microui.Color.basefocus] = rl.Color{220, 220, 220, 255}
+	style.colors[microui.Color.basefocus] = rl.Color{200, 200, 200, 255}
+	style.colors[microui.Color.button] = rl.Color{255, 255, 255, 255}
+	style.colors[microui.Color.buttonhover] = rl.Color{240, 240, 240, 255}
+	style.colors[microui.Color.buttonfocus] = rl.Color{220, 220, 220, 255}
+	style.colors[microui.Color.scrollbase] = rl.Color{210, 210, 210, 255}
+	style.colors[microui.Color.scrollthumb] = rl.Color{180, 180, 180, 255}
 
 	app.mu.set_style(style)
 

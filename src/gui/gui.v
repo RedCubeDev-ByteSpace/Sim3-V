@@ -13,6 +13,7 @@ pub fn draw_ui(mut app data.App) {
 	draw_debug_window(mut app)
 	draw_color_window(mut app)
 	draw_components_window(mut app)
+	draw_chip_select_window(mut app)
 
 	for mut comp in app.sim.components {
 		comp.draw_component_window(mut app)
@@ -82,10 +83,10 @@ fn draw_color_window(mut app data.App) {
 			rect := app.mu.layout_next()
 
 			if app.mu.mouse_over(rect) && app.mu.is_mouse_pressed(.left) {
-				app.bench.current_selected_color_idx = i
+				app.bench.placement.current_selected_color_idx = i
 			}
 
-			if i == app.bench.current_selected_color_idx {
+			if i == app.bench.placement.current_selected_color_idx {
 				app.mu.draw_rect(rect, rl.Color{0, 0, 0, 255})
 				app.mu.draw_rect(rl.Rectangle{
 					x:      rect.x + 1
@@ -109,8 +110,8 @@ fn draw_color_window(mut app data.App) {
 }
 
 fn draw_components_window(mut app data.App) {
-	if app.mu.begin_window_ex('Components', rl.Rectangle{10, 80, 145, 65}, .noclose | .noresize | .noscroll) {
-		app.mu.layout_row([30, 30, 30, 30], 30)
+	if app.mu.begin_window_ex('Components', rl.Rectangle{10, 80, 180, 65}, .noclose | .noresize | .noscroll) {
+		app.mu.layout_row([30, 30, 30, 30, 30], 30)
 
 		style := app.mu.get_style()
 		border_color := style.colors[microui.Color.border]
@@ -121,26 +122,10 @@ fn draw_components_window(mut app data.App) {
 
 		// -------------------------------------------------------------------------------------------------------------
 		// Wire button
-
-		// determine the background color for this button
-		rect_wire := app.mu.layout_next()
-		mut bg_wire := bg_color
-		if app.bench.placement.selected_component_type == .wire {
-			bg_wire = focus_color
-		} else if app.mu.mouse_over(rect_wire) {
-			bg_wire = hover_color
-		}
-
-		// when clicked: toggle this component being selected
-		if app.mu.mouse_over(rect_wire) && app.mu.is_mouse_pressed(.left) {
-			utils.toggle_component_placement(mut app, .wire)
-			app.bench.placement.placed_wire_starting_point = false
-		}
-
-		// draw the button
-		app.mu.draw_custom(rect_wire, app, fn [fg_color, bg_wire, border_color] (rect rl.Rectangle, _ voidptr) {
+		draw_component_button(mut app, .wire, fg_color, bg_color, focus_color, hover_color,
+			border_color, fn (rect rl.Rectangle, mut app data.App, fg_color rl.Color, bg_color rl.Color, border_color rl.Color) {
 			rl.draw_rectangle(int(rect.x), int(rect.y), int(rect.width), int(rect.height),
-				bg_wire)
+				bg_color)
 			rl.draw_rectangle_lines_ex(rect, 1, border_color)
 
 			margin := 5
@@ -150,25 +135,10 @@ fn draw_components_window(mut app data.App) {
 
 		// -------------------------------------------------------------------------------------------------------------
 		// Switch component button
-
-		// determine the background color for this button
-		rect_switch := app.mu.layout_next()
-		mut bg_switch := bg_color
-		if app.bench.placement.selected_component_type == .switch {
-			bg_switch = focus_color
-		} else if app.mu.mouse_over(rect_switch) {
-			bg_switch = hover_color
-		}
-
-		// when clicked: toggle this component being selected
-		if app.mu.mouse_over(rect_switch) && app.mu.is_mouse_pressed(.left) {
-			utils.toggle_component_placement(mut app, .switch)
-		}
-
-		// draw the button
-		app.mu.draw_custom(rect_switch, app, fn [fg_color, bg_switch, border_color] (rect rl.Rectangle, _ voidptr) {
+		draw_component_button(mut app, .switch, fg_color, bg_color, focus_color, hover_color,
+			border_color, fn (rect rl.Rectangle, mut app data.App, fg_color rl.Color, bg_color rl.Color, border_color rl.Color) {
 			rl.draw_rectangle(int(rect.x), int(rect.y), int(rect.width), int(rect.height),
-				bg_switch)
+				bg_color)
 			rl.draw_rectangle_lines_ex(rect, 1, border_color)
 
 			margin := 5
@@ -185,25 +155,10 @@ fn draw_components_window(mut app data.App) {
 
 		// -------------------------------------------------------------------------------------------------------------
 		// FixedContact component button
-
-		// determine the background color for this button
-		rect_fixed_contact := app.mu.layout_next()
-		mut bg_fixed_contact := bg_color
-		if app.bench.placement.selected_component_type == .fixed_contact {
-			bg_fixed_contact = focus_color
-		} else if app.mu.mouse_over(rect_fixed_contact) {
-			bg_fixed_contact = hover_color
-		}
-
-		// when clicked: toggle this component being selected
-		if app.mu.mouse_over(rect_fixed_contact) && app.mu.is_mouse_pressed(.left) {
-			utils.toggle_component_placement(mut app, .fixed_contact)
-		}
-
-		// draw the button
-		app.mu.draw_custom(rect_fixed_contact, app, fn [fg_color, bg_fixed_contact, border_color] (rect rl.Rectangle, mut app data.App) {
+		draw_component_button(mut app, .fixed_contact, fg_color, bg_color, focus_color,
+			hover_color, border_color, fn (rect rl.Rectangle, mut app data.App, fg_color rl.Color, bg_color rl.Color, border_color rl.Color) {
 			rl.draw_rectangle(int(rect.x), int(rect.y), int(rect.width), int(rect.height),
-				bg_fixed_contact)
+				bg_color)
 			rl.draw_rectangle_lines_ex(rect, 1, border_color)
 
 			margin := 5
@@ -225,25 +180,10 @@ fn draw_components_window(mut app data.App) {
 
 		// -------------------------------------------------------------------------------------------------------------
 		// LED component button
-
-		// determine the background color for this button
-		rect_led := app.mu.layout_next()
-		mut bg_led := bg_color
-		if app.bench.placement.selected_component_type == .led {
-			bg_led = focus_color
-		} else if app.mu.mouse_over(rect_led) {
-			bg_led = hover_color
-		}
-
-		// when clicked: toggle this component being selected
-		if app.mu.mouse_over(rect_led) && app.mu.is_mouse_pressed(.left) {
-			utils.toggle_component_placement(mut app, .led)
-		}
-
-		// draw the button
-		app.mu.draw_custom(rect_led, app, fn [fg_color, bg_led, border_color] (rect rl.Rectangle, mut app data.App) {
+		draw_component_button(mut app, .led, fg_color, bg_color, focus_color, hover_color,
+			border_color, fn (rect rl.Rectangle, mut app data.App, fg_color rl.Color, bg_color rl.Color, border_color rl.Color) {
 			rl.draw_rectangle(int(rect.x), int(rect.y), int(rect.width), int(rect.height),
-				bg_led)
+				bg_color)
 			rl.draw_rectangle_lines_ex(rect, 1, border_color)
 
 			rl.draw_circle(int(rect.x + rect.width / 2), int(rect.y + rect.height / 2),
@@ -255,6 +195,116 @@ fn draw_components_window(mut app data.App) {
 				8.5, fg_color)
 		})
 
+		// -------------------------------------------------------------------------------------------------------------
+		// Chip component button
+		draw_component_button(mut app, .chip, fg_color, bg_color, focus_color, hover_color,
+			border_color, fn (rect rl.Rectangle, mut app data.App, fg_color rl.Color, bg_color rl.Color, border_color rl.Color) {
+			rl.draw_rectangle(int(rect.x), int(rect.y), int(rect.width), int(rect.height),
+				bg_color)
+			rl.draw_rectangle_lines_ex(rect, 1, border_color)
+
+			width := 10
+			height := 15
+			chip_box := rl.Rectangle{
+				x:      rect.x + rect.width / 2 - width / 2
+				y:      rect.y + rect.height / 2 - height / 2
+				width:  width
+				height: height
+			}
+			rl.draw_rectangle_lines_ex(chip_box, 1.7, border_color)
+
+			margin := 7
+			num_leg_rows := 3
+			leg_space_height := 12
+			leg_spacing := leg_space_height / num_leg_rows
+			start_y := rect.y + rect.height / 2 - 4
+			for i in 0 .. num_leg_rows {
+				y := int(start_y + leg_spacing * i)
+				rl.draw_line(int(rect.x + margin), y, int(chip_box.x), y, fg_color)
+				rl.draw_line(int(chip_box.x + chip_box.width), y, int(rect.x + rect.width - margin),
+					y, fg_color)
+			}
+		})
+
 		app.mu.end_window()
 	}
+}
+
+fn draw_component_button(mut app data.App, comp_type data.SelectedComponentType, fg_color rl.Color, bg_color rl.Color, focus_color rl.Color, hover_color rl.Color, border_color rl.Color, draw fn (rect rl.Rectangle, mut app data.App, fg_color rl.Color, bg_color rl.Color, border_color rl.Color)) {
+	// determine the background color for this button
+	rect := app.mu.layout_next()
+	mut bg := bg_color
+	if app.bench.placement.current_selected_component_type == comp_type {
+		bg = focus_color
+	} else if app.mu.mouse_over(rect) {
+		bg = hover_color
+	}
+
+	// when clicked: toggle this component being selected
+	if app.mu.mouse_over(rect) && app.mu.is_mouse_pressed(.left) {
+		utils.toggle_component_placement(mut app, comp_type)
+	}
+
+	// draw the button
+	app.mu.draw_custom(rect, app, fn [fg_color, bg, border_color, draw] (rect rl.Rectangle, mut app data.App) {
+		draw(rect, mut app, fg_color, bg, border_color)
+	})
+}
+
+fn draw_chip_select_window(mut app data.App) {
+	if app.mu.begin_window_ex('Chips', rl.Rectangle{10, 155, 260, 400}, .noclose) {
+		for group_name, chip_uids in app.catalog.groups {
+			if app.mu.header(group_name) {
+				app.mu.layout_row([10, -1], 40)
+
+				for chip_uid in chip_uids {
+					app.mu.layout_next()
+					if draw_chip_button(mut app, chip_uid) {
+						app.bench.placement.current_selected_chip_uid = chip_uid
+					}
+				}
+			}
+		}
+
+		app.mu.end_window()
+	}
+}
+
+fn draw_chip_button(mut app data.App, chip_uid string) bool {
+	chip := app.catalog.chips[chip_uid]
+	rect := app.mu.layout_next()
+	id := app.mu.get_id(chip.name)
+	mut clicked := false
+
+	app.mu.update_control(id, rect, microui.Opt.zero())
+	if app.mu.is_mouse_pressed(.left) && app.mu.get_focus_id() == id {
+		clicked = true
+	}
+
+	color := if chip.unique_id == app.bench.placement.current_selected_chip_uid {
+		microui.Color.buttonfocus
+	} else {
+		microui.Color.button
+	}
+	app.mu.draw_control_frame(id, rect, color, microui.Opt.zero())
+
+	top_rect := rl.Rectangle{
+		...rect
+		y:      rect.y + 3
+		height: rect.height / 2
+	}
+	top_rect_faux_bold := rl.Rectangle{
+		...top_rect
+		x: rect.x + 1
+	}
+	bottom_rect := rl.Rectangle{
+		...rect
+		y:      rect.y + rect.height / 2
+		height: rect.height / 2
+	}
+	app.mu.draw_control_text(chip.name, top_rect, .text, microui.Opt.zero())
+	app.mu.draw_control_text(chip.name, top_rect_faux_bold, .text, microui.Opt.zero())
+	app.mu.draw_control_text(chip.description, bottom_rect, .text, microui.Opt.zero())
+
+	return clicked
 }

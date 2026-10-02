@@ -2,6 +2,7 @@ module data
 
 import microui
 import math.vec
+import chip_catalog
 
 pub const one_simspace_unit_in_px = 20
 pub const component_line_thickness = 2
@@ -77,7 +78,6 @@ pub mut:
 	bench struct {
 	pub mut:
 		bench_state                  BenchState
-		current_selected_color_idx   int
 		selected_components          []IComponent = []
 		marching_ants_starting_point int
 		marching_ants_frame_counter  int
@@ -91,10 +91,21 @@ pub mut:
 
 		placement struct {
 		pub mut:
-			selected_component_type    SelectedComponentType
-			rotation                   Rotation
+			current_selected_color_idx      int
+			current_selected_chip_uid       string
+			current_selected_component_type SelectedComponentType
+			rotation                        Rotation
+
 			placed_wire_starting_point bool
 		}
+	}
+
+	// catalog ---------------------------------------------------------------------------------------------------------
+	// everything concerning the catalog of chips that can be used in a simulation
+	catalog struct {
+	pub mut:
+		chips  map[string]chip_catalog.ChipEntry
+		groups map[string][]string
 	}
 
 	// fonts -----------------------------------------------------------------------------------------------------------

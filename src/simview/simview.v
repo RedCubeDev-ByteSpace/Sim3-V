@@ -197,7 +197,7 @@ fn draw_marching_ants_line(app data.App, color rl.Color, off int, s int, e int, 
 }
 
 fn draw_preview_of_component_being_placed(app data.App) {
-	if app.bench.placement.selected_component_type == .none {
+	if app.bench.placement.current_selected_component_type == .none {
 		return
 	}
 
@@ -209,12 +209,12 @@ fn draw_preview_of_component_being_placed(app data.App) {
 	pos := vec.vec2(f32(comp_pos_screen_space.x), f32(comp_pos_screen_space.y))
 	zoomed_unit := data.one_simspace_unit_in_px * app.view.zoom
 	color := rl.Color{
-		...data.wire_colors[app.bench.current_selected_color_idx]
+		...data.wire_colors[app.bench.placement.current_selected_color_idx]
 		a: 150
 	}
 
 	// draw the preview using the components static draw function
-	match app.bench.placement.selected_component_type {
+	match app.bench.placement.current_selected_component_type {
 		.none {}
 		.switch {
 			components.Switch.draw(pos, zoomed_unit, color, false, app.bench.placement.rotation)
@@ -225,6 +225,7 @@ fn draw_preview_of_component_being_placed(app data.App) {
 		.led {
 			components.LED.draw(pos, zoomed_unit, color, false, app.bench.placement.rotation)
 		}
+		.chip {}
 		.wire {
 			if !app.bench.placement.placed_wire_starting_point {
 				rl.draw_circle_lines(comp_pos_screen_space.x, comp_pos_screen_space.y,

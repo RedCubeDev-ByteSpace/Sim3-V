@@ -15,4 +15,5 @@ pub enum SelectedComponentType {
 	switch
 	fixed_contact
 	led
+	chip
 }
