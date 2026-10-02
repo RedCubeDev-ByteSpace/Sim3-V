@@ -11,7 +11,7 @@ pub fn toggle_component_placement(mut app data.App, component data.SelectedCompo
 		app.bench.placement.current_selected_component_type = component
 		app.bench.bench_state = .placing_component
 
-		if component == .wire {
+		if component == .wire || component == .bus {
 			app.bench.placement.placed_wire_starting_point = false
 		}
 	}
@@ -20,6 +20,10 @@ pub fn toggle_component_placement(mut app data.App, component data.SelectedCompo
 pub fn exit_component_placement(mut app data.App) {
 	app.bench.placement.current_selected_component_type = .none
 	app.bench.bench_state = .idle
+}
+
+pub fn add_component(mut app data.App, component data.IComponent) {
+	app.sim.components[component.get_comp_id()] = component
 }
 
 // this is required because C will always round towards zero

@@ -15,7 +15,7 @@ pub fn draw_view(app data.App) {
 	draw_grid(app)
 	draw_selection(app)
 	draw_components(app)
-	draw_wire_connection_markers(app)
+	draw_wire_branching_points(app)
 	draw_selected_component_outlines(app)
 	draw_wire_movement_handles(app)
 	draw_preview_of_component_being_placed(app)
@@ -25,7 +25,7 @@ fn draw_components(app data.App) {
 	// get the AABB for the current viewport
 	view_aabb := data.get_viewport_aabb(app)
 
-	for comp in app.sim.components {
+	for comp in app.sim.components.values() {
 		// only draw components that are touching the current viewports aabb
 		if data.do_aabbs_intersect(view_aabb, comp.get_aabb()) {
 			comp.draw(app)
@@ -38,11 +38,11 @@ fn draw_components(app data.App) {
 	}
 }
 
-fn draw_wire_connection_markers(app data.App) {
+fn draw_wire_branching_points(app data.App) {
 	for marker in app.sim.wire_branching_points {
 		marker_pos := data.worldspace_to_screenspace(app, marker.pos)
 
-		rl.draw_circle(marker_pos.x, marker_pos.y, app.view.zoom * 4, marker.color)
+		rl.draw_circle(marker_pos.x, marker_pos.y, app.view.zoom * 3, marker.color)
 	}
 }
 
@@ -89,17 +89,18 @@ fn draw_wire_movement_handles(app data.App) {
 		return
 	}
 
-	wire := app.bench.wire_moving.wire
-	if wire is components.Wire {
+	wire := app.sim.components[app.bench.wire_moving.wire_id]
+	if wire is data.IWireBase {
+		base := wire.get_base()
 		rect_world := if app.bench.wire_moving.wire_end == .from {
-			wire.get_from_aabb()
+			base.get_from_aabb()
 		} else {
-			wire.get_to_aabb()
+			base.get_to_aabb()
 		}
 		offset := if app.bench.wire_moving.wire_end == .from {
-			wire.get_offset_from()
+			base.get_offset_from()
 		} else {
-			wire.get_offset_to()
+			base.get_offset_to()
 		}
 		offset_rect_world := rl.Rectangle{
 			...rect_world
@@ -226,7 +227,7 @@ fn draw_preview_of_component_being_placed(app data.App) {
 			components.LED.draw(pos, zoomed_unit, color, false, app.bench.placement.rotation)
 		}
 		.chip {}
-		.wire {
+		.wire, .bus {
 			if !app.bench.placement.placed_wire_starting_point {
 				rl.draw_circle_lines(comp_pos_screen_space.x, comp_pos_screen_space.y,
 					5, color)

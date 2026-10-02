@@ -33,7 +33,7 @@ pub fn LED.new(mut app data.App, pos vec.Vec2[int], rot data.Rotation, color rl.
 	utils.register_contact_point(mut app, l.pos, l.contact_point.cont_id)
 
 	// add this wire to the global component list
-	app.sim.components << l
+	utils.add_component(mut app, l)
 	app.sim.wire_mesh_recalc_needed = true
 
 	// done :)

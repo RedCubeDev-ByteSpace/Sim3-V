@@ -31,6 +31,13 @@ pub fn unregister_wire(mut app data.App, pos vec.Vec2[int], wire_comp_id i64) {
 
 		// delete this wire
 		app.sim.wire_positions[key].delete(i)
+
+		// if there are no more wires at this location
+		// -> remove the list
+		if app.sim.wire_positions[key].len == 0 {
+			app.sim.wire_positions.delete(key)
+		}
+
 		return
 	}
 
@@ -40,10 +47,10 @@ pub fn unregister_wire(mut app data.App, pos vec.Vec2[int], wire_comp_id i64) {
 @[inline]
 pub fn add_wire_branching_point(mut app data.App, wire_positions map[string][]i64, pos string) {
 	if wire_positions[pos].len > 2 {
-		wire := app.sim.wire_table[wire_positions[pos][0]]
+		wire := app.sim.components[wire_positions[pos][0]]
 		app.sim.wire_branching_points << data.WireBranchingPoint{
 			pos:   str_to_vec(pos)
-			color: wire.component.get_color()
+			color: wire.get_color()
 		}
 	}
 }

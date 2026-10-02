@@ -36,7 +36,7 @@ pub fn Switch.new(mut app data.App, pos vec.Vec2[int], rot data.Rotation, color 
 	utils.register_contact_point(mut app, s.pos, s.contact_point.cont_id)
 
 	// add this wire to the global component list
-	app.sim.components << s
+	utils.add_component(mut app, s)
 	app.sim.wire_mesh_recalc_needed = true
 
 	// done :)

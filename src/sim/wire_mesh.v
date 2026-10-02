@@ -3,6 +3,7 @@ module sim
 import data
 import components
 import utils
+import raylib as rl
 
 pub fn recalculate_wire_meshes(mut app data.App) {
 	if !app.sim.wire_mesh_recalc_needed {
@@ -34,15 +35,19 @@ pub fn recalculate_wire_meshes(mut app data.App) {
 		mut wire_mesh_wire_ids := []i64{}
 		mut wire_mesh_contact_point_ids := []i64{}
 
-		// start with the current first entry in the positions map
-		first_key := current_wire_positions.keys()[0]
+		// find a starting wire for mesh building
+		for wire_stack in current_wire_positions.values() {
+			wires := wire_stack.filter(app.sim.components[it] is components.Wire)
+			if wires.len > 0 {
+				wires_to_visit_queue << wires[0]
+				break
+			}
+		}
 
-		// if there are more than two wires at this location -> add a connection marker
-		utils.add_wire_branching_point(mut app, current_wire_positions, first_key)
-
-		// enqueue all wires at this point
-		wires_to_visit_queue << current_wire_positions[first_key]
-		current_wire_positions.delete(first_key)
+		// no starting point found -> nothing we can do
+		if wires_to_visit_queue.len == 0 {
+			return
+		}
 
 		// go through the wires_to_visit_queue until theres nothing left
 		for wires_to_visit_queue.len > 0 {
@@ -59,35 +64,46 @@ pub fn recalculate_wire_meshes(mut app data.App) {
 			visited_wires << wire_comp_id
 
 			// get the wire table entry for this wire
-			wire := app.sim.wire_table[wire_comp_id]
+			wire := app.sim.components[wire_comp_id]
 
-			// add this element to our current wire mesh
-			wire_mesh_wire_ids << wire.comp_id
-
-			// add any wires it was connected to
-			if wire.wire_from_pos in current_wire_positions {
-				// if there are more than two wires at this location -> add a connection marker
-				utils.add_wire_branching_point(mut app, current_wire_positions, wire.wire_from_pos)
-
-				wires_to_visit_queue << current_wire_positions[wire.wire_from_pos]
-				current_wire_positions.delete(wire.wire_from_pos)
-			}
-			if wire.wire_to_pos in current_wire_positions {
-				// if there are more than two wires at this location -> add a connection marker
-				utils.add_wire_branching_point(mut app, current_wire_positions, wire.wire_to_pos)
-
-				wires_to_visit_queue << current_wire_positions[wire.wire_to_pos]
-				current_wire_positions.delete(wire.wire_to_pos)
+			// skip any busses, they're not real wires (posers)
+			if wire is components.Bus {
+				continue
 			}
 
-			// are there any contact points at this position?
-			if wire.wire_from_pos in current_contact_point_positions {
-				wire_mesh_contact_point_ids << current_contact_point_positions[wire.wire_from_pos]
-				current_contact_point_positions.delete(wire.wire_from_pos)
-			}
-			if wire.wire_to_pos in current_contact_point_positions {
-				wire_mesh_contact_point_ids << current_contact_point_positions[wire.wire_to_pos]
-				current_contact_point_positions.delete(wire.wire_to_pos)
+			if wire is components.Wire {
+				// add this element to our current wire mesh
+				wire_mesh_wire_ids << wire.get_comp_id()
+
+				// add any wires it was connected to
+				wire_from := utils.vec_to_str(wire.get_wire_from())
+				wire_to := utils.vec_to_str(wire.get_wire_to())
+				if wire_from in current_wire_positions {
+					// if there are more than two wires at this location -> add a connection marker
+					utils.add_wire_branching_point(mut app, current_wire_positions, wire_from)
+
+					wires_to_visit_queue << resolve_any_busses(app, current_wire_positions[wire_from],
+						wire_comp_id)
+					current_wire_positions.delete(wire_from)
+				}
+				if wire_to in current_wire_positions {
+					// if there are more than two wires at this location -> add a connection marker
+					utils.add_wire_branching_point(mut app, current_wire_positions, wire_to)
+
+					wires_to_visit_queue << resolve_any_busses(app, current_wire_positions[wire_to],
+						wire_comp_id)
+					current_wire_positions.delete(wire_to)
+				}
+
+				// are there any contact points at this position?
+				if wire_from in current_contact_point_positions {
+					wire_mesh_contact_point_ids << current_contact_point_positions[wire_from]
+					current_contact_point_positions.delete(wire_from)
+				}
+				if wire_to in current_contact_point_positions {
+					wire_mesh_contact_point_ids << current_contact_point_positions[wire_to]
+					current_contact_point_positions.delete(wire_to)
+				}
 			}
 		}
 
@@ -106,6 +122,76 @@ pub fn recalculate_wire_meshes(mut app data.App) {
 			}
 		}
 	}
+}
+
+fn resolve_any_busses(app data.App, wire_ids []i64, entry_wire i64) []i64 {
+	// first: filter out all non busses, we will pass these right through
+	mut wires := wire_ids.filter(app.sim.components[it] is components.Wire)
+
+	// then: filter out all busses
+	busses := wire_ids.filter(app.sim.components[it] is components.Bus)
+
+	// resolve all wires of the same color that are connected to this bus
+	color := app.sim.components[entry_wire].get_color()
+	for bus_id in busses {
+		wires << get_bus_endpoints_for_color(app, bus_id, color)
+	}
+
+	return wires
+}
+
+fn get_bus_endpoints_for_color(app data.App, initial_bus_id i64, wire_color rl.Color) []i64 {
+	mut busses_to_visit := [initial_bus_id]
+	mut visited_busses := []i64{}
+	mut wires_found := []i64{}
+
+	for busses_to_visit.len > 0 {
+		// dequeue this bus
+		bus_id := busses_to_visit[0]
+		busses_to_visit.delete(0)
+
+		// skip any busses we've looked at before
+		if bus_id in visited_busses {
+			continue
+		}
+		visited_busses << bus_id
+
+		// is this bus segment connected to any other bus segments?
+		bus := app.sim.components[bus_id]
+
+		if bus is components.Bus {
+			mut wires_to_look_through := []i64{}
+			if utils.vec_to_str(bus.get_wire_from()) in app.sim.wire_positions {
+				wires_to_look_through << app.sim.wire_positions[utils.vec_to_str(bus.get_wire_from())]
+			}
+			if utils.vec_to_str(bus.get_wire_to()) in app.sim.wire_positions {
+				wires_to_look_through << app.sim.wire_positions[utils.vec_to_str(bus.get_wire_to())]
+			}
+
+			for wire in wires_to_look_through {
+				if wire == bus_id {
+					continue
+				}
+
+				comp := app.sim.components[wire]
+
+				// is this an actual real real life legit wire?
+				if comp is components.Wire {
+					// if so: does it match the color we're looking for?
+					if comp.get_color() == wire_color {
+						wires_found << wire
+					}
+				}
+
+				// if this isnt actually a wire but a lame old bus -> add it to the list to visit later
+				if comp is components.Bus {
+					busses_to_visit << wire
+				}
+			}
+		}
+	}
+
+	return wires_found
 }
 
 pub fn update_wire_meshes(mut app data.App) {
@@ -167,7 +253,7 @@ pub fn update_wire_meshes(mut app data.App) {
 
 		// distribute the new wire mesh state to all wires inside this mesh for drawing
 		for wire_id in mesh.wires {
-			mut comp := app.sim.wire_table[wire_id].component
+			mut comp := app.sim.components[wire_id]
 			if mut comp is components.Wire {
 				comp.set_state(wire_mesh_state)
 			}

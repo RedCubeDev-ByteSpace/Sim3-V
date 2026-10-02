@@ -12,6 +12,7 @@ pub enum BenchState {
 pub enum SelectedComponentType {
 	none
 	wire
+	bus
 	switch
 	fixed_contact
 	led

@@ -92,7 +92,7 @@ fn handle_component_interaction(mut app data.App) bool {
 		&& rl.is_mouse_button_pressed(int(rl.MouseButton.mouse_button_left)) {
 		// ... check if we've clicked on a component
 		mouse_pos_in_world_space := data.screenspace_to_worldspace(app, app.input.mouse_pos)
-		for mut comp in app.sim.components {
+		for mut comp in app.sim.components.values() {
 			if !comp.has_interaction() {
 				continue
 			}
@@ -110,7 +110,7 @@ fn handle_component_interaction(mut app data.App) bool {
 		&& rl.is_mouse_button_pressed(int(rl.MouseButton.mouse_button_right)) {
 		// ... check if we've clicked on a component
 		mouse_pos_in_world_space := data.screenspace_to_worldspace(app, app.input.mouse_pos)
-		for mut comp in app.sim.components {
+		for mut comp in app.sim.components.values() {
 			// if yes AND component is not currectly selected -> open component window
 			if comp.hit_test(mouse_pos_in_world_space) && comp !in app.bench.selected_components {
 				comp.open_component_window()
@@ -285,33 +285,32 @@ fn handle_wire_move(mut app data.App) bool {
 	// when the bench isnt busy right now
 	// -> check if we're hovering a wire movement handle
 	if app.bench.bench_state == .idle {
-		wire_table := app.sim.wire_table.values()
 		app.bench.wire_moving.draw_hover_box = false
 
 		// are we currently hovering a movement box of a wire?
-		for wire_table_entry in wire_table {
-			wire := wire_table_entry.component
-
+		for wire in app.sim.components.values() {
 			// dont target any wires that are already selected, moving the entire wire takes precedence over moving only
 			// one of its points
 			if wire in app.bench.selected_components {
 				continue
 			}
 
-			if wire is components.Wire {
+			if wire is data.IWireBase {
+				base := wire.get_base()
+
 				// if the mouse cursor is inside the "from" movement handle
-				if data.is_point_inside_aabb(wire.get_from_aabb(), mouse_pos_in_world_space) {
+				if data.is_point_inside_aabb(base.get_from_aabb(), mouse_pos_in_world_space) {
 					// -> draw a box around it
-					app.bench.wire_moving.wire = wire
+					app.bench.wire_moving.wire_id = base.get_comp_id()
 					app.bench.wire_moving.wire_end = .from
 					app.bench.wire_moving.draw_hover_box = true
 					break
 				}
 
 				// if the mouse cursor is inside the "to" movement handle
-				if data.is_point_inside_aabb(wire.get_to_aabb(), mouse_pos_in_world_space) {
+				if data.is_point_inside_aabb(base.get_to_aabb(), mouse_pos_in_world_space) {
 					// -> draw a box around it
-					app.bench.wire_moving.wire = wire
+					app.bench.wire_moving.wire_id = base.get_comp_id()
 					app.bench.wire_moving.wire_end = .to
 					app.bench.wire_moving.draw_hover_box = true
 					break
@@ -337,7 +336,7 @@ fn handle_wire_move(mut app data.App) bool {
 		new_offset_f := mouse_pos_in_world_space.sub(app.input.wire_move_start_pos)
 		new_offset := utils.roundificate_to_whole_point(new_offset_f)
 
-		mut comp := app.bench.wire_moving.wire
+		mut comp := app.sim.components[app.bench.wire_moving.wire_id]
 		match app.bench.wire_moving.wire_end {
 			.from {
 				comp.set_offset_from(new_offset)
@@ -351,7 +350,7 @@ fn handle_wire_move(mut app data.App) bool {
 	// if we're currently moving and theres a mouse up -> end and commit movement
 	if app.bench.bench_state == .moving_wire
 		&& rl.is_mouse_button_released(int(rl.MouseButton.mouse_button_left)) {
-		mut comp := app.bench.wire_moving.wire
+		mut comp := app.sim.components[app.bench.wire_moving.wire_id]
 
 		// prepare the component for its move
 		comp.on_move(mut app)
@@ -411,7 +410,7 @@ fn handle_rectangle_select(mut app data.App) bool {
 			height: end_pos_world_space.y - start_pos_world_space.y
 		}
 
-		for comp in app.sim.components {
+		for comp in app.sim.components.values() {
 			if data.is_aabb_inside_aabb(selection_aabb, comp.get_aabb()) {
 				app.bench.selected_components << comp
 			}
@@ -471,6 +470,16 @@ fn handle_component_placement(mut app data.App) bool {
 					app.bench.placement.placed_wire_starting_point = true
 				} else {
 					components.Wire.new(mut app, app.input.wire_place_start_pos, placement_pos,
+						color)
+					app.bench.placement.placed_wire_starting_point = false
+				}
+			}
+			.bus {
+				if !app.bench.placement.placed_wire_starting_point {
+					app.input.wire_place_start_pos = placement_pos
+					app.bench.placement.placed_wire_starting_point = true
+				} else {
+					components.Bus.new(mut app, app.input.wire_place_start_pos, placement_pos,
 						color)
 					app.bench.placement.placed_wire_starting_point = false
 				}

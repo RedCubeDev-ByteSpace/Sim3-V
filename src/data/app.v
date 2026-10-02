@@ -62,10 +62,9 @@ pub mut:
 	sim struct {
 	pub mut:
 		global_id_counter            i64
-		wire_mesh_recalc_needed      bool         = false
-		components                   []IComponent = []
-		wire_table                   map[i64]WireTableEntry // comp_id -> wire
-		wire_positions               map[string][]i64       // vec2 -> comp_id
+		wire_mesh_recalc_needed      bool
+		components                   map[i64]IComponent
+		wire_positions               map[string][]i64 // vec2 -> comp_id
 		wire_meshes                  []WireMesh = []
 		global_contact_point_counter i64
 		contact_point_table          map[i64]&ContactPoint
@@ -84,7 +83,7 @@ pub mut:
 
 		wire_moving struct {
 		pub mut:
-			wire           &IComponent = unsafe { nil }
+			wire_id        i64
 			wire_end       WireEnd
 			draw_hover_box bool
 		}

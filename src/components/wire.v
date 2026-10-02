@@ -26,15 +26,7 @@ pub fn Wire.new(mut app data.App, wire_from vec.Vec2[int], wire_to vec.Vec2[int]
 	w.comp_name = 'Wire ${w.comp_id}'
 
 	// add this wire to the global component list
-	app.sim.components << w
-
-	// add this wire to the wire lookup table
-	app.sim.wire_table[w.comp_id] = data.WireTableEntry{
-		comp_id:       w.comp_id
-		component:     &w
-		wire_from_pos: utils.vec_to_str(w.wire_from)
-		wire_to_pos:   utils.vec_to_str(w.wire_to)
-	}
+	utils.add_component(mut app, w)
 
 	// register this wire on the map
 	utils.register_wire(mut app, w.wire_from, w.comp_id)
@@ -59,19 +51,12 @@ pub fn (mut w Wire) on_move(mut app data.App) {
 pub fn (mut w Wire) on_moved(mut app data.App) {
 	utils.register_wire(mut app, w.wire_from, w.comp_id)
 	utils.register_wire(mut app, w.wire_to, w.comp_id)
-	app.sim.wire_table[w.comp_id] = data.WireTableEntry{
-		comp_id:       w.comp_id
-		component:     w
-		wire_from_pos: utils.vec_to_str(w.wire_from)
-		wire_to_pos:   utils.vec_to_str(w.wire_to)
-	}
 	app.sim.wire_mesh_recalc_needed = true
 }
 
 pub fn (mut w Wire) on_delete(mut app data.App) {
 	utils.unregister_wire(mut app, w.wire_from, w.comp_id)
 	utils.unregister_wire(mut app, w.wire_to, w.comp_id)
-	app.sim.wire_table.delete(w.comp_id)
 	app.sim.wire_mesh_recalc_needed = true
 }
 

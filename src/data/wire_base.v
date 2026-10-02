@@ -3,6 +3,10 @@ module data
 import math.vec
 import raylib as rl
 
+pub interface IWireBase {
+	get_base() WireBase
+}
+
 @[heap]
 pub struct WireBase {
 mut:
@@ -28,6 +32,10 @@ pub fn WireBase.new(mut app App, wire_from vec.Vec2[int], wire_to vec.Vec2[int],
 
 pub fn (c WireBase) get_comp_id() i64 {
 	return c.comp_id
+}
+
+pub fn (c WireBase) get_base() WireBase {
+	return c
 }
 
 pub fn (w WireBase) get_wire_from() vec.Vec2[int] {

@@ -15,7 +15,7 @@ pub fn draw_ui(mut app data.App) {
 	draw_components_window(mut app)
 	draw_chip_select_window(mut app)
 
-	for mut comp in app.sim.components {
+	for mut comp in app.sim.components.values() {
 		comp.draw_component_window(mut app)
 	}
 
@@ -110,8 +110,8 @@ fn draw_color_window(mut app data.App) {
 }
 
 fn draw_components_window(mut app data.App) {
-	if app.mu.begin_window_ex('Components', rl.Rectangle{10, 80, 180, 65}, .noclose | .noresize | .noscroll) {
-		app.mu.layout_row([30, 30, 30, 30, 30], 30)
+	if app.mu.begin_window_ex('Components', rl.Rectangle{10, 80, 215, 65}, .noclose | .noresize | .noscroll) {
+		app.mu.layout_row([30, 30, 30, 30, 30, 30], 30)
 
 		style := app.mu.get_style()
 		border_color := style.colors[microui.Color.border]
@@ -131,6 +131,19 @@ fn draw_components_window(mut app data.App) {
 			margin := 5
 			rl.draw_line_ex(rl.Vector2{rect.x + margin, rect.y + margin}, rl.Vector2{rect.x +
 				rect.width - margin, rect.y + rect.width - margin}, 2, fg_color)
+		})
+
+		// -------------------------------------------------------------------------------------------------------------
+		// Bus button
+		draw_component_button(mut app, .bus, fg_color, bg_color, focus_color, hover_color,
+			border_color, fn (rect rl.Rectangle, mut app data.App, fg_color rl.Color, bg_color rl.Color, border_color rl.Color) {
+			rl.draw_rectangle(int(rect.x), int(rect.y), int(rect.width), int(rect.height),
+				bg_color)
+			rl.draw_rectangle_lines_ex(rect, 1, border_color)
+
+			margin := 5
+			rl.draw_line_ex(rl.Vector2{rect.x + margin, rect.y + margin}, rl.Vector2{rect.x +
+				rect.width - margin, rect.y + rect.width - margin}, 4, fg_color)
 		})
 
 		// -------------------------------------------------------------------------------------------------------------

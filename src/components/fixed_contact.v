@@ -36,7 +36,7 @@ pub fn FixedContact.new(mut app data.App, pos vec.Vec2[int], rot data.Rotation, 
 	utils.register_contact_point(mut app, c.pos, c.contact_point.cont_id)
 
 	// add this wire to the global component list
-	app.sim.components << c
+	utils.add_component(mut app, c)
 	app.sim.wire_mesh_recalc_needed = true
 
 	// done :)
