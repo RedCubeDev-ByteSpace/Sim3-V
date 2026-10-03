@@ -10,13 +10,14 @@ pub:
 pub mut:
 	group          string
 	origin_catalog string @[skip]
+	clock_pin      int    @[skip]
 }
 
 pub struct PinEntry {
 pub:
 	label         string @[required]
-	is_power      bool
 	is_active_low bool
+	is_power      bool
 	is_clock      bool
 }
 

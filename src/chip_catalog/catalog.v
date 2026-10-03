@@ -39,17 +39,47 @@ pub fn load_catalogs(path string) !(map[string]ChipEntry, map[string][]string) {
 	// also create a list of chip groups
 	mut groups := map[string][]string{}
 
-	for chip_entry in catalog {
+	for mut chip_entry in catalog {
 		// make sure theres no duplicates
 		if chip_entry.unique_id in chips {
 			println("Encountered duplicate unique_id in chip catalog! ('${chips[chip_entry.unique_id].origin_catalog}' and '${chip_entry.origin_catalog}')")
 			continue
 		}
 
+		// also make sure the pin setup is actually valid
+		mut num_clock_pins := 0
+		mut last_clock_pin := 0
+		for i, pin in chip_entry.pins {
+			// a pin cannot be both power and clock
+			if pin.is_power && pin.is_clock {
+				println("Invalid pin configuration! A pin cannot be power and clock at the same time ('${chip_entry.unique_id}')")
+				continue
+			}
+
+			// count how many clock pins there are
+			if pin.is_clock {
+				num_clock_pins++
+				last_clock_pin = i
+			}
+		}
+
+		// is the number of clock pins valid for the type of chip?
+		if chip_entry.script.has_state && num_clock_pins != 1 {
+			println("Invalid pin configuration! Stateful chips require exactly one clock pin (got: ${num_clock_pins}) ('${chip_entry.unique_id}')")
+			continue
+		}
+		if !chip_entry.script.has_state && num_clock_pins != 0 {
+			println("Invalid pin configuration! Stateless chips are not allowed to have any clock pins (got: ${num_clock_pins}) ('${chip_entry.unique_id}')")
+			continue
+		}
+
+		// remember where the clock pin is
+		chip_entry.clock_pin = last_clock_pin
+
 		// add this chip to the lookup table of all chips
 		chips[chip_entry.unique_id] = chip_entry
 
-		// have we met this chips category yet?
+		// have we met this chips group yet?
 		if chip_entry.group !in groups {
 			groups[chip_entry.group] = []
 		}

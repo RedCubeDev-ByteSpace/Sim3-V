@@ -2,7 +2,7 @@ module data
 
 import raylib as rl
 
-pub const background_color = rl.Color{230, 230, 230, 255}
+pub const background_color = rl.raywhite
 pub const grid_color = rl.Color{0, 0, 0, 255}
 pub const component_color = rl.Color{0, 0, 0, 255}
 pub const aabb_color = rl.Color{255, 0, 0, 255}

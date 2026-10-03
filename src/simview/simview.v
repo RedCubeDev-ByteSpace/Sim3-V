@@ -28,7 +28,8 @@ fn draw_wires(app data.App) {
 	view_aabb := data.get_viewport_aabb(app)
 
 	for comp in app.sim.components.values() {
-		if comp !is data.IWireBase {
+		if comp is data.IWireBase {
+		} else {
 			continue
 		}
 
@@ -255,7 +256,7 @@ fn draw_preview_of_component_being_placed(app data.App) {
 		}
 		.chip {
 			components.Chip.draw(app, pos, zoomed_unit, color, app.bench.placement.rotation,
-				app.bench.placement.current_selected_chip_uid)
+				app.bench.placement.current_selected_chip_uid, []data.ContactPoint{})
 		}
 		.wire, .bus {
 			if !app.bench.placement.placed_wire_starting_point {

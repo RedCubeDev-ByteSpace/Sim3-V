@@ -164,7 +164,7 @@
     "description": "4-Bit Counter",
     "pins": [
       { "label": "CLR", "is_active_low": true },
-      { "label": "CLK" },
+      { "label": "CLK", "is_clock": true },
       { "label": "A"   },
       { "label": "B"   },
       { "label": "C"   },
@@ -193,7 +193,7 @@
     "description": "4-Bit Decade Counter",
     "pins": [
       { "label": "CLR", "is_active_low": true },
-      { "label": "CLK" },
+      { "label": "CLK", "is_clock": true },
       { "label": "A"   },
       { "label": "B"   },
       { "label": "C"   },
@@ -222,7 +222,7 @@
     "description": "8-Bit SIPO Shift Register",
     "pins": [
       { "label": "CLR", "is_active_low": true },
-      { "label": "CLK" },
+      { "label": "CLK", "is_clock": true },
       { "label": "A"   },
       { "label": "B"   },
       { "label": "C"   },

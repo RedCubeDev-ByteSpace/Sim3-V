@@ -53,7 +53,7 @@ fn draw_grid(app data.App) {
 
 			// if we're zoomed in and grid movement trails are enabled
 			// -> draw them!
-			if zoom > 1 && app.view.grid.draw_grid_movement_trails {
+			if zoom > 1 && zoom_percentage > 0 && app.view.grid.draw_grid_movement_trails {
 				pixel_pos_in_world_space := data.screenspace_to_worldspace(app, vec.vec2(x,
 					y))
 				pixel_pos_in_prev_screen_space := data.worldspace_to_previous_screenspace(app,

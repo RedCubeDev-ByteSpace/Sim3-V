@@ -94,6 +94,44 @@ pub fn do_step(state voidptr, mut pins []data.ContactPoint) {
 	read_pin_table(state, mut pins)
 }
 
+pub fn do_step_rising(state voidptr, mut pins []data.ContactPoint) {
+	// load a reference to the step rising function
+	C.lua_getglobal(state, c'StepRising')
+
+	// convert the states of all pins into a lua table
+	build_pin_table(state, pins, true)
+
+	// call the function
+	if C.lua_pcall(state, 0, 0, 0) != 0 {
+		str := unsafe { cstring_to_vstring(C.lua_tostring(state, -1)) }
+		println('StepRising crashed!! \n' + str)
+		C.lua_pop(state, 1)
+		return
+	}
+
+	// read the pin table back in
+	read_pin_table(state, mut pins)
+}
+
+pub fn do_step_falling(state voidptr, mut pins []data.ContactPoint) {
+	// load a reference to the step rising function
+	C.lua_getglobal(state, c'StepFalling')
+
+	// convert the states of all pins into a lua table
+	build_pin_table(state, pins, true)
+
+	// call the function
+	if C.lua_pcall(state, 0, 0, 0) != 0 {
+		str := unsafe { cstring_to_vstring(C.lua_tostring(state, -1)) }
+		println('StepFalling crashed!! \n' + str)
+		C.lua_pop(state, 1)
+		return
+	}
+
+	// read the pin table back in
+	read_pin_table(state, mut pins)
+}
+
 fn build_pin_table(state voidptr, pins []data.ContactPoint, include_input_state bool) {
 	// create a lua table that contains the current state of all pins
 	C.lua_newtable(state)

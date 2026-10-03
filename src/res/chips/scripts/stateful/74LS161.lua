@@ -5,26 +5,26 @@
 function PinSetup()
 
     -- power pins are just gonna be inputs
-    pins.VCC.pin = PIN_INPUT;
-    pins.GND.pin = PIN_INPUT;
+    pins.VCC.output = PIN_INPUT;
+    pins.GND.output = PIN_INPUT;
 
     -- all them inputs
-    pins.CLR .pin = PIN_INPUT;
-    pins.CLK .pin = PIN_INPUT;
-    pins.A   .pin = PIN_INPUT;
-    pins.B   .pin = PIN_INPUT;
-    pins.C   .pin = PIN_INPUT;
-    pins.D   .pin = PIN_INPUT;
-    pins.ENP .pin = PIN_INPUT;
-    pins.LOAD.pin = PIN_INPUT;
-    pins.ENT .pin = PIN_INPUT;
+    pins.CLR .output = PIN_INPUT;
+    pins.CLK .output = PIN_INPUT;
+    pins.A   .output = PIN_INPUT;
+    pins.B   .output = PIN_INPUT;
+    pins.C   .output = PIN_INPUT;
+    pins.D   .output = PIN_INPUT;
+    pins.ENP .output = PIN_INPUT;
+    pins.LOAD.output = PIN_INPUT;
+    pins.ENT .output = PIN_INPUT;
 
     -- all them outputs
-    pins.QA  .pin = PIN_OUTPUT;
-    pins.QB  .pin = PIN_OUTPUT;
-    pins.QC  .pin = PIN_OUTPUT;
-    pins.QD  .pin = PIN_OUTPUT;
-    pins.RCO .pin = PIN_OUTPUT;
+    pins.QA  .output = PIN_OUTPUT;
+    pins.QB  .output = PIN_OUTPUT;
+    pins.QC  .output = PIN_OUTPUT;
+    pins.QD  .output = PIN_OUTPUT;
+    pins.RCO .output = PIN_OUTPUT;
 
 end
 
@@ -36,12 +36,12 @@ rippleCarry = false
 function Step()
 
     -- if CLR low -> instantly clear the state and output
-    if pins.CLR.wire == PIN_LOW then
+    if pins.CLR.input == PIN_LOW then
         num = 0;
         rippleCarry = false;
     else
         -- if the output is 1111 and the pin ENT is high -> turn on ripple carry
-        rippleCarry = num == 15 and pins.ENT.wire == 1;
+        rippleCarry = num == 15 and pins.ENT.input == 1;
     end
 
     updatePins();
@@ -53,7 +53,7 @@ function StepRising()
 
     -- if CLR low -> instantly clear the state and output
     -- this has the highest priority! nothing else comes after
-    if pins.CLR.wire == PIN_LOW then
+    if pins.CLR.input == PIN_LOW then
 
         -- just clear the state, then end this step
         num = 0;
@@ -65,12 +65,12 @@ function StepRising()
 
     -- if LOAD is low
     -- -> load the value from the inputs
-    if pins.LOAD.wire == PIN_LOW then
+    if pins.LOAD.input == PIN_LOW then
         num = BinToNum({
-            pins.D.wire,
-            pins.C.wire,
-            pins.B.wire,
-            pins.A.wire,
+            pins.D.input,
+            pins.C.input,
+            pins.B.input,
+            pins.A.input,
         });
 
         updatePins();
@@ -79,7 +79,7 @@ function StepRising()
 
     -- if ENP and ENT are high
     -- -> counting is enabled, count!
-    if pins.ENP.wire == PIN_HIGH and pins.ENT.wire == PIN_HIGH then
+    if pins.ENP.input == PIN_HIGH and pins.ENT.input == PIN_HIGH then
         num = num + 1;
 
         -- have we overflown our 4 bits?
@@ -96,11 +96,11 @@ end
 function updatePins()
 
     state = NumToBin(num, 4);
-    pins.QA .pin = state[4];
-    pins.QB .pin = state[3];
-    pins.QC .pin = state[2];
-    pins.QD .pin = state[1];
-    pins.RCO.pin = rippleCarry;
+    pins.QA .output = state[4];
+    pins.QB .output = state[3];
+    pins.QC .output = state[2];
+    pins.QD .output = state[1];
+    pins.RCO.output = rippleCarry;
 end
 
 -- ---------------------------------------------------------------------------------------------------------------------

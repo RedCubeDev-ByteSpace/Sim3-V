@@ -19,6 +19,6 @@ fn step_components(mut app data.App) {
 			continue
 		}
 
-		comp.step()
+		comp.step(app)
 	}
 }

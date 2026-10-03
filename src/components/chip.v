@@ -6,6 +6,8 @@ import data
 import utils
 import abuss.vlua.vlua
 import lua
+import chip_catalog
+import math
 
 @[heap]
 struct Chip {
@@ -16,6 +18,8 @@ mut:
 
 	lua_state_initialized bool
 	lua_state             voidptr
+
+	previous_clock_state bool
 
 	script_capabilities struct {
 	pub mut:
@@ -154,10 +158,10 @@ pub fn (mut c Chip) on_delete(mut app data.App) {
 
 fn (c &Chip) draw(app data.App) {
 	contact_point, zoomed_unit := utils.get_drawing_variables(app, c.ComponentBase)
-	Chip.draw(app, contact_point, zoomed_unit, c.color, c.rotation, c.chip_uid)
+	Chip.draw(app, contact_point, zoomed_unit, c.color, c.rotation, c.chip_uid, c.contact_points)
 }
 
-pub fn Chip.draw(app data.App, contact_point vec.Vec2[f32], zoomed_unit f32, color rl.Color, rot data.Rotation, chip_uid string) {
+pub fn Chip.draw(app data.App, contact_point vec.Vec2[f32], zoomed_unit f32, color rl.Color, rot data.Rotation, chip_uid string, contact_points []data.ContactPoint) {
 	low_color := data.get_low_color_from_high_color(color)
 	chip := app.catalog.chips[chip_uid]
 	height := chip.pins.len / 2
@@ -168,20 +172,78 @@ pub fn Chip.draw(app data.App, contact_point vec.Vec2[f32], zoomed_unit f32, col
 
 	// draw the contacts
 	for i in 0 .. chip.pins.len / 2 {
-		utils.draw_circle_lines(contact_point.x, contact_point.y, zoomed_unit, 0, -i,
-			0.25, rot, low_color)
 		utils.draw_contact_line(contact_point.x, contact_point.y, zoomed_unit, 0, -i,
 			1, -i, rot, low_color)
 
-		utils.draw_circle_lines(contact_point.x, contact_point.y, zoomed_unit, 4, -i,
-			0.25, rot, low_color)
+		idx_left := chip.pins.len / 2 - i - 1
+		contact_point_left := if contact_points.len > 0 {
+			contact_points[idx_left]
+		} else {
+			data.ContactPoint{}
+		}
+		utils.draw_chip_pin(contact_point.x, contact_point.y, zoomed_unit, 0, -i, contact_point_left,
+			chip.pins[idx_left], true, rot, low_color)
+
 		utils.draw_contact_line(contact_point.x, contact_point.y, zoomed_unit, 3, -i,
 			4, -i, rot, low_color)
+
+		idx_right := chip.pins.len / 2 + i
+		contact_point_right := if contact_points.len > 0 {
+			contact_points[idx_right]
+		} else {
+			data.ContactPoint{}
+		}
+		utils.draw_chip_pin(contact_point.x, contact_point.y, zoomed_unit, 4, -i, contact_point_right,
+			chip.pins[idx_right], false, rot, low_color)
 	}
 
-	// draw the label
+	// draw the chip label
 	utils.draw_centered_text_rotated(app, contact_point.x, contact_point.y, zoomed_unit,
-		2, -(height / 2), chip.name, 1, rot, low_color)
+		2, -(f32(height - 1) / 2.0), chip.name, 1, rot, low_color)
+
+	// are we close enough to draw pin labels?
+	zoom_percent := if app.view.zoom >= 1 {
+		math.log(app.view.zoom) / math.log(12)
+	} else {
+		0
+	}
+
+	if zoom_percent < 0.5 {
+		return
+	}
+
+	// calculate the opacity
+	opacity := if zoom_percent > 0.7 {
+		1
+	} else {
+		1.0 - (0.7 - zoom_percent) / 0.2
+	}
+	label_color := rl.Color{
+		...low_color
+		a: u8(opacity * 255)
+	}
+
+	// draw pin labels!
+	for i in 0 .. chip.pins.len / 2 {
+		rect_left := utils.draw_centered_text_rotated(app, contact_point.x, contact_point.y,
+			zoomed_unit, 1.25, -i, chip.pins[chip.pins.len / 2 - i - 1].label, 0.25, rot,
+			label_color)
+
+		if chip.pins[chip.pins.len / 2 - i - 1].is_active_low {
+			utils.draw_contact_line(contact_point.x, contact_point.y, zoomed_unit, rect_left.x +
+				rect_left.height / 2, rect_left.y - rect_left.width / 2.0, rect_left.x +
+				rect_left.height / 2, rect_left.y + rect_left.width / 2.0, rot, label_color)
+		}
+
+		rect_right := utils.draw_centered_text_rotated(app, contact_point.x, contact_point.y,
+			zoomed_unit, 2.75, -i, chip.pins[chip.pins.len / 2 + i].label, 0.25, rot,
+			label_color)
+		if chip.pins[chip.pins.len / 2 + i].is_active_low {
+			utils.draw_contact_line(contact_point.x, contact_point.y, zoomed_unit, rect_right.x +
+				rect_right.height / 2, rect_right.y - rect_right.width / 2.0, rect_right.x +
+				rect_right.height / 2, rect_right.y + rect_right.width / 2.0, rot, label_color)
+		}
+	}
 }
 
 fn (mut c Chip) draw_component_window(mut app data.App) {
@@ -202,10 +264,54 @@ fn (mut c Chip) draw_component_window(mut app data.App) {
 	}
 }
 
-pub fn (mut c Chip) step() {
+pub fn (mut c Chip) step(app data.App) {
 	if !c.lua_state_initialized || !c.script_capabilities.has_step {
 		return
 	}
 
+	// do a stateless step
 	lua.do_step(c.lua_state, mut c.contact_points)
+
+	// if this is a stateless chip -> we're done!
+	chip_entry := app.catalog.chips[c.chip_uid]
+	if !chip_entry.script.has_state {
+		return
+	}
+
+	// otherwise: whats the value of the clock pin?
+	current_clock_state := c.get_clock_state(chip_entry)
+
+	// has there been a change?
+	if current_clock_state == c.previous_clock_state {
+		return
+	}
+
+	// are we on a falling or rising edge?
+
+	// rising
+	if current_clock_state {
+		if c.script_capabilities.has_step_rising {
+			lua.do_step_rising(c.lua_state, mut c.contact_points)
+		}
+
+		// falling
+	} else {
+		if c.script_capabilities.has_step_falling {
+			lua.do_step_falling(c.lua_state, mut c.contact_points)
+		}
+	}
+
+	// remember this clock state
+	c.previous_clock_state = current_clock_state
+}
+
+pub fn (mut c Chip) get_clock_state(chip_entry chip_catalog.ChipEntry) bool {
+	mut state := c.contact_points[chip_entry.clock_pin].input_state == .high
+
+	// if this is an active low pin -> invert
+	if chip_entry.pins[chip_entry.clock_pin].is_active_low {
+		state = !state
+	}
+
+	return state
 }
