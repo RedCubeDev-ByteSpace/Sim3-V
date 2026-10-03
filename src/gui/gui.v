@@ -118,8 +118,8 @@ fn draw_color_window(mut app data.App) {
 }
 
 fn draw_components_window(mut app data.App) {
-	if app.mu.begin_window_ex('Components', rl.Rectangle{10, 80, 215, 65}, .noclose | .noresize | .noscroll) {
-		app.mu.layout_row([30, 30, 30, 30, 30, 30], 30)
+	if app.mu.begin_window_ex('Components', rl.Rectangle{10, 80, 250, 65}, .noclose | .noresize | .noscroll) {
+		app.mu.layout_row([30, 30, 30, 30, 30, 30, 30], 30)
 
 		style := app.mu.get_style()
 		border_color := style.colors[microui.Color.border]
@@ -197,6 +197,26 @@ fn draw_components_window(mut app data.App) {
 				x: rect.x + rect.width / 2 - text_size.x / 2
 				y: rect.y + rect.height / 2 - text_size.y / 2 + 1
 			}, font_size, 1, fg_color)
+		})
+
+		// -------------------------------------------------------------------------------------------------------------
+		// Clock component button
+		draw_component_button(mut app, .clock, fg_color, bg_color, focus_color, hover_color,
+			border_color, fn (rect rl.Rectangle, mut app data.App, fg_color rl.Color, bg_color rl.Color, border_color rl.Color) {
+			rl.draw_rectangle(int(rect.x), int(rect.y), int(rect.width), int(rect.height),
+				bg_color)
+			rl.draw_rectangle_lines_ex(rect, 1, border_color)
+
+			margin := 5
+			rl.draw_rectangle_lines_ex(rl.Rectangle{
+				x:      rect.x + margin
+				y:      rect.y + margin
+				width:  rect.width - margin * 2
+				height: rect.height - margin * 2
+			}, 2, fg_color)
+
+			rl.draw_rectangle(int(rect.x + rect.width / 2 - margin + 5), int(rect.y +
+				rect.height / 2 - 1), int(rect.width / 2 - margin - 3), int(2), fg_color)
 		})
 
 		// -------------------------------------------------------------------------------------------------------------
@@ -282,6 +302,10 @@ fn draw_chip_select_window(mut app data.App) {
 					app.mu.layout_next()
 					if draw_chip_button(mut app, chip_uid) {
 						app.bench.placement.current_selected_chip_uid = chip_uid
+
+						if app.bench.placement.current_selected_component_type != .chip {
+							utils.toggle_component_placement(mut app, .chip)
+						}
 					}
 				}
 			}

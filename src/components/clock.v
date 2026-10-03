@@ -1,0 +1,124 @@
+module components
+
+import raylib as rl
+import math.vec
+import data
+import utils
+import microui
+import math
+
+@[heap]
+struct Clock {
+	data.ComponentBase
+mut:
+	// properties for this clock component
+	state         bool
+	ticks_max     f32
+	ticks         int
+	contact_point data.ContactPoint
+}
+
+pub fn Clock.new(mut app data.App, pos vec.Vec2[int], rot data.Rotation, color rl.Color, ticks_max int) Clock {
+	// initialize a new component with all its unique data
+	mut c := Clock{
+		state:     false
+		ticks_max: f32(ticks_max)
+	}
+
+	// initialize the component base with all the standardized data
+	c.ComponentBase = data.ComponentBase.new(mut app, pos, vec.vec2[int](2, 2), rot, color,
+		false)
+	c.has_step = true
+
+	// create a dummy name for this component
+	c.comp_name = 'Clock ${c.comp_id}'
+
+	// calculate where this components bounding box is based on its rotation
+	c.aabb_offset = utils.get_aabb_offset_for_rotation(-1, -3, 2, 2, rot)
+
+	// create a new contact point where wires can connect to
+	c.contact_point = data.ContactPoint.new(mut app, .low)
+	app.sim.contact_point_table[c.contact_point.cont_id] = &c.contact_point
+	utils.register_contact_point(mut app, c.pos, c.contact_point.cont_id)
+
+	// add this wire to the global component list
+	utils.add_component(mut app, c)
+	app.sim.wire_mesh_recalc_needed = true
+
+	// done :)
+	return c
+}
+
+pub fn (mut c Clock) on_move(mut app data.App) {
+	utils.unregister_contact_point(mut app, c.pos, c.contact_point.cont_id)
+}
+
+pub fn (mut c Clock) on_moved(mut app data.App) {
+	utils.register_contact_point(mut app, c.pos, c.contact_point.cont_id)
+	app.sim.wire_mesh_recalc_needed = true
+}
+
+pub fn (mut c Clock) on_delete(mut app data.App) {
+	utils.unregister_contact_point(mut app, c.pos, c.contact_point.cont_id)
+	app.sim.contact_point_table.delete(c.contact_point.cont_id)
+	app.sim.wire_mesh_recalc_needed = true
+}
+
+fn (c &Clock) draw(app data.App) {
+	contact_point, zoomed_unit := utils.get_drawing_variables(app, c.ComponentBase)
+	Clock.draw(contact_point, zoomed_unit, c.color, c.ticks, c.ticks_max, c.rotation)
+}
+
+pub fn Clock.draw(contact_point vec.Vec2[f32], zoomed_unit f32, color rl.Color, ticks int, ticks_max f32, rot data.Rotation) {
+	low_color := data.get_low_color_from_high_color(color)
+
+	rl.draw_circle_lines(int(contact_point.x), int(contact_point.y), int(zoomed_unit / 4),
+		low_color)
+
+	utils.draw_contact_line(contact_point.x, contact_point.y, zoomed_unit, 0, 0, 0, -1,
+		rot, low_color)
+
+	utils.draw_component_rectangle(contact_point.x, contact_point.y, zoomed_unit, -1,
+		-3, 2, 2, rot, low_color)
+
+	angle := (ticks / ticks_max) * math.pi * 2
+	outer_x := f32(math.cos(angle)) * 0.9
+	outer_y := -2 + f32(math.sin(angle)) * 0.9
+	inner_x := f32(math.cos(angle)) * 0.3
+	inner_y := -2 + f32(math.sin(angle)) * 0.3
+	utils.draw_line(contact_point.x, contact_point.y, zoomed_unit, inner_x, inner_y, outer_x,
+		outer_y, 0.1, rot, color)
+}
+
+fn (mut c Clock) draw_component_window(mut app data.App) {
+	if !c.component_window_open {
+		return
+	}
+
+	pos_in_screen_space := data.worldspace_to_screenspace(app, c.pos)
+	if app.mu.begin_window_ex_bool_controlled('Clock (id: ${c.comp_id})', rl.Rectangle{pos_in_screen_space.x, pos_in_screen_space.y, 200, 105},
+		.noscroll | .noresize, c.component_window_open)
+	{
+		app.mu.layout_row([50, -1], 0)
+
+		app.mu.label('Name')
+		app.mu.textbox(c.comp_name)
+
+		app.mu.label('Timeout')
+		app.mu.slider_ex(c.ticks_max, 1, 500, 1, '%.0f', microui.Opt.zero())
+
+		app.mu.label('Ticks')
+		app.mu.label('${c.ticks}')
+
+		app.mu.end_window_bool_controlled(c.component_window_open)
+	}
+}
+
+pub fn (mut c Clock) step(app data.App) {
+	c.ticks++
+	if c.ticks > c.ticks_max {
+		c.ticks = 0
+		c.state = !c.state
+		c.contact_point.output_state = if c.state { .high } else { .low }
+	}
+}

@@ -251,6 +251,9 @@ fn draw_preview_of_component_being_placed(app data.App) {
 		.fixed_contact {
 			components.FixedContact.draw(app, pos, zoomed_unit, color, false, app.bench.placement.rotation)
 		}
+		.clock {
+			components.Clock.draw(pos, zoomed_unit, color, 0, 0, app.bench.placement.rotation)
+		}
 		.led {
 			components.LED.draw(pos, zoomed_unit, color, false, app.bench.placement.rotation)
 		}

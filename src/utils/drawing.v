@@ -99,6 +99,53 @@ pub fn draw_contact_line(init_x_f f32, init_y_f f32, unit f32, from_x f32, from_
 	rl.draw_line(draw_from_x, draw_from_y, draw_to_x, draw_to_y, color)
 }
 
+pub fn draw_line(init_x_f f32, init_y_f f32, unit f32, from_x f32, from_y f32, to_x f32, to_y f32, thick f32, rot data.Rotation, color rl.Color) {
+	init_x := int(init_x_f)
+	init_y := int(init_y_f)
+
+	sized_from_x := int(from_x * unit)
+	sized_from_y := int(from_y * unit)
+	sized_to_x := int(to_x * unit)
+	sized_to_y := int(to_y * unit)
+
+	sized_thick := thick * unit
+
+	mut draw_from_x := 0
+	mut draw_from_y := 0
+	mut draw_to_x := 0
+	mut draw_to_y := 0
+
+	match rot {
+		.up {
+			draw_from_x = init_x + sized_from_x
+			draw_from_y = init_y + sized_from_y
+			draw_to_x = init_x + sized_to_x
+			draw_to_y = init_y + sized_to_y
+		}
+		.down {
+			draw_from_x = init_x - sized_from_x
+			draw_from_y = init_y - sized_from_y
+			draw_to_x = init_x - sized_to_x
+			draw_to_y = init_y - sized_to_y
+		}
+		.right {
+			draw_from_x = init_x - sized_from_y
+			draw_from_y = init_y + sized_from_x
+			draw_to_x = init_x - sized_to_y
+			draw_to_y = init_y + sized_to_x
+		}
+		.left {
+			draw_from_x = init_x + sized_from_y
+			draw_from_y = init_y - sized_from_x
+			draw_to_x = init_x + sized_to_y
+			draw_to_y = init_y - sized_to_x
+		}
+	}
+
+	rl.draw_line_ex(rl.Vector2{draw_from_x, draw_from_y}, rl.Vector2{draw_to_x, draw_to_y},
+		sized_thick, color)
+}
+
 pub fn draw_circle_filled(init_x_f f32, init_y_f f32, unit f32, x f32, y f32, radius f32, rot data.Rotation, color rl.Color) {
 	init_x := int(init_x_f)
 	init_y := int(init_y_f)

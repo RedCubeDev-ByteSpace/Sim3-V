@@ -15,6 +15,7 @@ pub enum SelectedComponentType {
 	bus
 	switch
 	fixed_contact
+	clock
 	led
 	chip
 }
