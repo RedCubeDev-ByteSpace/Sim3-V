@@ -17,9 +17,11 @@ pub:
 	label         string @[required]
 	is_power      bool
 	is_active_low bool
+	is_clock      bool
 }
 
 pub struct ScriptEntry {
+pub:
 	source    string @[required]
 	has_state bool   @[required]
 }

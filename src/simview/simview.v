@@ -20,6 +20,7 @@ pub fn draw_view(app data.App) {
 	draw_selected_component_outlines(app)
 	draw_wire_movement_handles(app)
 	draw_preview_of_component_being_placed(app)
+	draw_contact_points(app)
 }
 
 fn draw_wires(app data.App) {
@@ -252,7 +253,10 @@ fn draw_preview_of_component_being_placed(app data.App) {
 		.led {
 			components.LED.draw(pos, zoomed_unit, color, false, app.bench.placement.rotation)
 		}
-		.chip {}
+		.chip {
+			components.Chip.draw(app, pos, zoomed_unit, color, app.bench.placement.rotation,
+				app.bench.placement.current_selected_chip_uid)
+		}
 		.wire, .bus {
 			if !app.bench.placement.placed_wire_starting_point {
 				rl.draw_circle_lines(comp_pos_screen_space.x, comp_pos_screen_space.y,
@@ -268,5 +272,17 @@ fn draw_preview_of_component_being_placed(app data.App) {
 				}, 2, color)
 			}
 		}
+	}
+}
+
+fn draw_contact_points(app data.App) {
+	if !app.view.debug.show_contacts {
+		return
+	}
+
+	for point_key in app.sim.contact_point_positions.keys() {
+		pos := utils.str_to_vec(point_key)
+		screen_pos := data.worldspace_to_screenspace(app, pos)
+		rl.draw_circle(screen_pos.x, screen_pos.y, 5, data.aabb_color)
 	}
 }

@@ -463,7 +463,9 @@ fn handle_component_placement(mut app data.App) bool {
 			.led {
 				components.LED.new(mut app, placement_pos, rotation, color)
 			}
-			.chip {}
+			.chip {
+				components.Chip.new(mut app, placement_pos, rotation, color, app.bench.placement.current_selected_chip_uid)
+			}
 			.wire {
 				if !app.bench.placement.placed_wire_starting_point {
 					app.input.wire_place_start_pos = placement_pos

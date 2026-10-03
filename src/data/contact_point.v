@@ -10,6 +10,7 @@ pub struct ContactPoint {
 pub:
 	cont_id i64
 pub mut:
+	label        string
 	output_state ContactPointState
 	input_state  WireState
 }

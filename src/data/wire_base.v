@@ -148,7 +148,13 @@ pub fn (w WireBase) has_interaction() bool {
 	return false
 }
 
+pub fn (w WireBase) has_step() bool {
+	return false
+}
+
 pub fn (mut w WireBase) interact() {}
+
+pub fn (mut w WireBase) step() {}
 
 pub fn (mut w WireBase) open_component_window() {
 	w.component_window_open = true

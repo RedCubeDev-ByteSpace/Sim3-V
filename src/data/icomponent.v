@@ -11,6 +11,7 @@ pub interface IComponent {
 	get_color() rl.Color
 
 	has_interaction() bool
+	has_step() bool
 
 	draw(app App)
 mut:
@@ -29,4 +30,5 @@ mut:
 	interact()
 	open_component_window()
 	draw_component_window(mut app App)
+	step()
 }

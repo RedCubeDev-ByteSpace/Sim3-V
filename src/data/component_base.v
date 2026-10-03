@@ -16,6 +16,7 @@ mut:
 	rotation              Rotation
 	color                 rl.Color
 	has_interaction       bool
+	has_step              bool
 	component_window_open bool
 }
 
@@ -79,8 +80,12 @@ pub fn (c ComponentBase) get_aabb() AABB {
 	return AABB{
 		x:      f32(c.pos.x + c.offset.x) + c.aabb_offset.x - aabb_padding
 		y:      f32(c.pos.y + c.offset.y) + c.aabb_offset.y - aabb_padding
-		width:  f32(c.size.x) + aabb_padding * 2
-		height: f32(c.size.y) + aabb_padding * 2
+		width:
+			f32(if c.rotation == .left || c.rotation == .right { c.size.x } else { c.size.y }) +
+			aabb_padding * 2
+		height:
+			f32(if c.rotation == .left || c.rotation == .right { c.size.y } else { c.size.x }) +
+			aabb_padding * 2
 	}
 }
 
@@ -96,7 +101,13 @@ pub fn (c ComponentBase) has_interaction() bool {
 	return c.has_interaction
 }
 
+pub fn (c ComponentBase) has_step() bool {
+	return c.has_step
+}
+
 pub fn (mut c ComponentBase) interact() {}
+
+pub fn (mut c ComponentBase) step() {}
 
 pub fn (mut c ComponentBase) open_component_window() {
 	c.component_window_open = true

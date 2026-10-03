@@ -21,7 +21,7 @@
       { "label": "VCC", "is_power": true }
     ],
     "script": {
-      "source": "stateless/74LS00.script",
+      "source": "stateless/74LS00.lua",
       "has_state": false
     }
   },
@@ -47,7 +47,7 @@
       { "label": "VCC", "is_power": true }
     ],
     "script": {
-      "source": "stateless/74LS02.script",
+      "source": "stateless/74LS02.lua",
       "has_state": false
     }
   },
@@ -73,7 +73,7 @@
       { "label": "VCC", "is_power": true }
     ],
     "script": {
-      "source": "stateless/74LS04.script",
+      "source": "stateless/74LS04.lua",
       "has_state": false
     }
   },
@@ -99,7 +99,7 @@
       { "label": "VCC", "is_power": true }
     ],
     "script": {
-      "source": "stateless/74LS08.script",
+      "source": "stateless/74LS08.lua",
       "has_state": false
     }
   },
@@ -125,7 +125,7 @@
       { "label": "VCC", "is_power": true }
     ],
     "script": {
-      "source": "stateless/74LS32.script",
+      "source": "stateless/74LS32.lua",
       "has_state": false
     }
   },
@@ -153,7 +153,7 @@
       { "label": "VCC", "is_power": true }
     ],
     "script": {
-      "source": "stateless/74LS48.script",
+      "source": "stateless/74LS48.lua",
       "has_state": false
     }
   },
@@ -181,7 +181,7 @@
       { "label": "VCC", "is_power": true }
     ],
     "script": {
-      "source": "stateful/74LS161.script",
+      "source": "stateful/74LS161.lua",
       "has_state": true,
       "ClockPin": 2
     }
@@ -210,7 +210,7 @@
       { "label": "VCC", "is_power": true }
     ],
     "script": {
-      "source": "stateful/74LS162.script",
+      "source": "stateful/74LS162.lua",
       "has_state": true,
       "ClockPin": 2
     }
@@ -239,7 +239,7 @@
       { "label": "VCC", "is_power": true }
     ],
     "script": {
-      "source": "stateful/74LS162.script",
+      "source": "stateful/74LS162.lua",
       "has_state": true,
       "ClockPin": 2
     }

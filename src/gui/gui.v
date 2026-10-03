@@ -46,12 +46,20 @@ fn draw_debug_window(mut app data.App) {
 		} else {
 			0
 		}:.2}')
+		app.mu.label('Rotation: ${match app.bench.placement.rotation {
+			.left { 'left' }
+			.up { 'up' }
+			.right { 'right' }
+			.down { 'down' }
+		}}')
 
 		app.mu.layout_row([-1], 2)
 		app.mu.layout_next()
 		app.mu.layout_row([1, -1], 0)
 		app.mu.layout_next()
 		app.mu.checkbox('Draw AABBs', app.view.debug.show_aabb)
+		app.mu.layout_next()
+		app.mu.checkbox('Draw Contact Points', app.view.debug.show_contacts)
 
 		app.mu.end_window()
 	}

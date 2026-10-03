@@ -5,7 +5,7 @@ import components
 import utils
 import raylib as rl
 
-pub fn recalculate_wire_meshes(mut app data.App) {
+fn recalculate_wire_meshes(mut app data.App) {
 	if !app.sim.wire_mesh_recalc_needed {
 		return
 	}
@@ -194,7 +194,7 @@ fn get_bus_endpoints_for_color(app data.App, initial_bus_id i64, wire_color rl.C
 	return wires_found
 }
 
-pub fn update_wire_meshes(mut app data.App) {
+fn update_wire_meshes(mut app data.App) {
 	// go through each wire mesh
 	for mut mesh in app.sim.wire_meshes {
 		mut wire_mesh_state := data.WireState.error

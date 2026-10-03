@@ -5,14 +5,14 @@
 function PinSetup()
 
     -- power pins!! just set them as input idek
-    pins.VCC.pin = PIN_INPUT;
-    pins.GND.pin = PIN_INPUT;
+    pins.VCC.output = PIN_INPUT;
+    pins.GND.output = PIN_INPUT;
 
     -- all 6!! for them them logical gates
     -- (each with input A and output Y)
     for i = 1, 6 do
-        pins["A" .. i].pin = PIN_INPUT;
-        pins["Y" .. i].pin = PIN_OUTPUT;
+        pins["A" .. i].output = PIN_INPUT;
+        pins["Y" .. i].output = PIN_OUTPUT;
     end
 
 end
@@ -21,7 +21,7 @@ function Step()
 
     -- go through all gate pairs and do the logic
     for i = 1, 6 do
-        pins["Y" .. i].pin = not (pins["A" .. i].wire == PIN_HIGH);
+        pins["Y" .. i].output = not (pins["A" .. i].input == PIN_HIGH);
     end
 
 end

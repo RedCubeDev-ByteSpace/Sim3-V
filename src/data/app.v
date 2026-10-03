@@ -38,7 +38,8 @@ pub mut:
 
 		debug struct {
 		pub mut:
-			show_aabb bool
+			show_aabb     bool
+			show_contacts bool
 		}
 	}
 
