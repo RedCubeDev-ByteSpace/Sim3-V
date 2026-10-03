@@ -40,6 +40,11 @@ pub fn handle_input(mut app data.App) {
 	mouse_pos := rl.get_mouse_position()
 	app.input.mouse_pos = vec.vec2[f32](mouse_pos.x, mouse_pos.y)
 
+	// are we trying to place a component?
+	if handle_component_placement(mut app) {
+		return
+	}
+
 	// are we trying to interact with a component?
 	if handle_component_interaction(mut app) {
 		return
@@ -52,11 +57,6 @@ pub fn handle_input(mut app data.App) {
 
 	// is this movement a zoom in or out?
 	if handle_simview_zoom(mut app) {
-		return
-	}
-
-	// are we trying to place a component?
-	if handle_component_placement(mut app) {
 		return
 	}
 
@@ -126,7 +126,8 @@ fn handle_simview_movement(mut app data.App) bool {
 	// when we're not already moving the view and the user pressed their right mouse button
 	// -> start a new view movement
 	if (app.bench.bench_state == .idle || app.bench.bench_state == .placing_component)
-		&& rl.is_mouse_button_pressed(int(rl.MouseButton.mouse_button_right)) {
+		&& (rl.is_mouse_button_pressed(int(rl.MouseButton.mouse_button_right))
+		|| rl.is_mouse_button_pressed(int(rl.MouseButton.mouse_button_middle))) {
 		// set the view movement flag and remember where the move started
 		app.bench.bench_state = .moving_view
 		app.input.view_moving_start_pos = app.input.mouse_pos
@@ -150,7 +151,8 @@ fn handle_simview_movement(mut app data.App) bool {
 		}
 
 		// ... and the user has stopped pressing the button -> apply the offset onto the actual camera position
-		if rl.is_mouse_button_released(int(rl.MouseButton.mouse_button_right)) {
+		if rl.is_mouse_button_released(int(rl.MouseButton.mouse_button_right))
+			|| rl.is_mouse_button_released(int(rl.MouseButton.mouse_button_middle)) {
 			app.view.camera_position = app.view.camera_position.add(app.view.camera_offset.div_scalar[f32](app.view.zoom * data.one_simspace_unit_in_px))
 			app.view.camera_offset.zero()
 
@@ -446,7 +448,10 @@ fn handle_component_placement(mut app data.App) bool {
 	}
 
 	// if the left mouse button was pressed -> place the component
-	if rl.is_mouse_button_pressed(int(rl.MouseButton.mouse_button_left)) {
+	if rl.is_mouse_button_pressed(int(rl.MouseButton.mouse_button_left))
+		|| (rl.is_mouse_button_pressed(int(rl.MouseButton.mouse_button_right))
+		&& app.bench.placement.current_selected_component_type == .wire
+		&& app.bench.placement.placed_wire_starting_point) {
 		mouse_pos_in_world_space := data.screenspace_to_worldspace(app, app.input.mouse_pos)
 		placement_pos := utils.roundificate_to_whole_point(mouse_pos_in_world_space)
 		color := data.wire_colors[app.bench.placement.current_selected_color_idx]
@@ -473,7 +478,16 @@ fn handle_component_placement(mut app data.App) bool {
 				} else {
 					components.Wire.new(mut app, app.input.wire_place_start_pos, placement_pos,
 						color)
-					app.bench.placement.placed_wire_starting_point = false
+
+					// if right mouse button -> continue on with the next wire segment
+					if rl.is_mouse_button_pressed(int(rl.MouseButton.mouse_button_right)) {
+						app.input.wire_place_start_pos = placement_pos
+						app.bench.placement.placed_wire_starting_point = true
+					}
+					// if left -> end placement
+					else {
+						app.bench.placement.placed_wire_starting_point = false
+					}
 				}
 			}
 			.bus {
@@ -487,9 +501,10 @@ fn handle_component_placement(mut app data.App) bool {
 				}
 			}
 		}
+		return true
 	}
 
-	return true
+	return false
 }
 
 fn handle_component_deletion(mut app data.App) bool {
