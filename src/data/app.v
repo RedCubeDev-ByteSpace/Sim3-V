@@ -2,6 +2,7 @@ module data
 
 import microui
 import math.vec
+import raylib as rl
 import chip_catalog
 
 pub const one_simspace_unit_in_px = 20
@@ -150,5 +151,16 @@ pub mut:
 	fonts struct {
 	pub mut:
 		fonts []microui.SizedFont
+
+		last_zoom f32
+
+		chip_label_font      rl.Font
+		chip_label_font_size f32
+
+		chip_pin_label_font      rl.Font
+		chip_pin_label_font_size f32
+
+		fixed_contact_label_font      rl.Font
+		fixed_contact_label_font_size f32
 	}
 }

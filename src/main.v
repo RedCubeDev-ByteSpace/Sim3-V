@@ -115,6 +115,7 @@ fn on_frame(mut app data.App) {
 	rl.clear_background(data.background_color)
 
 	// draw all the components that are currently in view
+	fonts.recalculate_font_choices(mut app)
 	simview.step_marching_ants(mut app)
 	simview.draw_view(app)
 

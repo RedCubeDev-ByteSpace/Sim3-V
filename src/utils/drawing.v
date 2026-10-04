@@ -212,7 +212,7 @@ pub fn draw_circle_lines(init_x_f f32, init_y_f f32, unit f32, x f32, y f32, rad
 	rl.draw_circle_lines(draw_x, draw_y, sized_radius, color)
 }
 
-pub fn draw_centered_text(app data.App, init_x_f f32, init_y_f f32, unit f32, x f32, y f32, text string, font_size f32, rot data.Rotation, color rl.Color) {
+pub fn draw_centered_text(app data.App, init_x_f f32, init_y_f f32, unit f32, x f32, y f32, text string, font_size f32, font rl.Font, rot data.Rotation, color rl.Color) {
 	init_x := int(init_x_f)
 	init_y := int(init_y_f)
 
@@ -241,16 +241,14 @@ pub fn draw_centered_text(app data.App, init_x_f f32, init_y_f f32, unit f32, x 
 		}
 	}
 
-	sized_font_size := int(font_size * unit)
-	font := fonts.get_font_for_size(app, sized_font_size)
-	text_size := rl.measure_text_ex(font, text, sized_font_size, 1)
+	text_size := rl.measure_text_ex(font, text, font_size, 1)
 	rl.draw_text_ex(font, text, rl.Vector2{
 		x: draw_x - (text_size.x / 2)
 		y: draw_y - (text_size.y / 2)
-	}, sized_font_size, 1, color)
+	}, font_size, 1, color)
 }
 
-pub fn draw_centered_text_rotated(app data.App, init_x_f f32, init_y_f f32, unit f32, x f32, y f32, text string, font_size f32, rot data.Rotation, color rl.Color) rl.Rectangle {
+pub fn draw_centered_text_rotated(app data.App, init_x_f f32, init_y_f f32, unit f32, x f32, y f32, text string, font_size f32, font rl.Font, rot data.Rotation, color rl.Color) rl.Rectangle {
 	init_x := int(init_x_f)
 	init_y := int(init_y_f)
 
@@ -279,9 +277,7 @@ pub fn draw_centered_text_rotated(app data.App, init_x_f f32, init_y_f f32, unit
 		}
 	}
 
-	sized_font_size := int(font_size * unit)
-	font := fonts.get_font_for_size(app, sized_font_size)
-	text_size := rl.measure_text_ex(font, text, sized_font_size, 1)
+	text_size := rl.measure_text_ex(font, text, font_size, 1)
 
 	rl.draw_text_pro(font, text, rl.Vector2{
 		x: draw_x
@@ -289,7 +285,7 @@ pub fn draw_centered_text_rotated(app data.App, init_x_f f32, init_y_f f32, unit
 	}, rl.Vector2{
 		x: text_size.x / 2
 		y: text_size.y / 2
-	}, int(rot) * 90, sized_font_size, 1, color)
+	}, int(rot) * 90, font_size, 1, color)
 
 	return rl.Rectangle{
 		x:      x

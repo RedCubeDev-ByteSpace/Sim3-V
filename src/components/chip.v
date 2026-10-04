@@ -208,7 +208,8 @@ pub fn Chip.draw(app data.App, contact_point vec.Vec2[f32], zoomed_unit f32, col
 
 	// draw the chip label
 	utils.draw_centered_text_rotated(app, contact_point.x, contact_point.y, zoomed_unit,
-		2, -(f32(height - 1) / 2.0), chip.name, 1, rot, low_color)
+		2, -(f32(height - 1) / 2.0), chip.name, app.fonts.chip_label_font_size, app.fonts.chip_label_font,
+		rot, low_color)
 
 	// are we close enough to draw pin labels?
 	zoom_percent := if app.view.zoom >= 1 {
@@ -235,8 +236,8 @@ pub fn Chip.draw(app data.App, contact_point vec.Vec2[f32], zoomed_unit f32, col
 	// draw pin labels!
 	for i in 0 .. chip.pins.len / 2 {
 		rect_left := utils.draw_centered_text_rotated(app, contact_point.x, contact_point.y,
-			zoomed_unit, 1.25, -i, chip.pins[chip.pins.len / 2 - i - 1].label, 0.25, rot,
-			label_color)
+			zoomed_unit, 1.25, -i, chip.pins[chip.pins.len / 2 - i - 1].label, app.fonts.chip_pin_label_font_size,
+			app.fonts.chip_pin_label_font, rot, label_color)
 
 		if chip.pins[chip.pins.len / 2 - i - 1].is_active_low {
 			utils.draw_contact_line(contact_point.x, contact_point.y, zoomed_unit, rect_left.x +
@@ -245,8 +246,8 @@ pub fn Chip.draw(app data.App, contact_point vec.Vec2[f32], zoomed_unit f32, col
 		}
 
 		rect_right := utils.draw_centered_text_rotated(app, contact_point.x, contact_point.y,
-			zoomed_unit, 2.75, -i, chip.pins[chip.pins.len / 2 + i].label, 0.25, rot,
-			label_color)
+			zoomed_unit, 2.75, -i, chip.pins[chip.pins.len / 2 + i].label, app.fonts.chip_pin_label_font_size,
+			app.fonts.chip_pin_label_font, rot, label_color)
 		if chip.pins[chip.pins.len / 2 + i].is_active_low {
 			utils.draw_contact_line(contact_point.x, contact_point.y, zoomed_unit, rect_right.x +
 				rect_right.height / 2, rect_right.y - rect_right.width / 2.0, rect_right.x +

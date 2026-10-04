@@ -87,7 +87,8 @@ pub fn FixedContact.draw(app data.App, contact_point vec.Vec2[f32], zoomed_unit 
 
 	state_label := if state { '1' } else { '0' }
 	utils.draw_centered_text(app, contact_point.x, contact_point.y, zoomed_unit, 0, -1,
-		state_label, 0.75, rot, draw_color)
+		state_label, app.fonts.fixed_contact_label_font_size, app.fonts.fixed_contact_label_font,
+		rot, draw_color)
 }
 
 fn (mut f FixedContact) draw_component_window(mut app data.App) {

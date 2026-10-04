@@ -36,3 +36,25 @@ pub fn get_font_for_size(app data.App, size int) rl.Font {
 
 	return app.fonts.fonts[app.fonts.fonts.len - 1].font
 }
+
+pub fn recalculate_font_choices(mut app data.App) {
+	// only recalculate when the zoom changed
+	if app.view.zoom == app.fonts.last_zoom {
+		return
+	}
+	app.fonts.last_zoom = app.view.zoom
+
+	zoomed_unit := app.view.zoom * data.one_simspace_unit_in_px
+
+	// chip label font
+	app.fonts.chip_label_font_size = zoomed_unit
+	app.fonts.chip_label_font = get_font_for_size(app, int(zoomed_unit))
+
+	// pin label font
+	app.fonts.chip_pin_label_font_size = zoomed_unit * 0.25
+	app.fonts.chip_pin_label_font = get_font_for_size(app, int(zoomed_unit * 0.25))
+
+	// fixed contact label font
+	app.fonts.fixed_contact_label_font_size = zoomed_unit * 0.75
+	app.fonts.fixed_contact_label_font = get_font_for_size(app, int(zoomed_unit * 0.75))
+}
