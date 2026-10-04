@@ -17,6 +17,7 @@ pub const marching_ants_segment_size = 6
 
 // App -----------------------------------------------------------------------------------------------------------------
 // keeps track of all the state used in this application
+@[heap]
 pub struct App {
 pub mut:
 	mu microui.Context
@@ -78,10 +79,11 @@ pub mut:
 	// everything concerning the circuit workbench
 	bench struct {
 	pub mut:
-		bench_state                  BenchState
-		selected_components          []IComponent = []
-		marching_ants_starting_point int
-		marching_ants_frame_counter  int
+		bench_state                   BenchState
+		return_after_move_bench_state BenchState
+		selected_components           []IComponent = []
+		marching_ants_starting_point  int
+		marching_ants_frame_counter   int
 
 		wire_moving struct {
 		pub mut:
@@ -99,6 +101,11 @@ pub mut:
 
 			placed_wire_starting_point bool
 		}
+
+		clipboard struct {
+		pub mut:
+			current_clip_board []ComponentCfg
+		}
 	}
 
 	// catalog ---------------------------------------------------------------------------------------------------------
@@ -107,6 +114,16 @@ pub mut:
 	pub mut:
 		chips  map[string]chip_catalog.ChipEntry
 		groups map[string][]string
+	}
+
+	// storage ---------------------------------------------------------------------------------------------------------
+	// everything concerning the saving and loading of things
+	storage struct {
+	pub mut:
+		data_directory string
+
+		has_blueprints_directory bool
+		blueprints_directory     string
 	}
 
 	// fonts -----------------------------------------------------------------------------------------------------------

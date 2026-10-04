@@ -29,3 +29,17 @@ pub fn str_to_vec(s string) vec.Vec2[int] {
 		y: parts[1].i32()
 	}
 }
+
+pub fn vi_to_vf(v vec.Vec2[int]) vec.Vec2[f32] {
+	return vec.Vec2[f32]{
+		x: f32(v.x)
+		y: f32(v.y)
+	}
+}
+
+pub fn vf_to_vi(v vec.Vec2[f32]) vec.Vec2[int] {
+	return vec.Vec2[int]{
+		x: int(v.x)
+		y: int(v.y)
+	}
+}

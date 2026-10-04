@@ -45,6 +45,11 @@ pub fn handle_input(mut app data.App) {
 		return
 	}
 
+	// are we trying to copy or paste?
+	if handle_copy_paste(mut app) {
+		return
+	}
+
 	// are we trying to interact with a component?
 	if handle_component_interaction(mut app) {
 		return
@@ -125,9 +130,13 @@ fn handle_component_interaction(mut app data.App) bool {
 fn handle_simview_movement(mut app data.App) bool {
 	// when we're not already moving the view and the user pressed their right mouse button
 	// -> start a new view movement
-	if (app.bench.bench_state == .idle || app.bench.bench_state == .placing_component)
+	if (app.bench.bench_state == .idle || app.bench.bench_state == .placing_component
+		|| app.bench.bench_state == .pasting_components)
 		&& (rl.is_mouse_button_pressed(int(rl.MouseButton.mouse_button_right))
 		|| rl.is_mouse_button_pressed(int(rl.MouseButton.mouse_button_middle))) {
+		// remember the current state so we can return to it later
+		app.bench.return_after_move_bench_state = app.bench.bench_state
+
 		// set the view movement flag and remember where the move started
 		app.bench.bench_state = .moving_view
 		app.input.view_moving_start_pos = app.input.mouse_pos
@@ -156,11 +165,7 @@ fn handle_simview_movement(mut app data.App) bool {
 			app.view.camera_position = app.view.camera_position.add(app.view.camera_offset.div_scalar[f32](app.view.zoom * data.one_simspace_unit_in_px))
 			app.view.camera_offset.zero()
 
-			if app.bench.placement.current_selected_component_type != .none {
-				app.bench.bench_state = .placing_component
-			} else {
-				app.bench.bench_state = .idle
-			}
+			app.bench.bench_state = app.bench.return_after_move_bench_state
 
 			// stop any grid movement trails
 			app.view.grid.draw_grid_movement_trails = false
@@ -460,27 +465,54 @@ fn handle_component_placement(mut app data.App) bool {
 		match app.bench.placement.current_selected_component_type {
 			.none {}
 			.switch {
-				components.Switch.new(mut app, placement_pos, rotation, color, false)
+				components.Switch.new(mut app,
+					pos:   placement_pos
+					rot:   rotation
+					color: color
+					state: false
+				)
 			}
 			.fixed_contact {
-				components.FixedContact.new(mut app, placement_pos, rotation, color, false)
+				components.FixedContact.new(mut app,
+					pos:   placement_pos
+					rot:   rotation
+					color: color
+					state: false
+				)
 			}
 			.clock {
-				components.Clock.new(mut app, placement_pos, rotation, color, 60)
+				components.Clock.new(mut app,
+					pos:       placement_pos
+					rot:       rotation
+					color:     color
+					ticks_max: 60
+				)
 			}
 			.led {
-				components.LED.new(mut app, placement_pos, rotation, color)
+				components.LED.new(mut app,
+					pos:   placement_pos
+					rot:   rotation
+					color: color
+				)
 			}
 			.chip {
-				components.Chip.new(mut app, placement_pos, rotation, color, app.bench.placement.current_selected_chip_uid)
+				components.Chip.new(mut app,
+					pos:      placement_pos
+					rot:      rotation
+					color:    color
+					chip_uid: app.bench.placement.current_selected_chip_uid
+				)
 			}
 			.wire {
 				if !app.bench.placement.placed_wire_starting_point {
 					app.input.wire_place_start_pos = placement_pos
 					app.bench.placement.placed_wire_starting_point = true
 				} else {
-					components.Wire.new(mut app, app.input.wire_place_start_pos, placement_pos,
-						color)
+					components.Wire.new(mut app,
+						wire_from: app.input.wire_place_start_pos
+						wire_to:   placement_pos
+						color:     color
+					)
 
 					// if right mouse button -> continue on with the next wire segment
 					if rl.is_mouse_button_pressed(int(rl.MouseButton.mouse_button_right)) {
@@ -498,8 +530,11 @@ fn handle_component_placement(mut app data.App) bool {
 					app.input.wire_place_start_pos = placement_pos
 					app.bench.placement.placed_wire_starting_point = true
 				} else {
-					components.Bus.new(mut app, app.input.wire_place_start_pos, placement_pos,
-						color)
+					components.Bus.new(mut app,
+						wire_from: app.input.wire_place_start_pos
+						wire_to:   placement_pos
+						color:     color
+					)
 					app.bench.placement.placed_wire_starting_point = false
 				}
 			}
@@ -531,6 +566,116 @@ fn handle_component_deletion(mut app data.App) bool {
 		}
 		app.bench.selected_components.clear()
 		return true
+	}
+
+	return false
+}
+
+fn handle_copy_paste(mut app data.App) bool {
+	// did the user press ctrl + c?
+	if rl.is_key_pressed(int(rl.KeyboardKey.key_c))
+		&& (rl.is_key_down(int(rl.KeyboardKey.key_left_control))
+		|| rl.is_key_down(int(rl.KeyboardKey.key_right_control))) {
+		// is there anything selected?
+		if app.bench.selected_components.len == 0 {
+			return false // nope -> keep the clipboard as is
+		}
+
+		// otherwise:
+		// clear the current clip board
+		app.bench.clipboard.current_clip_board.clear()
+
+		// get the cfgs of all currently selected components and store them in the clipboard
+		for comp in app.bench.selected_components {
+			app.bench.clipboard.current_clip_board << comp.get_cfg()
+		}
+
+		// get the toppest and leftest component we've selected
+		mut most_toppest_leftest := app.bench.clipboard.current_clip_board[0].get_top_left()
+		for mut cfg in app.bench.clipboard.current_clip_board {
+			top_left := cfg.get_top_left()
+
+			// is this point further left? -> use its x coordinate
+			if top_left.x < most_toppest_leftest.x {
+				most_toppest_leftest.x = top_left.x
+			}
+
+			// is this point further up? -> use its y coordinate
+			if top_left.y < most_toppest_leftest.y {
+				most_toppest_leftest.y = top_left.y
+			}
+		}
+
+		// shift everything over by - the top left so its at 0,0
+		for mut cfg in app.bench.clipboard.current_clip_board {
+			cfg.translate_by(most_toppest_leftest.mul_scalar(-1))
+		}
+
+		return true
+	}
+
+	// did the user press ctrl + v?
+	if app.bench.bench_state == .idle && rl.is_key_pressed(int(rl.KeyboardKey.key_v))
+		&& (rl.is_key_down(int(rl.KeyboardKey.key_left_control))
+		|| rl.is_key_down(int(rl.KeyboardKey.key_right_control))) {
+		// is there anything in the clipboard?
+		if app.bench.clipboard.current_clip_board.len == 0 {
+			return false
+		}
+
+		// clear any selections
+		app.bench.selected_components.clear()
+
+		// draw the preview and let the user place the components
+		app.bench.bench_state = .pasting_components
+
+		return true
+	}
+
+	if app.bench.bench_state == .pasting_components {
+		// if ESC is pressed while pasting -> exit the paste mode
+		if rl.is_key_pressed(int(rl.KeyboardKey.key_escape)) {
+			app.bench.bench_state = .idle
+			return true
+		}
+
+		// if the left mouse button was clicked -> paste!
+		if rl.is_mouse_button_pressed(int(rl.MouseButton.mouse_button_left)) {
+			mouse_pos_in_world_space := utils.roundificate_to_whole_point(data.screenspace_to_worldspace(app,
+				app.input.mouse_pos))
+
+			for icfg in app.bench.clipboard.current_clip_board {
+				mut cfg := icfg
+				cfg.translate_by(mouse_pos_in_world_space)
+				match mut cfg {
+					data.SwitchCfg {
+						components.Switch.new(mut app, cfg)
+					}
+					data.FixedContactCfg {
+						components.FixedContact.new(mut app, cfg)
+					}
+					data.ClockCfg {
+						components.Clock.new(mut app, cfg)
+					}
+					data.LEDCfg {
+						components.LED.new(mut app, cfg)
+					}
+					data.ChipCfg {
+						components.Chip.new(mut app, cfg)
+					}
+					data.WireCfg {
+						components.Wire.new(mut app, cfg)
+					}
+					data.BusCfg {
+						components.Bus.new(mut app, cfg)
+					}
+				}
+				cfg.translate_by(mouse_pos_in_world_space.mul_scalar(-1))
+			}
+
+			app.bench.bench_state = .idle
+			return true
+		}
 	}
 
 	return false

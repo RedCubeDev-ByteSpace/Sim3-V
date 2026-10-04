@@ -11,6 +11,7 @@ import math.vec
 import fonts
 import sim
 import chip_catalog
+import storage
 
 $if tinyc {
 	#flag @VMODROOT/hacks/tcc.c
@@ -43,6 +44,9 @@ fn main() {
 
 	// load fonts
 	fonts.init(mut app)
+
+	// setup storage things
+	storage.setup_storage(mut app)
 
 	// load the chips!!! wow i really need to clean up my initialization jesus
 	app.catalog.chips, app.catalog.groups = chip_catalog.load_catalogs('./src/res/chips/catalogs') or {

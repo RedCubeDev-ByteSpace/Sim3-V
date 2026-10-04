@@ -14,24 +14,24 @@ mut:
 	contact_point data.ContactPoint
 }
 
-pub fn Switch.new(mut app data.App, pos vec.Vec2[int], rot data.Rotation, color rl.Color, state bool) Switch {
+pub fn Switch.new(mut app data.App, cfg data.SwitchCfg) Switch {
 	// initialize a new component with all its unique data
 	mut s := Switch{
-		state: state
+		state: cfg.state
 	}
 
 	// initialize the component base with all the standardized data
-	s.ComponentBase = data.ComponentBase.new(mut app, pos, vec.vec2[int](2, 2), rot, color,
-		true)
+	s.ComponentBase = data.ComponentBase.new(mut app, cfg.pos, vec.vec2[int](2, 2), cfg.rot,
+		cfg.color, true)
 
 	// create a dummy name for this component
 	s.comp_name = 'Switch ${s.comp_id}'
 
 	// calculate where this components bounding box is based on its rotation
-	s.aabb_offset = utils.get_aabb_offset_for_rotation(-1, -3, 2, 2, rot)
+	s.aabb_offset = utils.get_aabb_offset_for_rotation(-1, -3, 2, 2, cfg.rot)
 
 	// create a new contact point where wires can connect to
-	s.contact_point = data.ContactPoint.new(mut app, if state { .high } else { .low })
+	s.contact_point = data.ContactPoint.new(mut app, if cfg.state { .high } else { .low })
 	app.sim.contact_point_table[s.contact_point.cont_id] = &s.contact_point
 	utils.register_contact_point(mut app, s.pos, s.contact_point.cont_id)
 
@@ -41,6 +41,15 @@ pub fn Switch.new(mut app data.App, pos vec.Vec2[int], rot data.Rotation, color 
 
 	// done :)
 	return s
+}
+
+pub fn (s Switch) get_cfg() data.ComponentCfg {
+	return data.SwitchCfg{
+		pos:   s.pos
+		rot:   s.rotation
+		color: s.color
+		state: s.state
+	}
 }
 
 fn (mut s Switch) interact() {

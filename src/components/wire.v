@@ -13,14 +13,14 @@ mut:
 	state data.WireState
 }
 
-pub fn Wire.new(mut app data.App, wire_from vec.Vec2[int], wire_to vec.Vec2[int], color rl.Color) Wire {
+pub fn Wire.new(mut app data.App, cfg data.WireCfg) Wire {
 	// initialize a new component with all its unique data
 	mut w := Wire{
 		state: .low
 	}
 
 	// initialize the component base with all the standardized data
-	w.WireBase = data.WireBase.new(mut app, wire_from, wire_to, color)
+	w.WireBase = data.WireBase.new(mut app, cfg.wire_from, cfg.wire_to, cfg.color)
 
 	// create a dummy name for this component
 	w.comp_name = 'Wire ${w.comp_id}'
@@ -37,6 +37,14 @@ pub fn Wire.new(mut app data.App, wire_from vec.Vec2[int], wire_to vec.Vec2[int]
 
 	// done :)
 	return w
+}
+
+pub fn (w Wire) get_cfg() data.ComponentCfg {
+	return data.WireCfg{
+		wire_from: w.wire_from
+		wire_to:   w.wire_to
+		color:     w.color
+	}
 }
 
 pub fn (mut w Wire) set_state(wire_state data.WireState) {
@@ -61,15 +69,17 @@ pub fn (mut w Wire) on_delete(mut app data.App) {
 }
 
 fn (w &Wire) draw(app data.App) {
-	wire_from := data.worldspace_to_screenspace(app, w.wire_from.add(w.offset_from))
-	wire_to := data.worldspace_to_screenspace(app, w.wire_to.add(w.offset_to))
+	Wire.draw(data.worldspace_to_screenspace(app, w.wire_from.add(w.offset_from)), data.worldspace_to_screenspace(app,
+		w.wire_to.add(w.offset_to)), w.state, w.color)
+}
 
-	if w.state == .error {
+pub fn Wire.draw(wire_from vec.Vec2[int], wire_to vec.Vec2[int], state data.WireState, color rl.Color) {
+	if state == .error {
 		rl.draw_line_ex(utils.vec_to_rl(wire_from), utils.vec_to_rl(wire_to), 2 * data.component_line_thickness,
 			data.wire_error_color)
 	}
 
-	wire_thickness := match w.state {
+	wire_thickness := match state {
 		.low {
 			data.component_line_thickness
 		}
@@ -82,7 +92,7 @@ fn (w &Wire) draw(app data.App) {
 	}
 
 	rl.draw_line_ex(utils.vec_to_rl(wire_from), utils.vec_to_rl(wire_to), int(wire_thickness),
-		w.color)
+		color)
 }
 
 fn (mut w Wire) draw_component_window(mut app data.App) {

@@ -14,24 +14,24 @@ mut:
 	contact_point data.ContactPoint
 }
 
-pub fn FixedContact.new(mut app data.App, pos vec.Vec2[int], rot data.Rotation, color rl.Color, state bool) FixedContact {
+pub fn FixedContact.new(mut app data.App, cfg data.FixedContactCfg) FixedContact {
 	// initialize a new component with all its unique data
 	mut c := FixedContact{
-		state: state
+		state: cfg.state
 	}
 
 	// initialize the component base with all the standardized data
-	c.ComponentBase = data.ComponentBase.new(mut app, pos, vec.vec2[int](1, 1), rot, color,
-		false)
+	c.ComponentBase = data.ComponentBase.new(mut app, cfg.pos, vec.vec2[int](1, 1), cfg.rot,
+		cfg.color, false)
 
 	// create a dummy name for this component
 	c.comp_name = 'Fixed Contact ${c.comp_id}'
 
 	// calculate where this components bounding box is based on its rotation
-	c.aabb_offset = utils.get_aabb_offset_for_rotation(-0.5, -1.5, 1, 1, rot)
+	c.aabb_offset = utils.get_aabb_offset_for_rotation(-0.5, -1.5, 1, 1, cfg.rot)
 
 	// create a new contact point where wires can connect to
-	c.contact_point = data.ContactPoint.new(mut app, if state { .high } else { .low })
+	c.contact_point = data.ContactPoint.new(mut app, if cfg.state { .high } else { .low })
 	app.sim.contact_point_table[c.contact_point.cont_id] = &c.contact_point
 	utils.register_contact_point(mut app, c.pos, c.contact_point.cont_id)
 
@@ -43,18 +43,27 @@ pub fn FixedContact.new(mut app data.App, pos vec.Vec2[int], rot data.Rotation, 
 	return c
 }
 
-pub fn (mut s FixedContact) on_move(mut app data.App) {
-	utils.unregister_contact_point(mut app, s.pos, s.contact_point.cont_id)
+pub fn (f FixedContact) get_cfg() data.ComponentCfg {
+	return data.FixedContactCfg{
+		pos:   f.pos
+		rot:   f.rotation
+		color: f.color
+		state: f.state
+	}
 }
 
-pub fn (mut s FixedContact) on_moved(mut app data.App) {
-	utils.register_contact_point(mut app, s.pos, s.contact_point.cont_id)
+pub fn (mut f FixedContact) on_move(mut app data.App) {
+	utils.unregister_contact_point(mut app, f.pos, f.contact_point.cont_id)
+}
+
+pub fn (mut f FixedContact) on_moved(mut app data.App) {
+	utils.register_contact_point(mut app, f.pos, f.contact_point.cont_id)
 	app.sim.wire_mesh_recalc_needed = true
 }
 
-pub fn (mut s FixedContact) on_delete(mut app data.App) {
-	utils.unregister_contact_point(mut app, s.pos, s.contact_point.cont_id)
-	app.sim.contact_point_table.delete(s.contact_point.cont_id)
+pub fn (mut f FixedContact) on_delete(mut app data.App) {
+	utils.unregister_contact_point(mut app, f.pos, f.contact_point.cont_id)
+	app.sim.contact_point_table.delete(f.contact_point.cont_id)
 	app.sim.wire_mesh_recalc_needed = true
 }
 
@@ -81,25 +90,25 @@ pub fn FixedContact.draw(app data.App, contact_point vec.Vec2[f32], zoomed_unit 
 		state_label, 0.75, rot, draw_color)
 }
 
-fn (mut s FixedContact) draw_component_window(mut app data.App) {
-	if !s.component_window_open {
+fn (mut f FixedContact) draw_component_window(mut app data.App) {
+	if !f.component_window_open {
 		return
 	}
 
-	pos_in_screen_space := data.worldspace_to_screenspace(app, s.pos)
-	if app.mu.begin_window_ex_bool_controlled('Fixed Contact (id: ${s.comp_id})', rl.Rectangle{pos_in_screen_space.x, pos_in_screen_space.y, 200, 85},
-		.noscroll | .noresize, s.component_window_open)
+	pos_in_screen_space := data.worldspace_to_screenspace(app, f.pos)
+	if app.mu.begin_window_ex_bool_controlled('Fixed Contact (id: ${f.comp_id})', rl.Rectangle{pos_in_screen_space.x, pos_in_screen_space.y, 200, 85},
+		.noscroll | .noresize, f.component_window_open)
 	{
 		app.mu.layout_row([50, -1], 0)
 
 		app.mu.label('Name')
-		app.mu.textbox(s.comp_name)
+		app.mu.textbox(f.comp_name)
 
 		app.mu.label('State')
-		if app.mu.checkbox('', s.state) {
-			s.contact_point.output_state = if s.state { .high } else { .low }
+		if app.mu.checkbox('', f.state) {
+			f.contact_point.output_state = if f.state { .high } else { .low }
 		}
 
-		app.mu.end_window_bool_controlled(s.component_window_open)
+		app.mu.end_window_bool_controlled(f.component_window_open)
 	}
 }

@@ -20,6 +20,7 @@ pub fn draw_view(app data.App) {
 	draw_selected_component_outlines(app)
 	draw_wire_movement_handles(app)
 	draw_preview_of_component_being_placed(app)
+	draw_preview_of_components_being_pasted(app)
 	draw_contact_points(app)
 }
 
@@ -274,6 +275,69 @@ fn draw_preview_of_component_being_placed(app data.App) {
 					x: pos.x
 					y: pos.y
 				}, 2, color)
+			}
+		}
+	}
+}
+
+fn draw_preview_of_components_being_pasted(app data.App) {
+	if app.bench.bench_state != .pasting_components {
+		return
+	}
+
+	// figure out where to draw this preview of a component
+	mouse_pos_world_space := data.screenspace_to_worldspace(app, app.input.mouse_pos)
+	comp_pos_screen_space := data.worldspace_to_screenspace(app, utils.roundificate_to_whole_point(mouse_pos_world_space))
+
+	// prepare the variables needed for drawing any components
+	pos := vec.vec2(f32(comp_pos_screen_space.x), f32(comp_pos_screen_space.y))
+	zoomed_unit := data.one_simspace_unit_in_px * app.view.zoom
+
+	// draw the preview using the components static draw function
+	for i, comp in app.bench.clipboard.current_clip_board {
+		mut comp_i := data.IBaseCfg(app.bench.clipboard.current_clip_board[i])
+
+		color := rl.Color{
+			...comp_i.get_color()
+			a: 150
+		}
+
+		match comp {
+			data.SwitchCfg {
+				offset := utils.vi_to_vf(comp.pos).mul_scalar(zoomed_unit)
+				components.Switch.draw(pos.add(offset), zoomed_unit, color, comp.state,
+					comp.rot)
+			}
+			data.FixedContactCfg {
+				offset := utils.vi_to_vf(comp.pos).mul_scalar(zoomed_unit)
+				components.FixedContact.draw(app, pos.add(offset), zoomed_unit, color,
+					comp.state, comp.rot)
+			}
+			data.ClockCfg {
+				offset := utils.vi_to_vf(comp.pos).mul_scalar(zoomed_unit)
+				components.Clock.draw(pos.add(offset), zoomed_unit, color, 0, comp.ticks_max,
+					comp.rot)
+			}
+			data.LEDCfg {
+				offset := utils.vi_to_vf(comp.pos).mul_scalar(zoomed_unit)
+				components.LED.draw(pos.add(offset), zoomed_unit, color, false, comp.rot)
+			}
+			data.ChipCfg {
+				offset := utils.vi_to_vf(comp.pos).mul_scalar(zoomed_unit)
+				components.Chip.draw(app, pos.add(offset), zoomed_unit, color, comp.rot,
+					comp.chip_uid, []data.ContactPoint{})
+			}
+			data.WireCfg {
+				wire_from := utils.vi_to_vf(comp.wire_from).mul_scalar(zoomed_unit)
+				wire_to := utils.vi_to_vf(comp.wire_to).mul_scalar(zoomed_unit)
+				components.Wire.draw(utils.vf_to_vi(wire_from.add(pos)), utils.vf_to_vi(wire_to.add(pos)),
+					.low, color)
+			}
+			data.BusCfg {
+				wire_from := utils.vi_to_vf(comp.wire_from).mul_scalar(zoomed_unit)
+				wire_to := utils.vi_to_vf(comp.wire_to).mul_scalar(zoomed_unit)
+				components.Bus.draw(utils.vf_to_vi(wire_from.add(pos)), utils.vf_to_vi(wire_to.add(pos)),
+					color)
 			}
 		}
 	}

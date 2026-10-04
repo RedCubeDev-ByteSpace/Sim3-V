@@ -4,6 +4,8 @@ import math.vec
 import raylib as rl
 
 pub interface IComponent {
+	get_cfg() ComponentCfg
+
 	get_comp_id() i64
 	get_aabb() AABB
 	hit_test(pos vec.Vec2[f32]) bool

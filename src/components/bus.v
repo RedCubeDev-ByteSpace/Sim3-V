@@ -10,12 +10,12 @@ pub struct Bus {
 	data.WireBase
 }
 
-pub fn Bus.new(mut app data.App, wire_from vec.Vec2[int], wire_to vec.Vec2[int], color rl.Color) Bus {
+pub fn Bus.new(mut app data.App, cfg data.BusCfg) Bus {
 	// initialize a new component with all its unique data
 	mut b := Bus{}
 
 	// initialize the component base with all the standardized data
-	b.WireBase = data.WireBase.new(mut app, wire_from, wire_to, color)
+	b.WireBase = data.WireBase.new(mut app, cfg.wire_from, cfg.wire_to, cfg.color)
 
 	// create a dummy name for this component
 	b.comp_name = 'Bus ${b.comp_id}'
@@ -32,6 +32,14 @@ pub fn Bus.new(mut app data.App, wire_from vec.Vec2[int], wire_to vec.Vec2[int],
 
 	// done :)
 	return b
+}
+
+pub fn (b Bus) get_cfg() data.ComponentCfg {
+	return data.BusCfg{
+		wire_from: b.wire_from
+		wire_to:   b.wire_to
+		color:     b.color
+	}
 }
 
 pub fn (mut b Bus) on_move(mut app data.App) {
@@ -51,12 +59,14 @@ pub fn (mut b Bus) on_delete(mut app data.App) {
 	app.sim.wire_mesh_recalc_needed = true
 }
 
-fn (b &Bus) draw(app data.App) {
-	wire_from := data.worldspace_to_screenspace(app, b.wire_from.add(b.offset_from))
-	wire_to := data.worldspace_to_screenspace(app, b.wire_to.add(b.offset_to))
+pub fn (b &Bus) draw(app data.App) {
+	Bus.draw(data.worldspace_to_screenspace(app, b.wire_from.add(b.offset_from)), data.worldspace_to_screenspace(app,
+		b.wire_to.add(b.offset_to)), b.color)
+}
 
+pub fn Bus.draw(wire_from vec.Vec2[int], wire_to vec.Vec2[int], color rl.Color) {
 	rl.draw_line_ex(utils.vec_to_rl(wire_from), utils.vec_to_rl(wire_to), data.component_line_thickness * 2,
-		b.color)
+		color)
 }
 
 fn (mut b Bus) draw_component_window(mut app data.App) {

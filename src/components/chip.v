@@ -32,17 +32,17 @@ mut:
 	}
 }
 
-pub fn Chip.new(mut app data.App, pos vec.Vec2[int], rot data.Rotation, color rl.Color, chip_uid string) Chip {
+pub fn Chip.new(mut app data.App, cfg data.ChipCfg) Chip {
 	// initialize a new component with all its unique data
 	mut c := Chip{
-		chip_uid: chip_uid
+		chip_uid: cfg.chip_uid
 	}
-	chip_entry := app.catalog.chips[chip_uid]
+	chip_entry := app.catalog.chips[cfg.chip_uid]
 	height := chip_entry.pins.len / 2
 
 	// initialize the component base with all the standardized data
-	c.ComponentBase = data.ComponentBase.new(mut app, pos, vec.vec2[int](height, 2), rot,
-		color, false)
+	c.ComponentBase = data.ComponentBase.new(mut app, cfg.pos, vec.vec2[int](height, 2),
+		cfg.rot, cfg.color, false)
 	c.has_step = true
 
 	// create a dummy name for this component
@@ -50,7 +50,7 @@ pub fn Chip.new(mut app data.App, pos vec.Vec2[int], rot data.Rotation, color rl
 
 	// calculate where this components bounding box is based on its rotation
 	c.aabb_offset = utils.get_aabb_offset_for_rotation(1, -f32(height) + 0.5, 2, height,
-		rot)
+		cfg.rot)
 
 	// create a new contact points where wires can connect to
 	c.contact_points = []data.ContactPoint{len: chip_entry.pins.len}
@@ -61,7 +61,7 @@ pub fn Chip.new(mut app data.App, pos vec.Vec2[int], rot data.Rotation, color rl
 
 		app.sim.contact_point_table[c.contact_points[index_left].cont_id] = &c.contact_points[index_left]
 
-		lx, ly := utils.translate_point(pos, 0, -i, rot)
+		lx, ly := utils.translate_point(cfg.pos, 0, -i, cfg.rot)
 		utils.register_contact_point(mut app, vec.vec2(lx, ly), c.contact_points[index_left].cont_id)
 
 		index_right := chip_entry.pins.len / 2 + i
@@ -69,7 +69,7 @@ pub fn Chip.new(mut app data.App, pos vec.Vec2[int], rot data.Rotation, color rl
 		c.contact_points[index_right].label = chip_entry.pins[index_right].label
 		app.sim.contact_point_table[c.contact_points[index_right].cont_id] = &c.contact_points[index_right]
 
-		rx, ry := utils.translate_point(pos, 4, -i, rot)
+		rx, ry := utils.translate_point(cfg.pos, 4, -i, cfg.rot)
 		utils.register_contact_point(mut app, vec.vec2(rx, ry), c.contact_points[index_right].cont_id)
 	}
 
@@ -79,7 +79,7 @@ pub fn Chip.new(mut app data.App, pos vec.Vec2[int], rot data.Rotation, color rl
 
 	// try to load the script for this chip
 	c.lua_state_initialized = true
-	c.lua_state = lua.setup_chip_lua_state(app, chip_uid) or {
+	c.lua_state = lua.setup_chip_lua_state(app, cfg.chip_uid) or {
 		c.lua_state_initialized = false
 		unsafe { nil }
 	}
@@ -98,6 +98,15 @@ pub fn Chip.new(mut app data.App, pos vec.Vec2[int], rot data.Rotation, color rl
 
 	// done :)
 	return c
+}
+
+pub fn (c Chip) get_cfg() data.ComponentCfg {
+	return data.ChipCfg{
+		pos:      c.pos
+		rot:      c.rotation
+		color:    c.color
+		chip_uid: c.chip_uid
+	}
 }
 
 fn (mut c Chip) setup_pins() {

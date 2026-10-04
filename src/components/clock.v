@@ -18,23 +18,23 @@ mut:
 	contact_point data.ContactPoint
 }
 
-pub fn Clock.new(mut app data.App, pos vec.Vec2[int], rot data.Rotation, color rl.Color, ticks_max int) Clock {
+pub fn Clock.new(mut app data.App, cfg data.ClockCfg) Clock {
 	// initialize a new component with all its unique data
 	mut c := Clock{
 		state:     false
-		ticks_max: f32(ticks_max)
+		ticks_max: f32(cfg.ticks_max)
 	}
 
 	// initialize the component base with all the standardized data
-	c.ComponentBase = data.ComponentBase.new(mut app, pos, vec.vec2[int](2, 2), rot, color,
-		false)
+	c.ComponentBase = data.ComponentBase.new(mut app, cfg.pos, vec.vec2[int](2, 2), cfg.rot,
+		cfg.color, false)
 	c.has_step = true
 
 	// create a dummy name for this component
 	c.comp_name = 'Clock ${c.comp_id}'
 
 	// calculate where this components bounding box is based on its rotation
-	c.aabb_offset = utils.get_aabb_offset_for_rotation(-1, -3, 2, 2, rot)
+	c.aabb_offset = utils.get_aabb_offset_for_rotation(-1, -3, 2, 2, cfg.rot)
 
 	// create a new contact point where wires can connect to
 	c.contact_point = data.ContactPoint.new(mut app, .low)
@@ -47,6 +47,15 @@ pub fn Clock.new(mut app data.App, pos vec.Vec2[int], rot data.Rotation, color r
 
 	// done :)
 	return c
+}
+
+pub fn (c Clock) get_cfg() data.ComponentCfg {
+	return data.ClockCfg{
+		pos:       c.pos
+		rot:       c.rotation
+		color:     c.color
+		ticks_max: int(c.ticks_max)
+	}
 }
 
 pub fn (mut c Clock) on_move(mut app data.App) {
