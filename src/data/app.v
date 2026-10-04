@@ -104,7 +104,7 @@ pub mut:
 
 		clipboard struct {
 		pub mut:
-			current_clip_board []ComponentCfg
+			current_clip_board []IComponentCfg
 		}
 	}
 

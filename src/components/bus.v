@@ -34,7 +34,7 @@ pub fn Bus.new(mut app data.App, cfg data.BusCfg) Bus {
 	return b
 }
 
-pub fn (b Bus) get_cfg() data.ComponentCfg {
+pub fn (b Bus) get_cfg() data.IComponentCfg {
 	return data.BusCfg{
 		wire_from: b.wire_from
 		wire_to:   b.wire_to

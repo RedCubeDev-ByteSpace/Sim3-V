@@ -639,6 +639,46 @@ fn handle_copy_paste(mut app data.App) bool {
 			return true
 		}
 
+		// if R is pressed while placing -> rotate the components
+		if rl.is_key_pressed(int(rl.KeyboardKey.key_q)) {
+			// get the bottom rightest point in our clipboard
+			// -> this gives us the width and height rectangle around all of our components because the top left is always 0,0
+			mut bottom_right := app.bench.clipboard.current_clip_board[0].get_bottom_right()
+			for cfg in app.bench.clipboard.current_clip_board {
+				cfg_bottom_right := cfg.get_bottom_right()
+				if cfg_bottom_right.x > bottom_right.x {
+					bottom_right.x = cfg_bottom_right.x
+				}
+				if cfg_bottom_right.y > bottom_right.y {
+					bottom_right.y = cfg_bottom_right.y
+				}
+			}
+
+			// rotate all components
+			for mut cfg in app.bench.clipboard.current_clip_board {
+				cfg.rotate(bottom_right.x, bottom_right.y)
+			}
+
+			// get the new top left after doing the rotation
+			mut top_left := app.bench.clipboard.current_clip_board[0].get_top_left()
+			for cfg in app.bench.clipboard.current_clip_board {
+				cfg_top_left := cfg.get_top_left()
+				if cfg_top_left.x < top_left.x {
+					top_left.x = cfg_top_left.x
+				}
+				if cfg_top_left.y < top_left.y {
+					top_left.y = cfg_top_left.y
+				}
+			}
+
+			// shift all components so that the top left is at 0,0 again
+			for mut cfg in app.bench.clipboard.current_clip_board {
+				cfg.translate_by(top_left.mul_scalar(-1))
+			}
+
+			return true
+		}
+
 		// if the left mouse button was clicked -> paste!
 		if rl.is_mouse_button_pressed(int(rl.MouseButton.mouse_button_left)) {
 			mouse_pos_in_world_space := utils.roundificate_to_whole_point(data.screenspace_to_worldspace(app,
@@ -668,6 +708,9 @@ fn handle_copy_paste(mut app data.App) bool {
 					}
 					data.BusCfg {
 						components.Bus.new(mut app, cfg)
+					}
+					else {
+						assert false, 'Missing component cfg in handle_copy_paste'
 					}
 				}
 				cfg.translate_by(mouse_pos_in_world_space.mul_scalar(-1))

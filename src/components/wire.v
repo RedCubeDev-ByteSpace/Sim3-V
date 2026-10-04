@@ -39,7 +39,7 @@ pub fn Wire.new(mut app data.App, cfg data.WireCfg) Wire {
 	return w
 }
 
-pub fn (w Wire) get_cfg() data.ComponentCfg {
+pub fn (w Wire) get_cfg() data.IComponentCfg {
 	return data.WireCfg{
 		wire_from: w.wire_from
 		wire_to:   w.wire_to

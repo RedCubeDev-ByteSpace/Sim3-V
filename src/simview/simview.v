@@ -295,10 +295,8 @@ fn draw_preview_of_components_being_pasted(app data.App) {
 
 	// draw the preview using the components static draw function
 	for i, comp in app.bench.clipboard.current_clip_board {
-		mut comp_i := data.IBaseCfg(app.bench.clipboard.current_clip_board[i])
-
 		color := rl.Color{
-			...comp_i.get_color()
+			...comp.get_color()
 			a: 150
 		}
 
@@ -338,6 +336,9 @@ fn draw_preview_of_components_being_pasted(app data.App) {
 				wire_to := utils.vi_to_vf(comp.wire_to).mul_scalar(zoomed_unit)
 				components.Bus.draw(utils.vf_to_vi(wire_from.add(pos)), utils.vf_to_vi(wire_to.add(pos)),
 					color)
+			}
+			else {
+				assert false, 'Missing component cfg in draw_preview_of_components_being_pasted'
 			}
 		}
 	}

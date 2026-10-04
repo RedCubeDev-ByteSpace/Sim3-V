@@ -43,7 +43,7 @@ pub fn Switch.new(mut app data.App, cfg data.SwitchCfg) Switch {
 	return s
 }
 
-pub fn (s Switch) get_cfg() data.ComponentCfg {
+pub fn (s Switch) get_cfg() data.IComponentCfg {
 	return data.SwitchCfg{
 		pos:   s.pos
 		rot:   s.rotation

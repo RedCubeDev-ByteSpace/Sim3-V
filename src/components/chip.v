@@ -100,7 +100,7 @@ pub fn Chip.new(mut app data.App, cfg data.ChipCfg) Chip {
 	return c
 }
 
-pub fn (c Chip) get_cfg() data.ComponentCfg {
+pub fn (c Chip) get_cfg() data.IComponentCfg {
 	return data.ChipCfg{
 		pos:      c.pos
 		rot:      c.rotation

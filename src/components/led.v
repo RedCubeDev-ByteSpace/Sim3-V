@@ -40,7 +40,7 @@ pub fn LED.new(mut app data.App, cfg data.LEDCfg) LED {
 	return l
 }
 
-pub fn (l LED) get_cfg() data.ComponentCfg {
+pub fn (l LED) get_cfg() data.IComponentCfg {
 	return data.LEDCfg{
 		pos:   l.pos
 		rot:   l.rotation

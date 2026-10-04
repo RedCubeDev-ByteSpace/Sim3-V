@@ -49,7 +49,7 @@ pub fn Clock.new(mut app data.App, cfg data.ClockCfg) Clock {
 	return c
 }
 
-pub fn (c Clock) get_cfg() data.ComponentCfg {
+pub fn (c Clock) get_cfg() data.IComponentCfg {
 	return data.ClockCfg{
 		pos:       c.pos
 		rot:       c.rotation

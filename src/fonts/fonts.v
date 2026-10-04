@@ -6,7 +6,7 @@ import raylib as rl
 
 pub fn init(mut app data.App) {
 	// load different sizes of Computer Modern
-	sizes := [5, 10, 15, 20, 30, 40, 50, 100, 150, 170]
+	sizes := [3, 5, 8, 10, 12, 15, 16, 20, 30, 40, 50, 100, 150, 170]
 
 	for size in sizes {
 		sized_font := microui.SizedFont{
@@ -30,7 +30,7 @@ pub fn get_font_for_size(app data.App, size int) rl.Font {
 	// otherwise: fond a font that fits
 	for i, font in app.fonts.fonts {
 		if font.size > size {
-			return app.fonts.fonts[i - 1].font
+			return app.fonts.fonts[i].font
 		}
 	}
 

@@ -43,7 +43,7 @@ pub fn FixedContact.new(mut app data.App, cfg data.FixedContactCfg) FixedContact
 	return c
 }
 
-pub fn (f FixedContact) get_cfg() data.ComponentCfg {
+pub fn (f FixedContact) get_cfg() data.IComponentCfg {
 	return data.FixedContactCfg{
 		pos:   f.pos
 		rot:   f.rotation
