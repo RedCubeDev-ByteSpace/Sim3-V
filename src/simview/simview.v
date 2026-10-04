@@ -350,13 +350,13 @@ fn draw_component_from_cfg(app data.App, cfg data.ComponentCfg, color rl.Color) 
 			wire_from := utils.vi_to_vf(cfg.wire_from).mul_scalar(zoomed_unit)
 			wire_to := utils.vi_to_vf(cfg.wire_to).mul_scalar(zoomed_unit)
 			components.Wire.draw(utils.vf_to_vi(wire_from.add(pos)), utils.vf_to_vi(wire_to.add(pos)),
-				.low, color)
+				app.view.zoom, .low, color)
 		}
 		data.BusCfg {
 			wire_from := utils.vi_to_vf(cfg.wire_from).mul_scalar(zoomed_unit)
 			wire_to := utils.vi_to_vf(cfg.wire_to).mul_scalar(zoomed_unit)
 			components.Bus.draw(utils.vf_to_vi(wire_from.add(pos)), utils.vf_to_vi(wire_to.add(pos)),
-				color)
+				app.view.zoom, color)
 		}
 	}
 }

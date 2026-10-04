@@ -70,12 +70,14 @@ pub fn (mut w Wire) on_delete(mut app data.App) {
 
 fn (w &Wire) draw(app data.App) {
 	Wire.draw(data.worldspace_to_screenspace(app, w.wire_from.add(w.offset_from)), data.worldspace_to_screenspace(app,
-		w.wire_to.add(w.offset_to)), w.state, w.color)
+		w.wire_to.add(w.offset_to)), app.view.zoom, w.state, w.color)
 }
 
-pub fn Wire.draw(wire_from vec.Vec2[int], wire_to vec.Vec2[int], state data.WireState, color rl.Color) {
+pub fn Wire.draw(wire_from vec.Vec2[int], wire_to vec.Vec2[int], zoom f32, state data.WireState, color rl.Color) {
+	draw_zoom := if zoom > 1 { 1 } else { zoom }
+
 	if state == .error {
-		rl.draw_line_ex(utils.vec_to_rl(wire_from), utils.vec_to_rl(wire_to), 2 * data.component_line_thickness,
+		rl.draw_line_ex(utils.vec_to_rl(wire_from), utils.vec_to_rl(wire_to), 2 * data.component_line_thickness * draw_zoom,
 			data.wire_error_color)
 	}
 
@@ -91,7 +93,7 @@ pub fn Wire.draw(wire_from vec.Vec2[int], wire_to vec.Vec2[int], state data.Wire
 		}
 	}
 
-	rl.draw_line_ex(utils.vec_to_rl(wire_from), utils.vec_to_rl(wire_to), int(wire_thickness),
+	rl.draw_line_ex(utils.vec_to_rl(wire_from), utils.vec_to_rl(wire_to), f32(wire_thickness * draw_zoom),
 		color)
 }
 

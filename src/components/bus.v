@@ -61,11 +61,12 @@ pub fn (mut b Bus) on_delete(mut app data.App) {
 
 pub fn (b &Bus) draw(app data.App) {
 	Bus.draw(data.worldspace_to_screenspace(app, b.wire_from.add(b.offset_from)), data.worldspace_to_screenspace(app,
-		b.wire_to.add(b.offset_to)), b.color)
+		b.wire_to.add(b.offset_to)), app.view.zoom, b.color)
 }
 
-pub fn Bus.draw(wire_from vec.Vec2[int], wire_to vec.Vec2[int], color rl.Color) {
-	rl.draw_line_ex(utils.vec_to_rl(wire_from), utils.vec_to_rl(wire_to), data.component_line_thickness * 2,
+pub fn Bus.draw(wire_from vec.Vec2[int], wire_to vec.Vec2[int], zoom f32, color rl.Color) {
+	draw_zoom := if zoom > 1 { 1 } else { zoom }
+	rl.draw_line_ex(utils.vec_to_rl(wire_from), utils.vec_to_rl(wire_to), 2 * data.component_line_thickness * draw_zoom,
 		color)
 }
 
