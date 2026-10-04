@@ -21,14 +21,14 @@ pub fn FixedContact.new(mut app data.App, cfg data.FixedContactCfg) FixedContact
 	}
 
 	// initialize the component base with all the standardized data
-	c.ComponentBase = data.ComponentBase.new(mut app, cfg.pos, vec.vec2[int](1, 1), cfg.rot,
-		cfg.color, false)
+	c.ComponentBase = data.ComponentBase.new(mut app, cfg.pos, vec.vec2[int](1, 1), data.Rotation.from_int(cfg.rot),
+		cfg.color.to_rl(), false)
 
 	// create a dummy name for this component
 	c.comp_name = 'Fixed Contact ${c.comp_id}'
 
 	// calculate where this components bounding box is based on its rotation
-	c.aabb_offset = utils.get_aabb_offset_for_rotation(-0.5, -1.5, 1, 1, cfg.rot)
+	c.aabb_offset = utils.get_aabb_offset_for_rotation(-0.5, -1.5, 1, 1, data.Rotation.from_int(cfg.rot))
 
 	// create a new contact point where wires can connect to
 	c.contact_point = data.ContactPoint.new(mut app, if cfg.state { .high } else { .low })
@@ -43,11 +43,11 @@ pub fn FixedContact.new(mut app data.App, cfg data.FixedContactCfg) FixedContact
 	return c
 }
 
-pub fn (f FixedContact) get_cfg() data.IComponentCfg {
+pub fn (f FixedContact) get_cfg() data.ComponentCfg {
 	return data.FixedContactCfg{
 		pos:   f.pos
-		rot:   f.rotation
-		color: f.color
+		rot:   f.rotation.to_int()
+		color: data.Color.from_rl(f.color)
 		state: f.state
 	}
 }

@@ -15,7 +15,7 @@ pub fn Bus.new(mut app data.App, cfg data.BusCfg) Bus {
 	mut b := Bus{}
 
 	// initialize the component base with all the standardized data
-	b.WireBase = data.WireBase.new(mut app, cfg.wire_from, cfg.wire_to, cfg.color)
+	b.WireBase = data.WireBase.new(mut app, cfg.wire_from, cfg.wire_to, cfg.color.to_rl())
 
 	// create a dummy name for this component
 	b.comp_name = 'Bus ${b.comp_id}'
@@ -34,11 +34,11 @@ pub fn Bus.new(mut app data.App, cfg data.BusCfg) Bus {
 	return b
 }
 
-pub fn (b Bus) get_cfg() data.IComponentCfg {
+pub fn (b Bus) get_cfg() data.ComponentCfg {
 	return data.BusCfg{
 		wire_from: b.wire_from
 		wire_to:   b.wire_to
-		color:     b.color
+		color:     data.Color.from_rl(b.color)
 	}
 }
 

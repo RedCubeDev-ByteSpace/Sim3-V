@@ -18,14 +18,14 @@ pub fn LED.new(mut app data.App, cfg data.LEDCfg) LED {
 	mut l := LED{}
 
 	// initialize the component base with all the standardized data
-	l.ComponentBase = data.ComponentBase.new(mut app, cfg.pos, vec.vec2[int](2, 2), cfg.rot,
-		cfg.color, false)
+	l.ComponentBase = data.ComponentBase.new(mut app, cfg.pos, vec.vec2[int](2, 2), data.Rotation.from_int(cfg.rot),
+		cfg.color.to_rl(), false)
 
 	// create a dummy name for this component
 	l.comp_name = 'LED ${l.comp_id}'
 
 	// calculate where this components bounding box is based on its rotation
-	l.aabb_offset = utils.get_aabb_offset_for_rotation(-1, -3, 2, 2, cfg.rot)
+	l.aabb_offset = utils.get_aabb_offset_for_rotation(-1, -3, 2, 2, data.Rotation.from_int(cfg.rot))
 
 	// create a new contact point where wires can connect to
 	l.contact_point = data.ContactPoint.new(mut app, .floating)
@@ -40,11 +40,11 @@ pub fn LED.new(mut app data.App, cfg data.LEDCfg) LED {
 	return l
 }
 
-pub fn (l LED) get_cfg() data.IComponentCfg {
+pub fn (l LED) get_cfg() data.ComponentCfg {
 	return data.LEDCfg{
 		pos:   l.pos
-		rot:   l.rotation
-		color: l.color
+		rot:   l.rotation.to_int()
+		color: data.Color.from_rl(l.color)
 	}
 }
 

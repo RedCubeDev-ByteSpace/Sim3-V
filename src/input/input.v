@@ -50,6 +50,11 @@ pub fn handle_input(mut app data.App) {
 		return
 	}
 
+	// are we trying to place down a blueprint?
+	if handle_blueprint_placement(mut app) {
+		return
+	}
+
 	// are we trying to interact with a component?
 	if handle_component_interaction(mut app) {
 		return
@@ -459,8 +464,8 @@ fn handle_component_placement(mut app data.App) bool {
 		&& app.bench.placement.placed_wire_starting_point) {
 		mouse_pos_in_world_space := data.screenspace_to_worldspace(app, app.input.mouse_pos)
 		placement_pos := utils.roundificate_to_whole_point(mouse_pos_in_world_space)
-		color := data.wire_colors[app.bench.placement.current_selected_color_idx]
-		rotation := app.bench.placement.rotation
+		color := data.Color.from_rl(data.wire_colors[app.bench.placement.current_selected_color_idx])
+		rotation := app.bench.placement.rotation.to_int()
 
 		match app.bench.placement.current_selected_component_type {
 			.none {}
@@ -590,26 +595,7 @@ fn handle_copy_paste(mut app data.App) bool {
 			app.bench.clipboard.current_clip_board << comp.get_cfg()
 		}
 
-		// get the toppest and leftest component we've selected
-		mut most_toppest_leftest := app.bench.clipboard.current_clip_board[0].get_top_left()
-		for mut cfg in app.bench.clipboard.current_clip_board {
-			top_left := cfg.get_top_left()
-
-			// is this point further left? -> use its x coordinate
-			if top_left.x < most_toppest_leftest.x {
-				most_toppest_leftest.x = top_left.x
-			}
-
-			// is this point further up? -> use its y coordinate
-			if top_left.y < most_toppest_leftest.y {
-				most_toppest_leftest.y = top_left.y
-			}
-		}
-
-		// shift everything over by - the top left so its at 0,0
-		for mut cfg in app.bench.clipboard.current_clip_board {
-			cfg.translate_by(most_toppest_leftest.mul_scalar(-1))
-		}
+		utils.normalize_cfgs(mut app.bench.clipboard.current_clip_board)
 
 		return true
 	}
@@ -641,85 +627,78 @@ fn handle_copy_paste(mut app data.App) bool {
 
 		// if R is pressed while placing -> rotate the components
 		if rl.is_key_pressed(int(rl.KeyboardKey.key_q)) {
-			// get the bottom rightest point in our clipboard
-			// -> this gives us the width and height rectangle around all of our components because the top left is always 0,0
-			mut bottom_right := app.bench.clipboard.current_clip_board[0].get_bottom_right()
-			for cfg in app.bench.clipboard.current_clip_board {
-				cfg_bottom_right := cfg.get_bottom_right()
-				if cfg_bottom_right.x > bottom_right.x {
-					bottom_right.x = cfg_bottom_right.x
-				}
-				if cfg_bottom_right.y > bottom_right.y {
-					bottom_right.y = cfg_bottom_right.y
-				}
-			}
-
-			// rotate all components
-			for mut cfg in app.bench.clipboard.current_clip_board {
-				cfg.rotate(bottom_right.x, bottom_right.y)
-			}
-
-			// get the new top left after doing the rotation
-			mut top_left := app.bench.clipboard.current_clip_board[0].get_top_left()
-			for cfg in app.bench.clipboard.current_clip_board {
-				cfg_top_left := cfg.get_top_left()
-				if cfg_top_left.x < top_left.x {
-					top_left.x = cfg_top_left.x
-				}
-				if cfg_top_left.y < top_left.y {
-					top_left.y = cfg_top_left.y
-				}
-			}
-
-			// shift all components so that the top left is at 0,0 again
-			for mut cfg in app.bench.clipboard.current_clip_board {
-				cfg.translate_by(top_left.mul_scalar(-1))
-			}
-
+			utils.rotate_cfgs(mut app.bench.clipboard.current_clip_board)
 			return true
 		}
 
 		// if the left mouse button was clicked -> paste!
 		if rl.is_mouse_button_pressed(int(rl.MouseButton.mouse_button_left)) {
-			mouse_pos_in_world_space := utils.roundificate_to_whole_point(data.screenspace_to_worldspace(app,
-				app.input.mouse_pos))
-
-			for icfg in app.bench.clipboard.current_clip_board {
-				mut cfg := icfg
-				cfg.translate_by(mouse_pos_in_world_space)
-				match mut cfg {
-					data.SwitchCfg {
-						components.Switch.new(mut app, cfg)
-					}
-					data.FixedContactCfg {
-						components.FixedContact.new(mut app, cfg)
-					}
-					data.ClockCfg {
-						components.Clock.new(mut app, cfg)
-					}
-					data.LEDCfg {
-						components.LED.new(mut app, cfg)
-					}
-					data.ChipCfg {
-						components.Chip.new(mut app, cfg)
-					}
-					data.WireCfg {
-						components.Wire.new(mut app, cfg)
-					}
-					data.BusCfg {
-						components.Bus.new(mut app, cfg)
-					}
-					else {
-						assert false, 'Missing component cfg in handle_copy_paste'
-					}
-				}
-				cfg.translate_by(mouse_pos_in_world_space.mul_scalar(-1))
-			}
-
+			place_components_from_cfg(mut app, mut app.bench.clipboard.current_clip_board)
 			app.bench.bench_state = .idle
 			return true
 		}
 	}
 
 	return false
+}
+
+fn handle_blueprint_placement(mut app data.App) bool {
+	if app.bench.bench_state != .placing_blueprint {
+		return false
+	}
+
+	// if ESC is pressed while pasting -> exit the paste mode
+	if rl.is_key_pressed(int(rl.KeyboardKey.key_escape)) {
+		app.bench.bench_state = .idle
+		return true
+	}
+
+	// if R is pressed while placing -> rotate the components
+	if rl.is_key_pressed(int(rl.KeyboardKey.key_q)) {
+		utils.rotate_cfgs(mut app.bench.blueprints.current_blueprint_cfgs)
+		return true
+	}
+
+	// if the left mouse button was clicked -> paste!
+	if rl.is_mouse_button_pressed(int(rl.MouseButton.mouse_button_left)) {
+		place_components_from_cfg(mut app, mut app.bench.blueprints.current_blueprint_cfgs)
+		app.bench.bench_state = .idle
+		return true
+	}
+
+	return false
+}
+
+fn place_components_from_cfg(mut app data.App, mut cfgs []data.ComponentCfg) {
+	mouse_pos_in_world_space := utils.roundificate_to_whole_point(data.screenspace_to_worldspace(app,
+		app.input.mouse_pos))
+
+	for mut cfg in cfgs {
+		mut icfg := cfg.as_interface()
+		icfg.translate_by(mouse_pos_in_world_space)
+		match mut cfg {
+			data.SwitchCfg {
+				components.Switch.new(mut app, cfg)
+			}
+			data.FixedContactCfg {
+				components.FixedContact.new(mut app, cfg)
+			}
+			data.ClockCfg {
+				components.Clock.new(mut app, cfg)
+			}
+			data.LEDCfg {
+				components.LED.new(mut app, cfg)
+			}
+			data.ChipCfg {
+				components.Chip.new(mut app, cfg)
+			}
+			data.WireCfg {
+				components.Wire.new(mut app, cfg)
+			}
+			data.BusCfg {
+				components.Bus.new(mut app, cfg)
+			}
+		}
+		icfg.translate_by(mouse_pos_in_world_space.mul_scalar(-1))
+	}
 }

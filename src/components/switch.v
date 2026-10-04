@@ -21,14 +21,14 @@ pub fn Switch.new(mut app data.App, cfg data.SwitchCfg) Switch {
 	}
 
 	// initialize the component base with all the standardized data
-	s.ComponentBase = data.ComponentBase.new(mut app, cfg.pos, vec.vec2[int](2, 2), cfg.rot,
-		cfg.color, true)
+	s.ComponentBase = data.ComponentBase.new(mut app, cfg.pos, vec.vec2[int](2, 2), data.Rotation.from_int(cfg.rot),
+		cfg.color.to_rl(), true)
 
 	// create a dummy name for this component
 	s.comp_name = 'Switch ${s.comp_id}'
 
 	// calculate where this components bounding box is based on its rotation
-	s.aabb_offset = utils.get_aabb_offset_for_rotation(-1, -3, 2, 2, cfg.rot)
+	s.aabb_offset = utils.get_aabb_offset_for_rotation(-1, -3, 2, 2, data.Rotation.from_int(cfg.rot))
 
 	// create a new contact point where wires can connect to
 	s.contact_point = data.ContactPoint.new(mut app, if cfg.state { .high } else { .low })
@@ -43,11 +43,11 @@ pub fn Switch.new(mut app data.App, cfg data.SwitchCfg) Switch {
 	return s
 }
 
-pub fn (s Switch) get_cfg() data.IComponentCfg {
+pub fn (s Switch) get_cfg() data.ComponentCfg {
 	return data.SwitchCfg{
 		pos:   s.pos
-		rot:   s.rotation
-		color: s.color
+		rot:   s.rotation.to_int()
+		color: data.Color.from_rl(s.color)
 		state: s.state
 	}
 }

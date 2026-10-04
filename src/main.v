@@ -12,6 +12,7 @@ import fonts
 import sim
 import chip_catalog
 import storage
+import x.json2
 
 $if tinyc {
 	#flag @VMODROOT/hacks/tcc.c
@@ -28,6 +29,8 @@ fn C.emscripten_set_main_loop_arg(func fn (&data.App), arg &data.App, fps int, s
 const initial_window_width = 1600
 const initial_window_height = 900
 const window_title = 'Sim3'
+
+type SType = int | string
 
 // main ----------------------------------------------------------------------------------------------------------------
 // the programs entry point

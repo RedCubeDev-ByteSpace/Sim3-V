@@ -4,7 +4,7 @@ import math.vec
 import raylib as rl
 
 pub interface IComponent {
-	get_cfg() IComponentCfg
+	get_cfg() ComponentCfg
 
 	get_comp_id() i64
 	get_aabb() AABB

@@ -26,15 +26,15 @@ pub fn Clock.new(mut app data.App, cfg data.ClockCfg) Clock {
 	}
 
 	// initialize the component base with all the standardized data
-	c.ComponentBase = data.ComponentBase.new(mut app, cfg.pos, vec.vec2[int](2, 2), cfg.rot,
-		cfg.color, false)
+	c.ComponentBase = data.ComponentBase.new(mut app, cfg.pos, vec.vec2[int](2, 2), data.Rotation.from_int(cfg.rot),
+		cfg.color.to_rl(), false)
 	c.has_step = true
 
 	// create a dummy name for this component
 	c.comp_name = 'Clock ${c.comp_id}'
 
 	// calculate where this components bounding box is based on its rotation
-	c.aabb_offset = utils.get_aabb_offset_for_rotation(-1, -3, 2, 2, cfg.rot)
+	c.aabb_offset = utils.get_aabb_offset_for_rotation(-1, -3, 2, 2, data.Rotation.from_int(cfg.rot))
 
 	// create a new contact point where wires can connect to
 	c.contact_point = data.ContactPoint.new(mut app, .low)
@@ -49,11 +49,11 @@ pub fn Clock.new(mut app data.App, cfg data.ClockCfg) Clock {
 	return c
 }
 
-pub fn (c Clock) get_cfg() data.IComponentCfg {
+pub fn (c Clock) get_cfg() data.ComponentCfg {
 	return data.ClockCfg{
 		pos:       c.pos
-		rot:       c.rotation
-		color:     c.color
+		rot:       c.rotation.to_int()
+		color:     data.Color.from_rl(c.color)
 		ticks_max: int(c.ticks_max)
 	}
 }

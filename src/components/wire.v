@@ -20,7 +20,7 @@ pub fn Wire.new(mut app data.App, cfg data.WireCfg) Wire {
 	}
 
 	// initialize the component base with all the standardized data
-	w.WireBase = data.WireBase.new(mut app, cfg.wire_from, cfg.wire_to, cfg.color)
+	w.WireBase = data.WireBase.new(mut app, cfg.wire_from, cfg.wire_to, cfg.color.to_rl())
 
 	// create a dummy name for this component
 	w.comp_name = 'Wire ${w.comp_id}'
@@ -39,11 +39,11 @@ pub fn Wire.new(mut app data.App, cfg data.WireCfg) Wire {
 	return w
 }
 
-pub fn (w Wire) get_cfg() data.IComponentCfg {
+pub fn (w Wire) get_cfg() data.ComponentCfg {
 	return data.WireCfg{
 		wire_from: w.wire_from
 		wire_to:   w.wire_to
-		color:     w.color
+		color:     data.Color.from_rl(w.color)
 	}
 }
 

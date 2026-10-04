@@ -104,7 +104,12 @@ pub mut:
 
 		clipboard struct {
 		pub mut:
-			current_clip_board []IComponentCfg
+			current_clip_board []ComponentCfg
+		}
+
+		blueprints struct {
+		pub mut:
+			current_blueprint_cfgs []ComponentCfg
 		}
 	}
 
@@ -124,6 +129,20 @@ pub mut:
 
 		has_blueprints_directory bool
 		blueprints_directory     string
+
+		blueprints struct {
+		pub mut:
+			blueprint_dir BlueprintDirectory
+
+			gui struct {
+			pub mut:
+				is_showing_new_blueprint_dialog bool
+				has_set_dialog_size             bool
+
+				new_blueprint_name string
+				new_blueprint_path string
+			}
+		}
 	}
 
 	// fonts -----------------------------------------------------------------------------------------------------------

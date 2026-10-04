@@ -14,6 +14,9 @@ pub fn setup_storage(mut app data.App) {
 
 	// make sure we have a place to save and load blueprints from / to
 	app.storage.blueprints_directory, app.storage.has_blueprints_directory = ensure_blueprints_directory(app.storage.data_directory)
+
+	// index the blueprint directory
+	index_blueprint_directory(mut app)
 }
 
 fn ensure_data_directory() !string {
@@ -31,7 +34,7 @@ fn ensure_data_directory() !string {
 
 fn ensure_blueprints_directory(data_dir string) (string, bool) {
 	// create a .sim3 directory inside of it
-	blueprints_dir := os.join_path(data_dir, data_dir_name)
+	blueprints_dir := os.join_path(data_dir, blueprints_dir_name)
 	if !os.exists(blueprints_dir) {
 		os.mkdir(blueprints_dir) or { return '', false }
 	}

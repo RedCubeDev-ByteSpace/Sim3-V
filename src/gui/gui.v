@@ -14,6 +14,7 @@ pub fn draw_ui(mut app data.App) {
 	draw_color_window(mut app)
 	draw_components_window(mut app)
 	draw_chip_select_window(mut app)
+	draw_blueprints_windows(mut app)
 
 	for mut comp in app.sim.components.values() {
 		comp.draw_component_window(mut app)
@@ -38,6 +39,7 @@ fn draw_debug_window(mut app data.App) {
 			.moving_wire { 'moving_wire' }
 			.placing_component { 'placing_component' }
 			.pasting_components { 'pasting_component' }
+			.placing_blueprint { 'placing_blueprint' }
 		}}')
 		app.mu.label('Camera: ${camera_pos.x:.2f}, ${camera_pos.y:.2f}')
 		app.mu.label('Mouse: ${app.input.mouse_pos.x:.0}, ${app.input.mouse_pos.y:.0}')
@@ -294,7 +296,7 @@ fn draw_component_button(mut app data.App, comp_type data.SelectedComponentType,
 }
 
 fn draw_chip_select_window(mut app data.App) {
-	if app.mu.begin_window_ex('Chips', rl.Rectangle{10, 155, 260, 400}, .noclose) {
+	if app.mu.begin_window_ex('Chips', rl.Rectangle{10, 150, 260, 400}, .noclose) {
 		for group_name, chip_uids in app.catalog.groups {
 			if app.mu.header(group_name) {
 				app.mu.layout_row([10, -1], 40)

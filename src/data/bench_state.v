@@ -8,6 +8,7 @@ pub enum BenchState {
 	moving_wire
 	placing_component
 	pasting_components
+	placing_blueprint
 }
 
 pub enum SelectedComponentType {

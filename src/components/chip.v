@@ -42,7 +42,7 @@ pub fn Chip.new(mut app data.App, cfg data.ChipCfg) Chip {
 
 	// initialize the component base with all the standardized data
 	c.ComponentBase = data.ComponentBase.new(mut app, cfg.pos, vec.vec2[int](height, 2),
-		cfg.rot, cfg.color, false)
+		data.Rotation.from_int(cfg.rot), cfg.color.to_rl(), false)
 	c.has_step = true
 
 	// create a dummy name for this component
@@ -50,7 +50,7 @@ pub fn Chip.new(mut app data.App, cfg data.ChipCfg) Chip {
 
 	// calculate where this components bounding box is based on its rotation
 	c.aabb_offset = utils.get_aabb_offset_for_rotation(1, -f32(height) + 0.5, 2, height,
-		cfg.rot)
+		data.Rotation.from_int(cfg.rot))
 
 	// create a new contact points where wires can connect to
 	c.contact_points = []data.ContactPoint{len: chip_entry.pins.len}
@@ -61,7 +61,7 @@ pub fn Chip.new(mut app data.App, cfg data.ChipCfg) Chip {
 
 		app.sim.contact_point_table[c.contact_points[index_left].cont_id] = &c.contact_points[index_left]
 
-		lx, ly := utils.translate_point(cfg.pos, 0, -i, cfg.rot)
+		lx, ly := utils.translate_point(cfg.pos, 0, -i, data.Rotation.from_int(cfg.rot))
 		utils.register_contact_point(mut app, vec.vec2(lx, ly), c.contact_points[index_left].cont_id)
 
 		index_right := chip_entry.pins.len / 2 + i
@@ -69,7 +69,7 @@ pub fn Chip.new(mut app data.App, cfg data.ChipCfg) Chip {
 		c.contact_points[index_right].label = chip_entry.pins[index_right].label
 		app.sim.contact_point_table[c.contact_points[index_right].cont_id] = &c.contact_points[index_right]
 
-		rx, ry := utils.translate_point(cfg.pos, 4, -i, cfg.rot)
+		rx, ry := utils.translate_point(cfg.pos, 4, -i, data.Rotation.from_int(cfg.rot))
 		utils.register_contact_point(mut app, vec.vec2(rx, ry), c.contact_points[index_right].cont_id)
 	}
 
@@ -100,11 +100,11 @@ pub fn Chip.new(mut app data.App, cfg data.ChipCfg) Chip {
 	return c
 }
 
-pub fn (c Chip) get_cfg() data.IComponentCfg {
+pub fn (c Chip) get_cfg() data.ComponentCfg {
 	return data.ChipCfg{
 		pos:      c.pos
-		rot:      c.rotation
-		color:    c.color
+		rot:      c.rotation.to_int()
+		color:    data.Color.from_rl(c.color)
 		chip_uid: c.chip_uid
 	}
 }
