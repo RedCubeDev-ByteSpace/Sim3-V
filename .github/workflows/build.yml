@@ -13,10 +13,17 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup V
-        uses: vlang/setup-v@v1.7
-        with:
-          version: '0.5.1'
+      - name: Setup V 0.5.1
+        run: |
+          curl -fsSL \
+            https://github.com/vlang/v/releases/download/0.5.1/v_linux.zip \
+            -o v_linux.zip
+          unzip -q v_linux.zip
+          echo "$PWD/v" >> "$GITHUB_PATH"
+
+      - name: Verify V
+        run: |
+          v version
 
       - name: Compile project
         run: (cd src && v install && v .)
