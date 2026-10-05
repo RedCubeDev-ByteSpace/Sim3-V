@@ -6,6 +6,7 @@ import math.vec
 import utils
 import math
 import components
+import cfg_utils
 
 pub fn handle_input(mut app data.App) {
 	// first: share our current cursor position with microui and check if it wants to capture our input
@@ -595,7 +596,7 @@ fn handle_copy_paste(mut app data.App) bool {
 			app.bench.clipboard.current_clip_board << comp.get_cfg()
 		}
 
-		utils.normalize_cfgs(mut app.bench.clipboard.current_clip_board)
+		cfg_utils.normalize_cfgs(mut app.bench.clipboard.current_clip_board)
 
 		return true
 	}
@@ -627,7 +628,7 @@ fn handle_copy_paste(mut app data.App) bool {
 
 		// if R is pressed while placing -> rotate the components
 		if rl.is_key_pressed(int(rl.KeyboardKey.key_q)) {
-			utils.rotate_cfgs(mut app.bench.clipboard.current_clip_board)
+			cfg_utils.rotate_cfgs(mut app.bench.clipboard.current_clip_board)
 			return true
 		}
 
@@ -655,7 +656,7 @@ fn handle_blueprint_placement(mut app data.App) bool {
 
 	// if R is pressed while placing -> rotate the components
 	if rl.is_key_pressed(int(rl.KeyboardKey.key_q)) {
-		utils.rotate_cfgs(mut app.bench.blueprints.current_blueprint_cfgs)
+		cfg_utils.rotate_cfgs(mut app.bench.blueprints.current_blueprint_cfgs)
 		return true
 	}
 

@@ -1,5 +1,6 @@
 module data
 
+import raylib as rl
 import x.json2
 
 pub struct BlueprintDirectory {
@@ -13,6 +14,10 @@ pub struct Blueprint {
 pub:
 	name       string
 	components []ComponentCfg
+pub mut:
+	path    string       @[skip]
+	date    string       @[skip]
+	preview rl.Texture2D @[skip]
 }
 
 pub fn (b Blueprint) to_json() string {
@@ -26,4 +31,8 @@ pub fn (b Blueprint) to_json() string {
 	obj['components'] = components_arr
 
 	return json2.encode(obj)
+}
+
+pub fn (b Blueprint) unload_preview_texture() {
+	rl.unload_texture(b.preview)
 }

@@ -631,6 +631,10 @@ pub fn (mut ctx Context) set_clip(rect rl.Rectangle) {
 	C.mu_set_clip(ctx.mu, C.mu_rect(i32(rect.x), i32(rect.y), i32(rect.width), i32(rect.height)))
 }
 
+pub fn (mut ctx Context) unset_clip() {
+	C.mu_set_clip(ctx.mu, C.mu_rect(i32(0), i32(0), i32(0x1000000), i32(0x1000000)))
+}
+
 pub fn (mut ctx Context) draw_rect(rect rl.Rectangle, color rl.Color) {
 	C.mu_draw_rect(ctx.mu, C.mu_rect(i32(rect.x), i32(rect.y), i32(rect.width), i32(rect.height)),
 		C.mu_color(color.r, color.g, color.b, color.a))

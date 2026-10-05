@@ -7,6 +7,7 @@ import chip_catalog
 
 pub const one_simspace_unit_in_px = 20
 pub const component_line_thickness = 2
+pub const blueprint_preview_size = 60
 pub const contact_point_size = 0.1
 pub const zoom_lerp_cutoff = 0.001
 pub const zoom_trail_cutoff = 0.005

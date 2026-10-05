@@ -263,7 +263,7 @@ fn draw_components_window(mut app data.App) {
 				width:  width
 				height: height
 			}
-			rl.draw_rectangle_lines_ex(chip_box, 1.7, border_color)
+			rl.draw_rectangle_lines_ex(chip_box, 1.7, fg_color)
 
 			margin := 7
 			num_leg_rows := 3
@@ -329,7 +329,7 @@ fn draw_chip_select_window(mut app data.App) {
 fn draw_chip_button(mut app data.App, chip_uid string) bool {
 	chip := app.catalog.chips[chip_uid]
 	rect := app.mu.layout_next()
-	id := app.mu.get_id(chip.name)
+	id := app.mu.get_id(chip_uid)
 	mut clicked := false
 
 	app.mu.update_control(id, rect, microui.Opt.zero())

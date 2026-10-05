@@ -3,6 +3,7 @@ module gui
 import raylib as rl
 import data
 import storage
+import microui
 
 fn draw_blueprints_windows(mut app data.App) {
 	draw_blueprints_window(mut app)
@@ -37,9 +38,9 @@ fn draw_blueprints_dir_node(mut app data.App, dir data.BlueprintDirectory) {
 }
 
 fn draw_blueprints_dir(mut app data.App, dir data.BlueprintDirectory) {
-	app.mu.layout_row([-1], 0)
+	app.mu.layout_row([-1], data.blueprint_preview_size)
 	for blueprint in dir.blueprints {
-		if app.mu.button(blueprint.name) {
+		if draw_blueprint_button(mut app, blueprint) {
 			app.bench.selected_components.clear()
 
 			app.bench.blueprints.current_blueprint_cfgs.clear()
@@ -56,6 +57,80 @@ fn draw_blueprints_dir(mut app data.App, dir data.BlueprintDirectory) {
 	for subdir in dir.blueprint_directories {
 		draw_blueprints_dir_node(mut app, subdir)
 	}
+}
+
+fn draw_blueprint_button(mut app data.App, bp data.Blueprint) bool {
+	rect := app.mu.layout_next()
+	id := app.mu.get_id(bp.path)
+	mut clicked := false
+
+	app.mu.update_control(id, rect, microui.Opt.zero())
+	if app.mu.is_mouse_pressed(.left) && app.mu.get_focus_id() == id {
+		clicked = true
+	}
+
+	app.mu.draw_control_frame(id, rect, .button, microui.Opt.zero())
+
+	preview_size := data.blueprint_preview_size
+
+	top_rect := rl.Rectangle{
+		...rect
+		x:      rect.x + preview_size
+		y:      rect.y + 3
+		height: rect.height / 3
+	}
+	top_rect_faux_bold := rl.Rectangle{
+		...top_rect
+		x: top_rect.x + 1
+	}
+	bottom_rect := rl.Rectangle{
+		...top_rect
+		y: top_rect.y + top_rect.height - 4
+	}
+	app.mu.draw_control_text(bp.name, top_rect, .text, microui.Opt.zero())
+	app.mu.draw_control_text(bp.name, top_rect_faux_bold, .text, microui.Opt.zero())
+	app.mu.draw_control_text(bp.date, bottom_rect, .text, microui.Opt.zero())
+
+	// draw preview
+	preview_rect := rl.Rectangle{
+		...rect
+		width:  preview_size
+		height: preview_size
+	}
+
+	texture := bp.preview
+	app.mu.set_clip(app.mu.get_current_container_body())
+	app.mu.draw_custom(preview_rect, app, fn [texture] (rect rl.Rectangle, _ voidptr) {
+		mut dest_rect := rl.Rectangle{0, 0, texture.width, texture.height}
+
+		if dest_rect.width > dest_rect.height {
+			if dest_rect.width > rect.width {
+				dest_rect = rl.Rectangle{
+					...dest_rect
+					width:  rect.width
+					height: rect.width * (dest_rect.height / dest_rect.width)
+				}
+			}
+		} else {
+			if dest_rect.height > rect.height {
+				dest_rect = rl.Rectangle{
+					...dest_rect
+					width:  rect.height * (dest_rect.width / dest_rect.height)
+					height: rect.height
+				}
+			}
+		}
+
+		rl.draw_texture_pro(texture, rl.Rectangle{0, 0, texture.width, -texture.height},
+			rl.Rectangle{
+			...dest_rect
+			x: rect.x + (rect.width - dest_rect.width) / 2
+			y: rect.y + (rect.height - dest_rect.height) / 2
+		}, rl.Vector2{0, 0}, 0, rl.white)
+	})
+	app.mu.unset_clip()
+
+	return clicked
 }
 
 fn draw_new_blueprint_dialog(mut app data.App) {

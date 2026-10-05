@@ -5,6 +5,7 @@ import utils
 import raylib as rl
 import math.vec
 import components
+import cfg_utils
 
 // simview -------------------------------------------------------------------------------------------------------------
 // this module is all about the drawing side of things
@@ -307,7 +308,12 @@ fn draw_preview_of_components_being_pasted(app data.App) {
 			a: 150
 		}
 
-		draw_component_from_cfg(app, cfg, color)
+		// figure out where to draw this preview of a component
+		mouse_pos_world_space := data.screenspace_to_worldspace(app, app.input.mouse_pos)
+		comp_pos_screen_space := data.worldspace_to_screenspace(app, utils.roundificate_to_whole_point(mouse_pos_world_space))
+
+		cfg_utils.draw_component_from_cfg(app, utils.vi_to_vf(comp_pos_screen_space),
+			app.view.zoom, cfg, color, false)
 	}
 }
 
@@ -323,55 +329,12 @@ fn draw_preview_of_blueprint_being_placed(app data.App) {
 			a: 150
 		}
 
-		draw_component_from_cfg(app, cfg, color)
-	}
-}
+		// figure out where to draw this preview of a component
+		mouse_pos_world_space := data.screenspace_to_worldspace(app, app.input.mouse_pos)
+		comp_pos_screen_space := data.worldspace_to_screenspace(app, utils.roundificate_to_whole_point(mouse_pos_world_space))
 
-fn draw_component_from_cfg(app data.App, cfg data.ComponentCfg, color rl.Color) {
-	// figure out where to draw this preview of a component
-	mouse_pos_world_space := data.screenspace_to_worldspace(app, app.input.mouse_pos)
-	comp_pos_screen_space := data.worldspace_to_screenspace(app, utils.roundificate_to_whole_point(mouse_pos_world_space))
-
-	// prepare the variables needed for drawing any components
-	pos := vec.vec2(f32(comp_pos_screen_space.x), f32(comp_pos_screen_space.y))
-	zoomed_unit := data.one_simspace_unit_in_px * app.view.zoom
-
-	match cfg {
-		data.SwitchCfg {
-			offset := utils.vi_to_vf(cfg.pos).mul_scalar(zoomed_unit)
-			components.Switch.draw(pos.add(offset), zoomed_unit, color, cfg.state, data.Rotation.from_int(cfg.rot))
-		}
-		data.FixedContactCfg {
-			offset := utils.vi_to_vf(cfg.pos).mul_scalar(zoomed_unit)
-			components.FixedContact.draw(app, pos.add(offset), zoomed_unit, color, cfg.state,
-				data.Rotation.from_int(cfg.rot))
-		}
-		data.ClockCfg {
-			offset := utils.vi_to_vf(cfg.pos).mul_scalar(zoomed_unit)
-			components.Clock.draw(pos.add(offset), zoomed_unit, color, 0, cfg.frequency,
-				data.Rotation.from_int(cfg.rot))
-		}
-		data.LEDCfg {
-			offset := utils.vi_to_vf(cfg.pos).mul_scalar(zoomed_unit)
-			components.LED.draw(pos.add(offset), zoomed_unit, color, false, data.Rotation.from_int(cfg.rot))
-		}
-		data.ChipCfg {
-			offset := utils.vi_to_vf(cfg.pos).mul_scalar(zoomed_unit)
-			components.Chip.draw(app, pos.add(offset), zoomed_unit, color, data.Rotation.from_int(cfg.rot),
-				cfg.chip_uid, []data.ContactPoint{})
-		}
-		data.WireCfg {
-			wire_from := utils.vi_to_vf(cfg.wire_from).mul_scalar(zoomed_unit)
-			wire_to := utils.vi_to_vf(cfg.wire_to).mul_scalar(zoomed_unit)
-			components.Wire.draw(utils.vf_to_vi(wire_from.add(pos)), utils.vf_to_vi(wire_to.add(pos)),
-				app.view.zoom, .low, color)
-		}
-		data.BusCfg {
-			wire_from := utils.vi_to_vf(cfg.wire_from).mul_scalar(zoomed_unit)
-			wire_to := utils.vi_to_vf(cfg.wire_to).mul_scalar(zoomed_unit)
-			components.Bus.draw(utils.vf_to_vi(wire_from.add(pos)), utils.vf_to_vi(wire_to.add(pos)),
-				app.view.zoom, color)
-		}
+		cfg_utils.draw_component_from_cfg(app, utils.vi_to_vf(comp_pos_screen_space),
+			app.view.zoom, cfg, color, false)
 	}
 }
 
