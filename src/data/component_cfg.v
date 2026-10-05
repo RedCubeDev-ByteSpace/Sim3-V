@@ -118,7 +118,7 @@ pub:
 pub struct ClockCfg {
 	ComponentBaseCfg
 pub:
-	ticks_max int
+	frequency f32
 }
 
 @[params]

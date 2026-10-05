@@ -32,5 +32,5 @@ mut:
 	interact()
 	open_component_window()
 	draw_component_window(mut app App)
-	step(app App)
+	step(app App, delta f32)
 }

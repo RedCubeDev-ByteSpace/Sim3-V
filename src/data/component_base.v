@@ -107,7 +107,7 @@ pub fn (c ComponentBase) has_step() bool {
 
 pub fn (mut c ComponentBase) interact() {}
 
-pub fn (mut c ComponentBase) step(app App) {}
+pub fn (mut c ComponentBase) step(app App, delta f32) {}
 
 pub fn (mut c ComponentBase) open_component_window() {
 	c.component_window_open = true

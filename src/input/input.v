@@ -490,7 +490,7 @@ fn handle_component_placement(mut app data.App) bool {
 					pos:       placement_pos
 					rot:       rotation
 					color:     color
-					ticks_max: 60
+					frequency: 1
 				)
 			}
 			.led {

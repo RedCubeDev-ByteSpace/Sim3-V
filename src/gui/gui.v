@@ -25,7 +25,7 @@ pub fn draw_ui(mut app data.App) {
 }
 
 fn draw_debug_window(mut app data.App) {
-	if app.mu.begin_window_ex('Debug Window', rl.Rectangle{0, 0, 250, 240}, .noclose) {
+	if app.mu.begin_window_ex('Debug Window', rl.Rectangle{0, 0, 250, 260}, .noclose) {
 		app.mu.layout_row([-1], 12)
 
 		camera_pos := app.view.camera_position.add(app.view.camera_offset.div_scalar(app.view.zoom * data.one_simspace_unit_in_px))
@@ -70,7 +70,7 @@ fn draw_debug_window(mut app data.App) {
 
 		app.mu.layout_row([130, -1], 0)
 		app.mu.label('Sim-Steps per Frame')
-		app.mu.slider(app.sim.steps_per_frame, 1, 50)
+		app.mu.slider_ex(app.sim.steps_per_frame, 1, 50, 1, '%.0f', microui.Opt.zero())
 
 		app.mu.end_window()
 	}

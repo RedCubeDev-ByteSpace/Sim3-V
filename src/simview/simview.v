@@ -348,7 +348,7 @@ fn draw_component_from_cfg(app data.App, cfg data.ComponentCfg, color rl.Color) 
 		}
 		data.ClockCfg {
 			offset := utils.vi_to_vf(cfg.pos).mul_scalar(zoomed_unit)
-			components.Clock.draw(pos.add(offset), zoomed_unit, color, 0, cfg.ticks_max,
+			components.Clock.draw(pos.add(offset), zoomed_unit, color, 0, cfg.frequency,
 				data.Rotation.from_int(cfg.rot))
 		}
 		data.LEDCfg {

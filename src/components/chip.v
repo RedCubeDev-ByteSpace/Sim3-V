@@ -273,7 +273,7 @@ fn (mut c Chip) draw_component_window(mut app data.App) {
 	}
 }
 
-pub fn (mut c Chip) step(app data.App) {
+pub fn (mut c Chip) step(app data.App, delta f32) {
 	if !c.lua_state_initialized || !c.script_capabilities.has_step {
 		return
 	}
