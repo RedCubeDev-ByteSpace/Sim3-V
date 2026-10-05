@@ -18,8 +18,5 @@ jobs:
         with:
           check-latest: true
 
-      - name: Go into Source dir
-        run: cd src
-
       - name: Compile project
-        run: (cd src && v .)
+        run: (cd src && v install && v .)
