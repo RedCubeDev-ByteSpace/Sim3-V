@@ -20,6 +20,7 @@ jobs:
             git \
             cmake \
             build-essential \
+            liblua5.4-dev \
             libasound2-dev \
             libx11-dev \
             libxrandr-dev \
