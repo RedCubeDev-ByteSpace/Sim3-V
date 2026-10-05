@@ -1,0 +1,22 @@
+name: V Compiler Status
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup V
+        uses: vlang/setup-v@v1.4
+        with:
+          check-latest: true
+
+      - name: Compile project
+        run: v .
