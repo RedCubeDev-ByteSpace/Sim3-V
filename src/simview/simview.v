@@ -26,6 +26,10 @@ pub fn draw_view(app data.App) {
 }
 
 fn draw_wires(app data.App) {
+	if app.view.debug.draw_only_led {
+		return
+	}
+
 	// get the AABB for the current viewport
 	view_aabb := data.get_viewport_aabb(app)
 
@@ -55,6 +59,12 @@ fn draw_components(app data.App) {
 		if comp is data.IWireBase {
 			continue
 		}
+		if app.view.debug.draw_only_led {
+			if comp is components.LED {
+			} else {
+				continue
+			}
+		}
 
 		// only draw components that are touching the current viewports aabb
 		if data.do_aabbs_intersect(view_aabb, comp.get_aabb()) {
@@ -69,6 +79,10 @@ fn draw_components(app data.App) {
 }
 
 fn draw_wire_branching_points(app data.App) {
+	if app.view.debug.draw_only_led {
+		return
+	}
+
 	for marker in app.sim.wire_branching_points {
 		marker_pos := data.worldspace_to_screenspace(app, marker.pos)
 

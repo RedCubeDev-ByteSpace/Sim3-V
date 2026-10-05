@@ -4,7 +4,6 @@ import data
 import math.vec
 import raylib as rl
 import utils
-import fonts
 
 pub struct Bus {
 	data.WireBase

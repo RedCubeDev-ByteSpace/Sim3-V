@@ -2,7 +2,6 @@ module utils
 
 import data
 import raylib as rl
-import fonts
 import math.vec
 import chip_catalog
 

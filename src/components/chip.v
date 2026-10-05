@@ -4,7 +4,6 @@ import raylib as rl
 import math.vec
 import data
 import utils
-import abuss.vlua.vlua
 import lua
 import chip_catalog
 import math

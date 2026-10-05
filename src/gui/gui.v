@@ -25,7 +25,7 @@ pub fn draw_ui(mut app data.App) {
 }
 
 fn draw_debug_window(mut app data.App) {
-	if app.mu.begin_window_ex('Debug Window', rl.Rectangle{0, 0, 220, 180}, .noclose) {
+	if app.mu.begin_window_ex('Debug Window', rl.Rectangle{0, 0, 250, 240}, .noclose) {
 		app.mu.layout_row([-1], 12)
 
 		camera_pos := app.view.camera_position.add(app.view.camera_offset.div_scalar(app.view.zoom * data.one_simspace_unit_in_px))
@@ -61,8 +61,16 @@ fn draw_debug_window(mut app data.App) {
 		app.mu.layout_row([1, -1], 0)
 		app.mu.layout_next()
 		app.mu.checkbox('Draw AABBs', app.view.debug.show_aabb)
+
 		app.mu.layout_next()
 		app.mu.checkbox('Draw Contact Points', app.view.debug.show_contacts)
+
+		app.mu.layout_next()
+		app.mu.checkbox('Only Draw LEDs', app.view.debug.draw_only_led)
+
+		app.mu.layout_row([130, -1], 0)
+		app.mu.label('Sim-Steps per Frame')
+		app.mu.slider(app.sim.steps_per_frame, 1, 50)
 
 		app.mu.end_window()
 	}

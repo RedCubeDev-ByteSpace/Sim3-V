@@ -3,7 +3,7 @@ module sim
 import data
 
 pub fn step_simulation(mut app data.App) {
-	for i in 0 .. 5 {
+	for _ in 0 .. int(app.sim.steps_per_frame) {
 		// reconstruct the wire meshes, if needed
 		recalculate_wire_meshes(mut app)
 

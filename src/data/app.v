@@ -43,6 +43,7 @@ pub mut:
 		pub mut:
 			show_aabb     bool
 			show_contacts bool
+			draw_only_led bool
 		}
 	}
 
@@ -74,6 +75,8 @@ pub mut:
 		contact_point_table          map[i64]&ContactPoint
 		contact_point_positions      map[string][]i64
 		wire_branching_points        []WireBranchingPoint = []
+
+		steps_per_frame f32 = 5
 	}
 
 	// bench -----------------------------------------------------------------------------------------------------------

@@ -1,7 +1,6 @@
 module data
 
 import x.json2
-import json
 
 pub struct BlueprintDirectory {
 pub mut:

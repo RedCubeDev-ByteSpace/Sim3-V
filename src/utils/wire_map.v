@@ -2,7 +2,6 @@ module utils
 
 import math.vec
 import data
-import raylib
 
 pub fn register_wire(mut app data.App, pos vec.Vec2[int], wire_comp_id i64) {
 	key := vec_to_str(pos)

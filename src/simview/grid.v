@@ -3,7 +3,6 @@ module simview
 import raylib as rl
 import data
 import math
-import utils
 import math.vec
 
 fn draw_grid(app data.App) {

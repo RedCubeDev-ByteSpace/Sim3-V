@@ -3,7 +3,6 @@ module data
 import math.vec
 import raylib as rl
 import x.json2
-import v2.gen.v
 
 pub interface IComponentCfg {
 	get_top_left() vec.Vec2[int]

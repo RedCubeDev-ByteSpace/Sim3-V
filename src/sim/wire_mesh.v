@@ -111,7 +111,7 @@ fn recalculate_wire_meshes(mut app data.App) {
 			// translate all contact point ids into real references
 			mut contact_points := []&data.ContactPoint{}
 			for cont_id in wire_mesh_contact_point_ids {
-				contact_points << app.sim.contact_point_table[cont_id]
+				contact_points << app.sim.contact_point_table[cont_id] or { continue }
 			}
 
 			// if theres no more wires to connect to this mesh

@@ -1,7 +1,6 @@
 module chip_catalog
 
 import os
-import net.http.file
 import x.json2
 
 pub fn load_catalogs(path string) !(map[string]ChipEntry, map[string][]string) {

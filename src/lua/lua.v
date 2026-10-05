@@ -2,7 +2,6 @@ module lua
 
 import abuss.vlua.vlua
 import data
-import encoding.vorbis
 
 const message_pack_stub = "package.path = package.path .. ';./src/res/lib/MessagePack.lua';"
 const chip_base_library = './src/res/lib/base.lua'

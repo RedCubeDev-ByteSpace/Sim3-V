@@ -6,13 +6,11 @@ import gui
 import data
 import simview
 import input
-import components
 import math.vec
 import fonts
 import sim
 import chip_catalog
 import storage
-import x.json2
 
 $if tinyc {
 	#flag @VMODROOT/hacks/tcc.c
@@ -30,8 +28,6 @@ const initial_window_width = 1600
 const initial_window_height = 900
 const window_title = 'Sim3'
 
-type SType = int | string
-
 // main ----------------------------------------------------------------------------------------------------------------
 // the programs entry point
 fn main() {
@@ -41,7 +37,7 @@ fn main() {
 	// create a new raylib window
 	rl.set_config_flags(rl.ConfigFlags.flag_msaa_4x_hint)
 	rl.init_window(initial_window_width, initial_window_height, window_title)
-	// rl.set_target_fps(60)
+	rl.set_target_fps(60)
 	rl.set_exit_key(0)
 	rl.set_window_state(.flag_window_resizable)
 
