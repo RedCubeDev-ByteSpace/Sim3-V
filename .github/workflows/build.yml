@@ -1,4 +1,4 @@
-name: V Compiler Status
+name: V 0.5.1
 
 on:
   push:
