@@ -18,5 +18,8 @@ jobs:
         with:
           check-latest: true
 
+      - name: Go into Source dir
+        run: cd src
+
       - name: Compile project
         run: v .
