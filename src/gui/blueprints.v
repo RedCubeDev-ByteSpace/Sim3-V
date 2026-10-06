@@ -93,9 +93,10 @@ fn draw_blueprint_button(mut app data.App, bp data.Blueprint) bool {
 
 	// draw preview
 	preview_rect := rl.Rectangle{
-		...rect
-		width:  preview_size
-		height: preview_size
+		x:      rect.x + 2
+		y:      rect.y + 2
+		width:  preview_size - 4
+		height: preview_size - 4
 	}
 
 	texture := bp.preview

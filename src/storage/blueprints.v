@@ -52,7 +52,7 @@ fn index_directory(app data.App, path string) data.BlueprintDirectory {
 		// try to deserialize it
 		mut blueprint := json2.decode[data.Blueprint](file_content) or { panic(err) }
 		blueprint.path = file_path
-		blueprint.date = time.unix(os.file_last_mod_unix(file_path)).format_ss()
+		blueprint.date = time.unix(os.file_last_mod_unix(file_path)).local().format_ss()
 		blueprint.preview = render_preview_texture(app, blueprint.components)
 
 		// store it in the index
@@ -133,7 +133,7 @@ fn render_preview_texture(app data.App, cfgs []data.ComponentCfg) rl.Texture2D {
 
 	// add the margin to the bottom_right
 	bottom_right = bottom_right.add(vec.vec2(margin_in_worldspace, margin_in_worldspace))
-	max_preview_side_length := f32(data.blueprint_preview_size - 4)
+	max_preview_side_length := f32(data.blueprint_preview_size * 2)
 	zoom := if bottom_right.x > bottom_right.y {
 		max_preview_side_length / (bottom_right.x * data.one_simspace_unit_in_px)
 	} else {
@@ -158,7 +158,7 @@ fn render_preview_texture(app data.App, cfgs []data.ComponentCfg) rl.Texture2D {
 
 	rl.image_alpha_crop(&img, 0.1)
 	texture := rl.load_texture_from_image(img)
-	// rl.set_texture_filter(texture, int(rl.TextureFilter.texture_filter_anisotropic_4x))
+	rl.set_texture_filter(texture, int(rl.TextureFilter.texture_filter_bilinear))
 
 	// shift all cfgs back over by the margin
 	for cfg in cfgs {

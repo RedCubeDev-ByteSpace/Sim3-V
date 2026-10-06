@@ -116,3 +116,37 @@ pub fn draw_component_from_cfg(app data.App, screen_pos vec.Vec2[f32], zoom f32,
 		}
 	}
 }
+
+pub fn place_components_from_cfg(mut app data.App, mut cfgs []data.ComponentCfg) {
+	mouse_pos_in_world_space := utils.roundificate_to_whole_point(data.screenspace_to_worldspace(app,
+		app.input.mouse_pos))
+
+	for mut cfg in cfgs {
+		mut icfg := cfg.as_interface()
+		icfg.translate_by(mouse_pos_in_world_space)
+		match mut cfg {
+			data.SwitchCfg {
+				components.Switch.new(mut app, cfg)
+			}
+			data.FixedContactCfg {
+				components.FixedContact.new(mut app, cfg)
+			}
+			data.ClockCfg {
+				components.Clock.new(mut app, cfg)
+			}
+			data.LEDCfg {
+				components.LED.new(mut app, cfg)
+			}
+			data.ChipCfg {
+				components.Chip.new(mut app, cfg)
+			}
+			data.WireCfg {
+				components.Wire.new(mut app, cfg)
+			}
+			data.BusCfg {
+				components.Bus.new(mut app, cfg)
+			}
+		}
+		icfg.translate_by(mouse_pos_in_world_space.mul_scalar(-1))
+	}
+}
