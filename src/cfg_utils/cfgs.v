@@ -80,38 +80,38 @@ pub fn draw_component_from_cfg(app data.App, screen_pos vec.Vec2[f32], zoom f32,
 	match cfg {
 		data.SwitchCfg {
 			offset := utils.vi_to_vf(cfg.pos).mul_scalar(zoomed_unit)
-			components.Switch.draw(screen_pos.add(offset), zoomed_unit, color, cfg.state,
+			components.Switch.draw_static(screen_pos.add(offset), zoomed_unit, color, cfg.state,
 				data.Rotation.from_int(cfg.rot))
 		}
 		data.FixedContactCfg {
 			offset := utils.vi_to_vf(cfg.pos).mul_scalar(zoomed_unit)
-			components.FixedContact.draw(app, screen_pos.add(offset), zoomed_unit, color,
+			components.FixedContact.draw_static(app, screen_pos.add(offset), zoomed_unit, color,
 				cfg.state, data.Rotation.from_int(cfg.rot))
 		}
 		data.ClockCfg {
 			offset := utils.vi_to_vf(cfg.pos).mul_scalar(zoomed_unit)
-			components.Clock.draw(screen_pos.add(offset), zoomed_unit, color, 0, cfg.frequency,
+			components.Clock.draw_static(screen_pos.add(offset), zoomed_unit, color, 0, cfg.frequency,
 				data.Rotation.from_int(cfg.rot))
 		}
 		data.LEDCfg {
 			offset := utils.vi_to_vf(cfg.pos).mul_scalar(zoomed_unit)
-			components.LED.draw(screen_pos.add(offset), zoomed_unit, color, false, data.Rotation.from_int(cfg.rot))
+			components.LED.draw_static(screen_pos.add(offset), zoomed_unit, color, false, data.Rotation.from_int(cfg.rot))
 		}
 		data.ChipCfg {
 			offset := utils.vi_to_vf(cfg.pos).mul_scalar(zoomed_unit)
-			components.Chip.draw(app, screen_pos.add(offset), zoomed_unit, color, data.Rotation.from_int(cfg.rot),
+			components.Chip.draw_static(app, screen_pos.add(offset), zoomed_unit, color, data.Rotation.from_int(cfg.rot),
 				cfg.chip_uid, []data.ContactPoint{})
 		}
 		data.WireCfg {
 			wire_from := utils.vi_to_vf(cfg.wire_from).mul_scalar(zoomed_unit)
 			wire_to := utils.vi_to_vf(cfg.wire_to).mul_scalar(zoomed_unit)
-			components.Wire.draw(utils.vf_to_vi(wire_from.add(screen_pos)), utils.vf_to_vi(wire_to.add(screen_pos)),
+			components.Wire.draw_static(utils.vf_to_vi(wire_from.add(screen_pos)), utils.vf_to_vi(wire_to.add(screen_pos)),
 				zoom, .low, color, single_pixel_wires)
 		}
 		data.BusCfg {
 			wire_from := utils.vi_to_vf(cfg.wire_from).mul_scalar(zoomed_unit)
 			wire_to := utils.vi_to_vf(cfg.wire_to).mul_scalar(zoomed_unit)
-			components.Bus.draw(utils.vf_to_vi(wire_from.add(screen_pos)), utils.vf_to_vi(wire_to.add(screen_pos)),
+			components.Bus.draw_static(utils.vf_to_vi(wire_from.add(screen_pos)), utils.vf_to_vi(wire_to.add(screen_pos)),
 				zoom, color, single_pixel_wires)
 		}
 	}

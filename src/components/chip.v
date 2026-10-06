@@ -166,10 +166,10 @@ pub fn (mut c Chip) on_delete(mut app data.App) {
 
 fn (c &Chip) draw(app data.App) {
 	contact_point, zoomed_unit := utils.get_drawing_variables(app, c.ComponentBase)
-	Chip.draw(app, contact_point, zoomed_unit, c.color, c.rotation, c.chip_uid, c.contact_points)
+	Chip.draw_static(app, contact_point, zoomed_unit, c.color, c.rotation, c.chip_uid, c.contact_points)
 }
 
-pub fn Chip.draw(app data.App, contact_point vec.Vec2[f32], zoomed_unit f32, color rl.Color, rot data.Rotation, chip_uid string, contact_points []data.ContactPoint) {
+pub fn Chip.draw_static(app data.App, contact_point vec.Vec2[f32], zoomed_unit f32, color rl.Color, rot data.Rotation, chip_uid string, contact_points []data.ContactPoint) {
 	low_color := data.get_low_color_from_high_color(color)
 	chip := app.catalog.chips[chip_uid]
 	height := chip.pins.len / 2

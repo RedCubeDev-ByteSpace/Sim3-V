@@ -154,19 +154,19 @@ pub fn (c ComponentCfg) as_interface() IComponentCfg {
 	}
 }
 
-pub fn (c ComponentCfg) to_json2() json2.Any {
-	mut obj := map[string]json2.Any{}
-
-	// generate the json encoding relaying logic at compile time
-	$for var in ComponentCfg.variants {
-		if c is var {
-			// encode the components data
-			obj = json2.map_from(c)
-			dump(obj)
-
-			// inject the objects type name for decoding later
-			obj['_type'] = typeof(c).name
-		}
-	}
-	return obj
-}
+// pub fn (c ComponentCfg) to_json2() json2.Any {
+// 	mut obj := map[string]json2.Any{}
+//
+// 	// generate the json encoding relaying logic at compile time
+// 	$for var in ComponentCfg.variants {
+// 		if c is var {
+// 			// encode the components data
+// 			obj = json2.map_from(c)
+// 			dump(obj)
+//
+// 			// inject the objects type name for decoding later
+// 			obj['_type'] = typeof(c).name
+// 		}
+// 	}
+// 	return obj
+// }

@@ -63,7 +63,7 @@ fn main() {
 	// set the font spacing to 1
 	style.font = microui.SizedFont{
 		size: 15
-		font: rl.load_font_ex('./src/res/tahoma.ttf', 15, unsafe { nil }, unsafe { nil })
+		font: rl.load_font_ex('./src/res/tahoma.ttf', 15, unsafe { nil }, 0)
 	}
 
 	// change some of the colors

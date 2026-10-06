@@ -219,11 +219,11 @@ fn draw_marching_ants_line(app data.App, color rl.Color, off int, s int, e int, 
 		if !vertical {
 			rl.draw_line(start + data.marching_ants_segment_size * num_segments, level,
 				start + data.marching_ants_segment_size * num_segments +
-				int(end - start) % data.marching_ants_segment_size, level, color)
+					int(end - start) % data.marching_ants_segment_size, level, color)
 		} else {
 			rl.draw_line(level, start + data.marching_ants_segment_size * num_segments,
 				level, start + data.marching_ants_segment_size * num_segments +
-				int(end - start) % data.marching_ants_segment_size, color)
+					int(end - start) % data.marching_ants_segment_size, color)
 		}
 	}
 
@@ -263,19 +263,19 @@ fn draw_preview_of_component_being_placed(app data.App) {
 	match app.bench.placement.current_selected_component_type {
 		.none {}
 		.switch {
-			components.Switch.draw(pos, zoomed_unit, color, false, app.bench.placement.rotation)
+			components.Switch.draw_static(pos, zoomed_unit, color, false, app.bench.placement.rotation)
 		}
 		.fixed_contact {
-			components.FixedContact.draw(app, pos, zoomed_unit, color, false, app.bench.placement.rotation)
+			components.FixedContact.draw_static(app, pos, zoomed_unit, color, false, app.bench.placement.rotation)
 		}
 		.clock {
-			components.Clock.draw(pos, zoomed_unit, color, 0, 0, app.bench.placement.rotation)
+			components.Clock.draw_static(pos, zoomed_unit, color, 0, 0, app.bench.placement.rotation)
 		}
 		.led {
-			components.LED.draw(pos, zoomed_unit, color, false, app.bench.placement.rotation)
+			components.LED.draw_static(pos, zoomed_unit, color, false, app.bench.placement.rotation)
 		}
 		.chip {
-			components.Chip.draw(app, pos, zoomed_unit, color, app.bench.placement.rotation,
+			components.Chip.draw_static(app, pos, zoomed_unit, color, app.bench.placement.rotation,
 				app.bench.placement.current_selected_chip_uid, []data.ContactPoint{})
 		}
 		.wire, .bus {

@@ -110,6 +110,10 @@ fn measure_text_height(ref voidptr) i32 {
 }
 
 fn measure_text_width(ref voidptr, const_str &char, len i32) i32 {
+	if const_str == unsafe { nil } {
+		return 0
+	}
+
 	// unpack the reference to our font wrapper object
 	font_wrapper := unsafe { &SizedFont(ref) }
 
@@ -274,22 +278,22 @@ pub fn (mut ctx Context) render() {
 			c.mu_command_rect {
 				rl.draw_rectangle(unsafe { cmd.rect.rect.x }, unsafe { cmd.rect.rect.y },
 					unsafe { cmd.rect.rect.w }, unsafe { cmd.rect.rect.h }, rl.Color{
-					r: unsafe { cmd.rect.color.r }
-					g: unsafe { cmd.rect.color.g }
-					b: unsafe { cmd.rect.color.b }
-					a: unsafe { cmd.rect.color.a }
-				})
+						r: unsafe { cmd.rect.color.r }
+						g: unsafe { cmd.rect.color.g }
+						b: unsafe { cmd.rect.color.b }
+						a: unsafe { cmd.rect.color.a }
+					})
 			}
 			c.mu_command_text {
 				font := unsafe { &SizedFont(cmd.text.font) }
 				text := unsafe { cstring_to_vstring(&cmd.text.str[0]) }
 				rl.draw_text_ex(font.font, text, rl.Vector2{unsafe { cmd.text.pos.x }, unsafe { cmd.text.pos.y }},
 					font.size, 1, rl.Color{
-					r: unsafe { cmd.text.color.r }
-					g: unsafe { cmd.text.color.g }
-					b: unsafe { cmd.text.color.b }
-					a: unsafe { cmd.text.color.a }
-				})
+						r: unsafe { cmd.text.color.r }
+						g: unsafe { cmd.text.color.g }
+						b: unsafe { cmd.text.color.b }
+						a: unsafe { cmd.text.color.a }
+					})
 			}
 			c.mu_command_clip {
 				x := unsafe { cmd.clip.rect.x }
@@ -317,11 +321,11 @@ pub fn (mut ctx Context) render() {
 					}
 					rl.draw_texture_pro(ctx.icon_atlas, atlas_rect, screen_rect, rl.Vector2{0, 0},
 						0, rl.Color{
-						r: unsafe { cmd.icon.color.r }
-						g: unsafe { cmd.icon.color.g }
-						b: unsafe { cmd.icon.color.b }
-						a: unsafe { cmd.icon.color.a }
-					})
+							r: unsafe { cmd.icon.color.r }
+							g: unsafe { cmd.icon.color.g }
+							b: unsafe { cmd.icon.color.b }
+							a: unsafe { cmd.icon.color.a }
+						})
 				}
 			}
 			c.mu_command_cust {
@@ -403,7 +407,7 @@ pub fn (mut ctx Context) end_window_bool_controlled(is_open &bool) {
 	container := C.mu_get_current_container(ctx.mu)
 	C.mu_end_window(ctx.mu)
 	unsafe {
-		*is_open = container.open != 0
+		*is_open = container.@open != 0
 	}
 }
 
@@ -516,12 +520,12 @@ pub fn (mut ctx Context) bring_container_to_front(name string) {
 
 pub fn (mut ctx Context) set_container_open(name string, isopen bool) {
 	mut container := C.mu_get_container(ctx.mu, name.str)
-	container.open = if isopen { 1 } else { 0 }
+	container.@open = if isopen { 1 } else { 0 }
 }
 
 pub fn (mut ctx Context) get_container_open(name string) bool {
 	mut container := C.mu_get_container(ctx.mu, name.str)
-	return container.open != 0
+	return container.@open != 0
 }
 
 pub fn (mut ctx Context) get_container_rect(name string) rl.Rectangle {

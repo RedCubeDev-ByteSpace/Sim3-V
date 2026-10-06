@@ -68,11 +68,11 @@ pub fn (mut w Wire) on_delete(mut app data.App) {
 }
 
 fn (w &Wire) draw(app data.App) {
-	Wire.draw(data.worldspace_to_screenspace(app, w.wire_from.add(w.offset_from)), data.worldspace_to_screenspace(app,
+	Wire.draw_static(data.worldspace_to_screenspace(app, w.wire_from.add(w.offset_from)), data.worldspace_to_screenspace(app,
 		w.wire_to.add(w.offset_to)), app.view.zoom, w.state, w.color, false)
 }
 
-pub fn Wire.draw(wire_from vec.Vec2[int], wire_to vec.Vec2[int], zoom f32, state data.WireState, color rl.Color, single_pixel_wire bool) {
+pub fn Wire.draw_static(wire_from vec.Vec2[int], wire_to vec.Vec2[int], zoom f32, state data.WireState, color rl.Color, single_pixel_wire bool) {
 	draw_zoom := if zoom > 1 { 1 } else { zoom }
 
 	if state == .error {
@@ -82,13 +82,13 @@ pub fn Wire.draw(wire_from vec.Vec2[int], wire_to vec.Vec2[int], zoom f32, state
 
 	wire_thickness := match state {
 		.low {
-			data.component_line_thickness
+			f32(data.component_line_thickness)
 		}
 		.high {
-			data.component_line_thickness * 1.5
+			f32(data.component_line_thickness * 1.5)
 		}
 		.error {
-			data.component_line_thickness
+			f32(data.component_line_thickness)
 		}
 	}
 

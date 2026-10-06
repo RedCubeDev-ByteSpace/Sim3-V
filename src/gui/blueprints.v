@@ -3,7 +3,6 @@ module gui
 import raylib as rl
 import data
 import storage
-import microui
 
 fn draw_blueprints_windows(mut app data.App) {
 	draw_blueprints_window(mut app)
@@ -64,12 +63,12 @@ fn draw_blueprint_button(mut app data.App, bp data.Blueprint) bool {
 	id := app.mu.get_id(bp.path)
 	mut clicked := false
 
-	app.mu.update_control(id, rect, microui.Opt.zero())
+	app.mu.update_control(id, rect, 0)
 	if app.mu.is_mouse_pressed(.left) && app.mu.get_focus_id() == id {
 		clicked = true
 	}
 
-	app.mu.draw_control_frame(id, rect, .button, microui.Opt.zero())
+	app.mu.draw_control_frame(id, rect, .button, 0)
 
 	preview_size := data.blueprint_preview_size
 
@@ -87,9 +86,9 @@ fn draw_blueprint_button(mut app data.App, bp data.Blueprint) bool {
 		...top_rect
 		y: top_rect.y + top_rect.height - 4
 	}
-	app.mu.draw_control_text(bp.name, top_rect, .text, microui.Opt.zero())
-	app.mu.draw_control_text(bp.name, top_rect_faux_bold, .text, microui.Opt.zero())
-	app.mu.draw_control_text(bp.date, bottom_rect, .text, microui.Opt.zero())
+	app.mu.draw_control_text(bp.name, top_rect, .text, 0)
+	app.mu.draw_control_text(bp.name, top_rect_faux_bold, .text, 0)
+	app.mu.draw_control_text(bp.date, bottom_rect, .text, 0)
 
 	// draw preview
 	preview_rect := rl.Rectangle{
@@ -124,10 +123,10 @@ fn draw_blueprint_button(mut app data.App, bp data.Blueprint) bool {
 
 		rl.draw_texture_pro(texture, rl.Rectangle{0, 0, texture.width, -texture.height},
 			rl.Rectangle{
-			...dest_rect
-			x: rect.x + (rect.width - dest_rect.width) / 2
-			y: rect.y + (rect.height - dest_rect.height) / 2
-		}, rl.Vector2{0, 0}, 0, rl.white)
+				...dest_rect
+				x: rect.x + (rect.width - dest_rect.width) / 2
+				y: rect.y + (rect.height - dest_rect.height) / 2
+			}, rl.Vector2{0, 0}, 0, rl.white)
 	})
 	app.mu.unset_clip()
 

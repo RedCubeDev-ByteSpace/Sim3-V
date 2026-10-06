@@ -4,7 +4,6 @@ import raylib as rl
 import math.vec
 import data
 import utils
-import microui
 import math
 
 const frequency_exponent = 4.0
@@ -83,11 +82,11 @@ pub fn (mut c Clock) on_delete(mut app data.App) {
 
 fn (c &Clock) draw(app data.App) {
 	contact_point, zoomed_unit := utils.get_drawing_variables(app, c.ComponentBase)
-	Clock.draw(contact_point, zoomed_unit, c.color, c.time_accumulator, 1.0 / c.frequency / 2,
+	Clock.draw_static(contact_point, zoomed_unit, c.color, c.time_accumulator, 1.0 / c.frequency / 2,
 		c.rotation)
 }
 
-pub fn Clock.draw(contact_point vec.Vec2[f32], zoomed_unit f32, color rl.Color, time f32, timeout f32, rot data.Rotation) {
+pub fn Clock.draw_static(contact_point vec.Vec2[f32], zoomed_unit f32, color rl.Color, time f32, timeout f32, rot data.Rotation) {
 	low_color := data.get_low_color_from_high_color(color)
 
 	rl.draw_circle_lines(int(contact_point.x), int(contact_point.y), int(zoomed_unit / 4),
@@ -123,9 +122,9 @@ fn (mut c Clock) draw_component_window(mut app data.App) {
 		app.mu.textbox(c.comp_name)
 
 		app.mu.label('Timeout')
-		if app.mu.slider_ex(c.frequency_slider, 0, 1, 0.005, '${c.frequency:.2} Hz', microui.Opt.zero()) {
+		if app.mu.slider_ex(c.frequency_slider, 0, 1, 0.005, '${c.frequency:.2} Hz', 0) {
 			// apply a power curve mapping
-			c.frequency = f32(frequency_min_val +(math.pow(c.frequency_slider, frequency_exponent) * (frequency_max_val - frequency_min_val)))
+			c.frequency = f32(frequency_min_val + (math.pow(c.frequency_slider, frequency_exponent) * (frequency_max_val - frequency_min_val)))
 		}
 
 		app.mu.label('Elapsed')

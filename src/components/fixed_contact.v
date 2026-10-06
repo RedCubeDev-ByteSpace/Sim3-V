@@ -68,10 +68,10 @@ pub fn (mut f FixedContact) on_delete(mut app data.App) {
 
 fn (f &FixedContact) draw(app data.App) {
 	contact_point, zoomed_unit := utils.get_drawing_variables(app, f.ComponentBase)
-	FixedContact.draw(app, contact_point, zoomed_unit, f.color, f.state, f.rotation)
+	FixedContact.draw_static(app, contact_point, zoomed_unit, f.color, f.state, f.rotation)
 }
 
-pub fn FixedContact.draw(app data.App, contact_point vec.Vec2[f32], zoomed_unit f32, color rl.Color, state bool, rot data.Rotation) {
+pub fn FixedContact.draw_static(app data.App, contact_point vec.Vec2[f32], zoomed_unit f32, color rl.Color, state bool, rot data.Rotation) {
 	low_color := data.get_low_color_from_high_color(color)
 	draw_color := if state { color } else { low_color }
 

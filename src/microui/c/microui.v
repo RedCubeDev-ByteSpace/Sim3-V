@@ -265,7 +265,7 @@ pub mut:
 	content_size            C.mu_Vec2
 	scroll                  C.mu_Vec2
 	zindeinput_buffer_sizex i32
-	open                    i32
+	@open                   i32
 }
 
 pub fn C.mu_vec2(x i32, y i32) C.mu_Vec2

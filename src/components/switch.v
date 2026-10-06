@@ -74,10 +74,10 @@ pub fn (mut s Switch) on_delete(mut app data.App) {
 
 fn (s &Switch) draw(app data.App) {
 	contact_point, zoomed_unit := utils.get_drawing_variables(app, s.ComponentBase)
-	Switch.draw(contact_point, zoomed_unit, s.color, s.state, s.rotation)
+	Switch.draw_static(contact_point, zoomed_unit, s.color, s.state, s.rotation)
 }
 
-pub fn Switch.draw(contact_point vec.Vec2[f32], zoomed_unit f32, color rl.Color, state bool, rot data.Rotation) {
+pub fn Switch.draw_static(contact_point vec.Vec2[f32], zoomed_unit f32, color rl.Color, state bool, rot data.Rotation) {
 	low_color := data.get_low_color_from_high_color(color)
 
 	rl.draw_circle_lines(int(contact_point.x), int(contact_point.y), int(zoomed_unit / 4),
