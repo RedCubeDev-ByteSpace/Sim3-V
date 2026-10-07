@@ -12,6 +12,7 @@ import sim
 import chip_catalog
 import storage
 import renderers
+import time
 
 $if tinyc {
 	#flag @VMODROOT/hacks/tcc.c
@@ -38,7 +39,7 @@ fn main() {
 	// create a new raylib window
 	rl.set_config_flags(rl.ConfigFlags.flag_msaa_4x_hint)
 	rl.init_window(initial_window_width, initial_window_height, window_title)
-	rl.set_target_fps(60)
+	// rl.set_target_fps(60)
 	rl.set_exit_key(0)
 	rl.set_window_state(.flag_window_resizable)
 
@@ -109,18 +110,42 @@ fn on_frame(mut app data.App) {
 	input.handle_input(mut app)
 	input.sync_zoom(mut app)
 
-	sim.step_simulation(mut app)
+	sw_sim := time.new_stopwatch()
+	{
+		sim.step_simulation(mut app)
+	}
+	time_sim := sw_sim.elapsed().nanoseconds()
 
 	rl.begin_drawing()
 	rl.clear_background(data.background_color)
 
 	// draw all the components that are currently in view
-	fonts.recalculate_font_choices(mut app)
-	simview.step_marching_ants(mut app)
-	simview.draw_view(mut app)
+	sw_draw := time.new_stopwatch()
+	{
+		fonts.recalculate_font_choices(mut app)
+		simview.step_marching_ants(mut app)
+		simview.draw_view(mut app)
+	}
+	time_draw := sw_draw.elapsed().nanoseconds()
 
 	// draw the ui last so its always on top
-	gui.draw_ui(mut app)
+	sw_gui := time.new_stopwatch()
+	{
+		gui.draw_ui(mut app)
+	}
+	time_gui := sw_gui.elapsed().nanoseconds()
 
 	rl.end_drawing()
+
+	// -----------------------------------------------------------------------------------------------------------------
+	app.profiling.last_measurement += rl.get_frame_time()
+
+	if app.profiling.last_measurement > 1 {
+		app.profiling.last_measurement = 0
+
+		app.profiling.frame_sim_time = time_sim
+		app.profiling.frame_draw_time = time_draw
+		app.profiling.frame_gui_time = time_gui
+		app.profiling.total_frame_time = time_sim + time_draw + time_gui
+	}
 }

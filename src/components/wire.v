@@ -70,7 +70,7 @@ pub fn (mut w Wire) on_delete(mut app data.App) {
 fn (w &Wire) draw(mut app data.App) {
 	Wire.draw(mut app.renderers.raylib_direct_renderer, data.worldspace_to_screenspace(app,
 		w.wire_from.add(w.offset_from)), data.worldspace_to_screenspace(app, w.wire_to.add(w.offset_to)),
-		app.view.zoom, w.state, w.color, false)
+		app.view.zoom, w.state, w.color, app.renderers.single_pixel_wires)
 }
 
 pub fn Wire.draw(mut renderer data.IRenderer, wire_from vec.Vec2[int], wire_to vec.Vec2[int], zoom f32, state data.WireState, color rl.Color, single_pixel_wire bool) {

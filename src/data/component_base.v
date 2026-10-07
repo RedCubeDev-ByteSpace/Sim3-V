@@ -18,6 +18,9 @@ mut:
 	has_interaction       bool
 	has_step              bool
 	component_window_open bool
+
+	render_size   vec.Vec2[f32]
+	render_offset vec.Vec2[f32]
 }
 
 pub fn ComponentBase.new(mut app App, pos vec.Vec2[int], size vec.Vec2[int], rot Rotation, color rl.Color, has_interaction bool) ComponentBase {
@@ -86,6 +89,15 @@ pub fn (c ComponentBase) get_aabb() AABB {
 		height:
 			f32(if c.rotation == .left || c.rotation == .right { c.size.y } else { c.size.x }) +
 			aabb_padding * 2
+	}
+}
+
+pub fn (c ComponentBase) get_rendering_rect() rl.Rectangle {
+	return rl.Rectangle{
+		x:      c.pos.x + c.render_offset.x + c.offset.x
+		y:      c.pos.y + c.render_offset.y + c.offset.y
+		width:  c.render_size.x
+		height: c.render_size.y
 	}
 }
 

@@ -86,6 +86,10 @@ pub fn (w WireBase) get_rotation() Rotation {
 	return .up
 }
 
+pub fn (w WireBase) get_rendering_rect() rl.Rectangle {
+	return rl.Rectangle{}
+}
+
 pub fn (mut w WireBase) set_rotation(rot Rotation) {}
 
 pub fn (w WireBase) get_color() rl.Color {

@@ -7,6 +7,8 @@ import utils
 import lua
 import chip_catalog
 import math
+import render_cache
+import fonts
 
 @[heap]
 struct Chip {
@@ -39,6 +41,8 @@ pub fn Chip.new(mut app data.App, cfg data.ChipCfg) Chip {
 	chip_entry := app.catalog.chips[cfg.chip_uid]
 	height := chip_entry.pins.len / 2
 
+	// -----------------------------------------------------------------------------------------------------------------
+
 	// initialize the component base with all the standardized data
 	c.ComponentBase = data.ComponentBase.new(mut app, cfg.pos, vec.vec2[int](height, 2),
 		data.Rotation.from_int(cfg.rot), cfg.color.to_rl(), false)
@@ -50,6 +54,8 @@ pub fn Chip.new(mut app data.App, cfg data.ChipCfg) Chip {
 	// calculate where this components bounding box is based on its rotation
 	c.aabb_offset = utils.get_aabb_offset_for_rotation(1, -f32(height) + 0.5, 2, height,
 		data.Rotation.from_int(cfg.rot))
+
+	// -----------------------------------------------------------------------------------------------------------------
 
 	// create a new contact points where wires can connect to
 	c.contact_points = []data.ContactPoint{len: chip_entry.pins.len}
@@ -75,6 +81,14 @@ pub fn Chip.new(mut app data.App, cfg data.ChipCfg) Chip {
 	// add this wire to the global component list
 	utils.add_component(mut app, c)
 	app.sim.wire_mesh_recalc_needed = true
+
+	// -----------------------------------------------------------------------------------------------------------------
+
+	// set up the render settings for caching
+	c.render_size, c.render_offset = utils.get_render_rect_for_rotation(-0.5, -f32(height) + 0.5,
+		vec.Vec2[f32]{5, height}, c.rotation)
+
+	// -----------------------------------------------------------------------------------------------------------------
 
 	// try to load the script for this chip
 	c.lua_state_initialized = true
@@ -165,14 +179,123 @@ pub fn (mut c Chip) on_delete(mut app data.App) {
 }
 
 fn (c &Chip) draw(mut app data.App) {
+	if !app.renderers.use_render_cache {
+		contact_point, zoomed_unit := utils.get_drawing_variables(app, c.ComponentBase)
+		Chip.draw(mut app.renderers.raylib_direct_renderer, app, contact_point, zoomed_unit,
+			c.color, c.rotation, c.chip_uid, c.contact_points)
+		return
+	}
+
+	// -----------------------------------------------------------------------------------------------------------------
+	// Render caching
+
+	raw_zoom := app.input.target_zoom
+
+	// what texture would we need?
+	cache_key := 'CH_${raw_zoom:.1f}_${int(c.rotation)}_${c.color.r},${c.color.g},${c.color.b},${c.color.a}_${c.chip_uid}'
+	cache_key_labels := 'CL_${raw_zoom:.1f}_${int(c.rotation)}_${c.color.r},${c.color.g},${c.color.b},${c.color.a}_${c.chip_uid}'
+
+	// does the texture we need exist already?
+	if render_cache.has_cache(app, cache_key) {
+		// draw it!
+		c.draw_from_cache(mut app, cache_key, cache_key_labels)
+		return
+	}
+
+	// otherwise: create a cache!
+
+	// first: cache the base chip structure
+	// -> the rectangle, lines to the pins and the chip label
+	render_width, render_height := utils.get_zoomed_render_rect(c.get_rendering_rect(),
+		raw_zoom)
+	t := render_cache.begin_cache(app, render_width, render_height)
+	{
+		origin, zoomed_unit := utils.get_render_origin_and_zoom(c.render_offset, raw_zoom)
+
+		// -------------------------------------------------------------------------------------------------------------
+		// draw the base shape of the chip and the lines out to the contacts
+
+		chip_label_font_size := zoomed_unit
+		chip_label_font := fonts.get_font_for_size(app, int(chip_label_font_size))
+
+		Chip.draw_base(mut app.renderers.raylib_direct_renderer, app, origin, zoomed_unit,
+			c.color, c.rotation, chip_label_font, chip_label_font_size, c.chip_uid, c.contact_points)
+	}
+	render_cache.end_cache(mut app, cache_key, t)
+
+	// if we're zoomed in enough
+	zoom_percent := if app.view.zoom >= 1 {
+		math.log(app.view.zoom) / math.log(12)
+	} else {
+		0
+	}
+
+	if zoom_percent >= 0.5 {
+		// second: cache the pin labels separately
+		// -> this way we can still smoothly fade them in and out based on zoom
+		t_labels := render_cache.begin_cache(app, render_width, render_height)
+		{
+			origin, zoomed_unit := utils.get_render_origin_and_zoom(c.render_offset, raw_zoom)
+
+			// -------------------------------------------------------------------------------------------------------------
+			// draw the base shape of the chip and the lines out to the contacts
+
+			pin_label_font_size := zoomed_unit * 0.25
+			pin_label_font := fonts.get_font_for_size(app, int(pin_label_font_size))
+
+			Chip.draw_pin_labels(mut app.renderers.raylib_direct_renderer, app, origin,
+				zoomed_unit, c.color, c.rotation, pin_label_font, pin_label_font_size,
+				c.chip_uid, c.contact_points, 1)
+		}
+		render_cache.end_cache(mut app, cache_key_labels, t_labels)
+	}
+
+	// and then draw it
+	c.draw_from_cache(mut app, cache_key, cache_key_labels)
+}
+
+fn (c &Chip) draw_from_cache(mut app data.App, cache_key string, cache_key_labels string) {
+	render_cache.draw_from_cache(app, cache_key, utils.get_render_rect_in_screenspace(app,
+		c.get_rendering_rect()), 1)
+
+	zoom_percent := if app.view.zoom >= 1 {
+		math.log(app.view.zoom) / math.log(12)
+	} else {
+		0
+	}
+
+	if zoom_percent >= 0.5 {
+		opacity := if zoom_percent > 0.7 {
+			1
+		} else {
+			1.0 - (0.7 - zoom_percent) / 0.2
+		}
+
+		render_cache.draw_from_cache(app, cache_key_labels, utils.get_render_rect_in_screenspace(app,
+			c.get_rendering_rect()), f32(opacity))
+	}
+
+	// draw the contacts the old fashioned way because it doesnt really make sense to cache them
 	contact_point, zoomed_unit := utils.get_drawing_variables(app, c.ComponentBase)
-	Chip.draw(mut app.renderers.raylib_direct_renderer, app, contact_point, zoomed_unit,
-		c.color, c.rotation, c.chip_uid, c.contact_points)
+	Chip.draw_pin_contacts(mut app.renderers.raylib_direct_renderer, app, contact_point,
+		zoomed_unit, c.color, c.rotation, c.chip_uid, c.contact_points)
 }
 
 pub fn Chip.draw(mut renderer data.IRenderer, app data.App, contact_point vec.Vec2[f32], zoomed_unit f32, color rl.Color, rot data.Rotation, chip_uid string, contact_points []data.ContactPoint) {
-	Chip.draw_base(mut renderer, app, contact_point, zoomed_unit, color, rot, chip_uid,
-		contact_points)
+	// -----------------------------------------------------------------------------------------------------------------
+	// draw the base shape of the chip and the lines out to the contacts
+
+	Chip.draw_base(mut renderer, app, contact_point, zoomed_unit, color, rot, app.fonts.chip_label_font,
+		app.fonts.chip_label_font_size, chip_uid, contact_points)
+
+	// -----------------------------------------------------------------------------------------------------------------
+	// draw the shapes at the ends of the pins
+
+	Chip.draw_pin_contacts(mut renderer, app, contact_point, zoomed_unit, color, rot,
+		chip_uid, contact_points)
+
+	// -----------------------------------------------------------------------------------------------------------------
+	// draw the pin documentation
 
 	// are we close enough to draw pin labels?
 	zoom_percent := if app.view.zoom >= 1 {
@@ -191,11 +314,11 @@ pub fn Chip.draw(mut renderer data.IRenderer, app data.App, contact_point vec.Ve
 		1.0 - (0.7 - zoom_percent) / 0.2
 	}
 
-	Chip.draw_pin_labels(mut renderer, app, contact_point, zoomed_unit, color, rot, chip_uid,
-		contact_points, f32(opacity))
+	Chip.draw_pin_labels(mut renderer, app, contact_point, zoomed_unit, color, rot, app.fonts.chip_pin_label_font,
+		app.fonts.chip_pin_label_font_size, chip_uid, contact_points, f32(opacity))
 }
 
-fn Chip.draw_base(mut renderer data.IRenderer, app data.App, contact_point vec.Vec2[f32], zoomed_unit f32, color rl.Color, rot data.Rotation, chip_uid string, contact_points []data.ContactPoint) {
+fn Chip.draw_base(mut renderer data.IRenderer, app data.App, contact_point vec.Vec2[f32], zoomed_unit f32, color rl.Color, rot data.Rotation, font rl.Font, font_size f32, chip_uid string, contact_points []data.ContactPoint) {
 	low_color := data.get_low_color_from_high_color(color)
 	chip := app.catalog.chips[chip_uid]
 	height := f32(chip.pins.len / 2)
@@ -203,6 +326,24 @@ fn Chip.draw_base(mut renderer data.IRenderer, app data.App, contact_point vec.V
 	// draw the box
 	renderer.draw_component_rectangle(contact_point.x, contact_point.y, zoomed_unit, 1,
 		-height + 0.5, 2, height, rot, low_color)
+
+	// draw the contact lines
+	for i in 0 .. chip.pins.len / 2 {
+		renderer.draw_contact_line(contact_point.x, contact_point.y, zoomed_unit, 0, -i,
+			1, -i, rot, low_color)
+
+		renderer.draw_contact_line(contact_point.x, contact_point.y, zoomed_unit, 3, -i,
+			4, -i, rot, low_color)
+	}
+
+	// draw the chip label
+	renderer.draw_centered_text_rotated(contact_point.x, contact_point.y, zoomed_unit,
+		2, -(f32(height - 1) / 2.0), chip.name, font_size, font, rot, low_color)
+}
+
+fn Chip.draw_pin_contacts(mut renderer data.IRenderer, app data.App, contact_point vec.Vec2[f32], zoomed_unit f32, color rl.Color, rot data.Rotation, chip_uid string, contact_points []data.ContactPoint) {
+	low_color := data.get_low_color_from_high_color(color)
+	chip := app.catalog.chips[chip_uid]
 
 	// draw the contacts
 	for i in 0 .. chip.pins.len / 2 {
@@ -230,14 +371,9 @@ fn Chip.draw_base(mut renderer data.IRenderer, app data.App, contact_point vec.V
 		renderer.draw_chip_pin(contact_point.x, contact_point.y, zoomed_unit, 4, -i, contact_point_right,
 			chip.pins[idx_right], false, rot, low_color)
 	}
-
-	// draw the chip label
-	renderer.draw_centered_text_rotated(contact_point.x, contact_point.y, zoomed_unit,
-		2, -(f32(height - 1) / 2.0), chip.name, app.fonts.chip_label_font_size, app.fonts.chip_label_font,
-		rot, low_color)
 }
 
-fn Chip.draw_pin_labels(mut renderer data.IRenderer, app data.App, contact_point vec.Vec2[f32], zoomed_unit f32, color rl.Color, rot data.Rotation, chip_uid string, contact_points []data.ContactPoint, opacity f32) {
+fn Chip.draw_pin_labels(mut renderer data.IRenderer, app data.App, contact_point vec.Vec2[f32], zoomed_unit f32, color rl.Color, rot data.Rotation, font rl.Font, font_size f32, chip_uid string, contact_points []data.ContactPoint, opacity f32) {
 	low_color := data.get_low_color_from_high_color(color)
 	chip := app.catalog.chips[chip_uid]
 
@@ -249,8 +385,8 @@ fn Chip.draw_pin_labels(mut renderer data.IRenderer, app data.App, contact_point
 	// draw pin labels!
 	for i in 0 .. chip.pins.len / 2 {
 		rect_left := renderer.draw_centered_text_rotated(contact_point.x, contact_point.y,
-			zoomed_unit, 1.25, -i, chip.pins[chip.pins.len / 2 - i - 1].label, app.fonts.chip_pin_label_font_size,
-			app.fonts.chip_pin_label_font, rot, label_color)
+			zoomed_unit, 1.25, -i, chip.pins[chip.pins.len / 2 - i - 1].label, font_size,
+			font, rot, label_color)
 
 		if chip.pins[chip.pins.len / 2 - i - 1].is_active_low {
 			renderer.draw_contact_line(contact_point.x, contact_point.y, zoomed_unit,
@@ -260,8 +396,8 @@ fn Chip.draw_pin_labels(mut renderer data.IRenderer, app data.App, contact_point
 		}
 
 		rect_right := renderer.draw_centered_text_rotated(contact_point.x, contact_point.y,
-			zoomed_unit, 2.75, -i, chip.pins[chip.pins.len / 2 + i].label, app.fonts.chip_pin_label_font_size,
-			app.fonts.chip_pin_label_font, rot, label_color)
+			zoomed_unit, 2.75, -i, chip.pins[chip.pins.len / 2 + i].label, font_size,
+			font, rot, label_color)
 		if chip.pins[chip.pins.len / 2 + i].is_active_low {
 			renderer.draw_contact_line(contact_point.x, contact_point.y, zoomed_unit,
 				rect_right.x + rect_right.height / 2, rect_right.y - rect_right.width / 2.0,

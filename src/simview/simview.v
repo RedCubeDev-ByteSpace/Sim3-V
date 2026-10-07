@@ -24,10 +24,11 @@ pub fn draw_view(mut app data.App) {
 	draw_preview_of_components_being_pasted(app)
 	draw_preview_of_blueprint_being_placed(app)
 	draw_contact_points(app)
+	draw_render_rects(app)
 }
 
 fn draw_wires(mut app data.App) {
-	if app.view.debug.draw_only_led {
+	if app.view.debug.draw_only_led || app.view.debug.dont_draw_wires {
 		return
 	}
 
@@ -268,8 +269,8 @@ fn draw_preview_of_component_being_placed(app data.App) {
 			components.Switch.draw(mut renderer, pos, zoomed_unit, color, false, app.bench.placement.rotation)
 		}
 		.fixed_contact {
-			components.FixedContact.draw(mut renderer, app, pos, zoomed_unit, color, false,
-				app.bench.placement.rotation)
+			components.FixedContact.draw(mut renderer, pos, zoomed_unit, color, app.fonts.fixed_contact_label_font,
+				app.fonts.fixed_contact_label_font_size, false, app.bench.placement.rotation)
 		}
 		.clock {
 			components.Clock.draw(mut renderer, pos, zoomed_unit, color, 0, 0, app.bench.placement.rotation)
@@ -350,5 +351,22 @@ fn draw_contact_points(app data.App) {
 		pos := utils.str_to_vec(point_key)
 		screen_pos := data.worldspace_to_screenspace(app, pos)
 		rl.draw_circle(screen_pos.x, screen_pos.y, 5, data.aabb_color)
+	}
+}
+
+fn draw_render_rects(app data.App) {
+	if !app.view.debug.draw_render_rect {
+		return
+	}
+
+	for _, comp in app.sim.components {
+		rect := comp.get_rendering_rect()
+		if rect.width == 0 || rect.height == 0 {
+			continue
+		}
+
+		pos_screenspace := data.worldspace_to_screenspace(app, vec.vec2[f32](rect.x, rect.y))
+		rl.draw_rectangle_lines(int(pos_screenspace.x), int(pos_screenspace.y), int(rect.width * app.view.zoom * data.one_simspace_unit_in_px),
+			int(rect.height * app.view.zoom * data.one_simspace_unit_in_px), data.aabb_color)
 	}
 }

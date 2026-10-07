@@ -86,8 +86,9 @@ pub fn draw_component_from_cfg(app data.App, screen_pos vec.Vec2[f32], zoom f32,
 		}
 		data.FixedContactCfg {
 			offset := utils.vi_to_vf(cfg.pos).mul_scalar(zoomed_unit)
-			components.FixedContact.draw(mut renderer, app, screen_pos.add(offset), zoomed_unit,
-				color, cfg.state, data.Rotation.from_int(cfg.rot))
+			components.FixedContact.draw(mut renderer, screen_pos.add(offset), zoomed_unit,
+				color, app.fonts.fixed_contact_label_font, app.fonts.fixed_contact_label_font_size,
+				cfg.state, data.Rotation.from_int(cfg.rot))
 		}
 		data.ClockCfg {
 			offset := utils.vi_to_vf(cfg.pos).mul_scalar(zoomed_unit)

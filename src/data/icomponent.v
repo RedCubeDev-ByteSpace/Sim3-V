@@ -13,6 +13,8 @@ pub interface IComponent {
 	get_rotation() Rotation
 	get_color() rl.Color
 
+	get_rendering_rect() rl.Rectangle
+
 	has_interaction() bool
 	has_step() bool
 mut:

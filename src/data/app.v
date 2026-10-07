@@ -14,6 +14,7 @@ pub const zoom_trail_cutoff = 0.005
 pub const max_zoom = 12
 pub const min_zoom = 0.2
 pub const aabb_padding = 0.2
+pub const render_cache_margin_px = 3
 pub const step_marching_ants_every_frames = 3
 pub const marching_ants_segment_size = 6
 
@@ -42,9 +43,11 @@ pub mut:
 
 		debug struct {
 		pub mut:
-			show_aabb     bool
-			show_contacts bool
-			draw_only_led bool
+			show_aabb        bool
+			show_contacts    bool
+			draw_only_led    bool
+			draw_render_rect bool
+			dont_draw_wires  bool
 		}
 	}
 
@@ -150,11 +153,26 @@ pub mut:
 		}
 	}
 
+	// profiling -------------------------------------------------------------------------------------------------------
+	// interesting data about what the app is doing
+	profiling struct {
+	pub mut:
+		last_measurement f32
+		total_frame_time i64
+		frame_sim_time   i64
+		frame_draw_time  i64
+		frame_gui_time   i64
+	}
+
 	// renderers -------------------------------------------------------------------------------------------------------
 	// resources for component rendering
 	renderers struct {
 	pub mut:
 		raylib_direct_renderer IRenderer
+
+		single_pixel_wires bool
+		use_render_cache   bool
+		cache              map[string]rl.RenderTexture2D
 	}
 
 	// fonts -----------------------------------------------------------------------------------------------------------

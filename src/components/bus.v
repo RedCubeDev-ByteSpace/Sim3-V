@@ -61,7 +61,7 @@ pub fn (mut b Bus) on_delete(mut app data.App) {
 pub fn (b &Bus) draw(mut app data.App) {
 	Bus.draw(mut app.renderers.raylib_direct_renderer, data.worldspace_to_screenspace(app,
 		b.wire_from.add(b.offset_from)), data.worldspace_to_screenspace(app, b.wire_to.add(b.offset_to)),
-		app.view.zoom, b.color, false)
+		app.view.zoom, b.color, app.renderers.single_pixel_wires)
 }
 
 pub fn Bus.draw(mut renderer data.IRenderer, wire_from vec.Vec2[int], wire_to vec.Vec2[int], zoom f32, color rl.Color, single_pixel_wire bool) {

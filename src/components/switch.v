@@ -4,6 +4,7 @@ import raylib as rl
 import math.vec
 import data
 import utils
+import render_cache
 
 @[heap]
 struct Switch {
@@ -20,6 +21,8 @@ pub fn Switch.new(mut app data.App, cfg data.SwitchCfg) Switch {
 		state: cfg.state
 	}
 
+	// -----------------------------------------------------------------------------------------------------------------
+
 	// initialize the component base with all the standardized data
 	s.ComponentBase = data.ComponentBase.new(mut app, cfg.pos, vec.vec2[int](2, 2), data.Rotation.from_int(cfg.rot),
 		cfg.color.to_rl(), true)
@@ -28,7 +31,9 @@ pub fn Switch.new(mut app data.App, cfg data.SwitchCfg) Switch {
 	s.comp_name = 'Switch ${s.comp_id}'
 
 	// calculate where this components bounding box is based on its rotation
-	s.aabb_offset = utils.get_aabb_offset_for_rotation(-1, -3, 2, 2, data.Rotation.from_int(cfg.rot))
+	s.aabb_offset = utils.get_aabb_offset_for_rotation(-1, -3, 2, 2, s.rotation)
+
+	// -----------------------------------------------------------------------------------------------------------------
 
 	// create a new contact point where wires can connect to
 	s.contact_point = data.ContactPoint.new(mut app, if cfg.state { .high } else { .low })
@@ -38,6 +43,12 @@ pub fn Switch.new(mut app data.App, cfg data.SwitchCfg) Switch {
 	// add this wire to the global component list
 	utils.add_component(mut app, s)
 	app.sim.wire_mesh_recalc_needed = true
+
+	// -----------------------------------------------------------------------------------------------------------------
+
+	// set up the render settings for caching
+	s.render_size, s.render_offset = utils.get_render_rect_for_rotation(-1, -3, vec.Vec2[f32]{2, 4},
+		s.rotation)
 
 	// done :)
 	return s
@@ -73,9 +84,43 @@ pub fn (mut s Switch) on_delete(mut app data.App) {
 }
 
 fn (s &Switch) draw(mut app data.App) {
-	contact_point, zoomed_unit := utils.get_drawing_variables(app, s.ComponentBase)
-	Switch.draw(mut app.renderers.raylib_direct_renderer, contact_point, zoomed_unit,
-		s.color, s.state, s.rotation)
+	if !app.renderers.use_render_cache {
+		contact_point, zoomed_unit := utils.get_drawing_variables(app, s.ComponentBase)
+		Switch.draw(mut app.renderers.raylib_direct_renderer, contact_point, zoomed_unit,
+			s.color, s.state, s.rotation)
+		return
+	}
+
+	// -----------------------------------------------------------------------------------------------------------------
+	// Render caching
+
+	raw_zoom := app.input.target_zoom
+
+	// what texture would we need?
+	cache_key := 'SW_${raw_zoom:.1f}_${int(s.rotation)}_${s.color.r},${s.color.g},${s.color.b},${s.color.a}_${s.state}'
+
+	// does the texture we need exist already?
+	if render_cache.has_cache(app, cache_key) {
+		// draw it!
+		render_cache.draw_from_cache(app, cache_key, utils.get_render_rect_in_screenspace(app,
+			s.get_rendering_rect()), 1)
+		return
+	}
+
+	// otherwise: create a cache
+	render_width, render_height := utils.get_zoomed_render_rect(s.get_rendering_rect(),
+		raw_zoom)
+	t := render_cache.begin_cache(app, render_width, render_height)
+
+	origin, zoomed_unit := utils.get_render_origin_and_zoom(s.render_offset, raw_zoom)
+	Switch.draw(mut app.renderers.raylib_direct_renderer, origin, zoomed_unit, s.color,
+		s.state, s.rotation)
+
+	render_cache.end_cache(mut app, cache_key, t)
+
+	// and then draw it
+	render_cache.draw_from_cache(app, cache_key, utils.get_render_rect_in_screenspace(app,
+		s.get_rendering_rect()), 1)
 }
 
 pub fn Switch.draw(mut renderer data.IRenderer, contact_point vec.Vec2[f32], zoomed_unit f32, color rl.Color, state bool, rot data.Rotation) {
