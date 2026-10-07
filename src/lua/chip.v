@@ -7,7 +7,7 @@ const message_pack_stub = "package.path = package.path .. ';./src/res/lib/Messag
 const chip_base_library = './src/res/lib/base.lua'
 const chip_script_dir = './src/res/chips/scripts/'
 
-pub fn setup_chip_lua_state(app data.App, chip_uid string) ?voidptr {
+pub fn setup_chip_lua_state(app &data.App, chip_uid string) ?voidptr {
 	chip_entry := app.catalog.chips[chip_uid]
 
 	// lua!!!!

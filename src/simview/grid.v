@@ -5,7 +5,7 @@ import data
 import math
 import math.vec
 
-fn draw_grid(app data.App) {
+fn draw_grid(app &data.App) {
 	zoom := app.view.zoom
 
 	if zoom < 0.4 {

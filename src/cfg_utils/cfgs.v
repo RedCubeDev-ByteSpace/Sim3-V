@@ -73,7 +73,7 @@ pub fn rotate_cfgs(mut cfgs []data.ComponentCfg) {
 	}
 }
 
-pub fn draw_component_from_cfg(app data.App, screen_pos vec.Vec2[f32], zoom f32, cfg data.ComponentCfg, color rl.Color, single_pixel_wires bool) {
+pub fn draw_component_from_cfg(app &data.App, screen_pos vec.Vec2[f32], zoom f32, cfg data.ComponentCfg, color rl.Color, single_pixel_wires bool) {
 	// prepare the variables needed for drawing any components
 	zoomed_unit := data.one_simspace_unit_in_px * zoom
 	mut renderer := &app.renderers.raylib_direct_renderer

@@ -124,7 +124,7 @@ fn recalculate_wire_meshes(mut app data.App) {
 	}
 }
 
-fn resolve_any_busses(app data.App, wire_ids []i64, entry_wire i64) []i64 {
+fn resolve_any_busses(app &data.App, wire_ids []i64, entry_wire i64) []i64 {
 	// first: filter out all non busses, we will pass these right through
 	mut wires := wire_ids.filter(app.sim.components[it] is components.Wire)
 
@@ -140,7 +140,7 @@ fn resolve_any_busses(app data.App, wire_ids []i64, entry_wire i64) []i64 {
 	return wires
 }
 
-fn get_bus_endpoints_for_color(app data.App, initial_bus_id i64, wire_color rl.Color) []i64 {
+fn get_bus_endpoints_for_color(app &data.App, initial_bus_id i64, wire_color rl.Color) []i64 {
 	mut busses_to_visit := [initial_bus_id]
 	mut visited_busses := []i64{}
 	mut wires_found := []i64{}

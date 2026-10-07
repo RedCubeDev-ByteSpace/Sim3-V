@@ -72,7 +72,7 @@ fn (f &FixedContact) draw(mut app data.App) {
 		f.color, f.state, f.rotation)
 }
 
-pub fn FixedContact.draw(mut renderer data.IRenderer, app data.App, contact_point vec.Vec2[f32], zoomed_unit f32, color rl.Color, state bool, rot data.Rotation) {
+pub fn FixedContact.draw(mut renderer data.IRenderer, app &data.App, contact_point vec.Vec2[f32], zoomed_unit f32, color rl.Color, state bool, rot data.Rotation) {
 	low_color := data.get_low_color_from_high_color(color)
 	draw_color := if state { color } else { low_color }
 

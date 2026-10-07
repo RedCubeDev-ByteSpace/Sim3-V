@@ -79,7 +79,7 @@ fn draw_components(mut app data.App) {
 	}
 }
 
-fn draw_wire_branching_points(app data.App) {
+fn draw_wire_branching_points(app &data.App) {
 	if app.view.debug.draw_only_led {
 		return
 	}
@@ -91,14 +91,14 @@ fn draw_wire_branching_points(app data.App) {
 	}
 }
 
-fn draw_aabb(app data.App, aabb data.AABB, color rl.Color) {
+fn draw_aabb(app &data.App, aabb data.AABB, color rl.Color) {
 	top_left := data.worldspace_to_screenspace(app, vec.vec2[f32](aabb.x, aabb.y))
 	zoomed_unit := data.one_simspace_unit_in_px * app.view.zoom
 	rl.draw_rectangle_lines(int(top_left.x), int(top_left.y), int(aabb.width * zoomed_unit),
 		int(aabb.height * zoomed_unit), color)
 }
 
-fn draw_selection(app data.App) {
+fn draw_selection(app &data.App) {
 	if app.bench.bench_state != .selecting {
 		return
 	}
@@ -119,7 +119,7 @@ fn draw_selection(app data.App) {
 	draw_marching_ants(app, rl.Rectangle{x1, y1, x2 - x1, y2 - y1}, data.selection_color_high)
 }
 
-fn draw_selected_component_outlines(app data.App) {
+fn draw_selected_component_outlines(app &data.App) {
 	for comp in app.bench.selected_components {
 		aabb := comp.get_aabb()
 		top_left := data.worldspace_to_screenspace(app, vec.vec2[f32](aabb.x, aabb.y))
@@ -129,7 +129,7 @@ fn draw_selected_component_outlines(app data.App) {
 	}
 }
 
-fn draw_wire_movement_handles(app data.App) {
+fn draw_wire_movement_handles(app &data.App) {
 	if !app.bench.wire_moving.draw_hover_box {
 		return
 	}
@@ -167,20 +167,20 @@ pub fn step_marching_ants(mut app data.App) {
 	}
 }
 
-fn draw_marching_ants(app data.App, rect rl.Rectangle, color rl.Color) {
+fn draw_marching_ants(app &data.App, rect rl.Rectangle, color rl.Color) {
 	// draw the rectangle in the low color as the base
 	mut offset := app.bench.marching_ants_starting_point
-	offset = draw_marching_ants_line(app, color, offset, int(rect.x), int(rect.x + rect.width),
+	offset = draw_marching_ants_line(color, offset, int(rect.x), int(rect.x + rect.width),
 		int(rect.y), false, false)
-	offset = draw_marching_ants_line(app, color, offset, int(rect.y), int(rect.y + rect.height),
+	offset = draw_marching_ants_line(color, offset, int(rect.y), int(rect.y + rect.height),
 		int(rect.x + rect.width), true, true)
-	offset = draw_marching_ants_line(app, color, offset, int(rect.x), int(rect.x + rect.width),
+	offset = draw_marching_ants_line(color, offset, int(rect.x), int(rect.x + rect.width),
 		int(rect.y + rect.height), false, false)
-	draw_marching_ants_line(app, color, offset, int(rect.y), int(rect.y + rect.height),
-		int(rect.x), true, true)
+	draw_marching_ants_line(color, offset, int(rect.y), int(rect.y + rect.height), int(rect.x),
+		true, true)
 }
 
-fn draw_marching_ants_line(app data.App, color rl.Color, off int, s int, e int, level int, vertical bool, reverse bool) int {
+fn draw_marching_ants_line(color rl.Color, off int, s int, e int, level int, vertical bool, reverse bool) int {
 	mut start := s
 	mut end := e
 	if start > end {
@@ -242,7 +242,7 @@ fn draw_marching_ants_line(app data.App, color rl.Color, off int, s int, e int, 
 	}
 }
 
-fn draw_preview_of_component_being_placed(app data.App) {
+fn draw_preview_of_component_being_placed(app &data.App) {
 	if app.bench.placement.current_selected_component_type == .none {
 		return
 	}
@@ -299,7 +299,7 @@ fn draw_preview_of_component_being_placed(app data.App) {
 	}
 }
 
-fn draw_preview_of_components_being_pasted(app data.App) {
+fn draw_preview_of_components_being_pasted(app &data.App) {
 	if app.bench.bench_state != .pasting_components {
 		return
 	}
@@ -320,7 +320,7 @@ fn draw_preview_of_components_being_pasted(app data.App) {
 	}
 }
 
-fn draw_preview_of_blueprint_being_placed(app data.App) {
+fn draw_preview_of_blueprint_being_placed(app &data.App) {
 	if app.bench.bench_state != .placing_blueprint {
 		return
 	}
@@ -341,7 +341,7 @@ fn draw_preview_of_blueprint_being_placed(app data.App) {
 	}
 }
 
-fn draw_contact_points(app data.App) {
+fn draw_contact_points(app &data.App) {
 	if !app.view.debug.show_contacts {
 		return
 	}

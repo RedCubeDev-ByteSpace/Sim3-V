@@ -20,7 +20,7 @@ pub fn init(mut app data.App) {
 	}
 }
 
-pub fn get_font_for_size(app data.App, size int) rl.Font {
+pub fn get_font_for_size(app &data.App, size int) rl.Font {
 	// is the requested size smaller than any font we have?
 	// -> return the smallest
 	if size < app.fonts.fonts[0].size {

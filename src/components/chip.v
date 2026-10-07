@@ -170,7 +170,7 @@ fn (c &Chip) draw(mut app data.App) {
 		c.color, c.rotation, c.chip_uid, c.contact_points)
 }
 
-pub fn Chip.draw(mut renderer data.IRenderer, app data.App, contact_point vec.Vec2[f32], zoomed_unit f32, color rl.Color, rot data.Rotation, chip_uid string, contact_points []data.ContactPoint) {
+pub fn Chip.draw(mut renderer data.IRenderer, app &data.App, contact_point vec.Vec2[f32], zoomed_unit f32, color rl.Color, rot data.Rotation, chip_uid string, contact_points []data.ContactPoint) {
 	Chip.draw_base(mut renderer, app, contact_point, zoomed_unit, color, rot, chip_uid,
 		contact_points)
 
@@ -195,7 +195,7 @@ pub fn Chip.draw(mut renderer data.IRenderer, app data.App, contact_point vec.Ve
 		contact_points, f32(opacity))
 }
 
-fn Chip.draw_base(mut renderer data.IRenderer, app data.App, contact_point vec.Vec2[f32], zoomed_unit f32, color rl.Color, rot data.Rotation, chip_uid string, contact_points []data.ContactPoint) {
+fn Chip.draw_base(mut renderer data.IRenderer, app &data.App, contact_point vec.Vec2[f32], zoomed_unit f32, color rl.Color, rot data.Rotation, chip_uid string, contact_points []data.ContactPoint) {
 	low_color := data.get_low_color_from_high_color(color)
 	chip := app.catalog.chips[chip_uid]
 	height := f32(chip.pins.len / 2)
@@ -237,7 +237,7 @@ fn Chip.draw_base(mut renderer data.IRenderer, app data.App, contact_point vec.V
 		rot, low_color)
 }
 
-fn Chip.draw_pin_labels(mut renderer data.IRenderer, app data.App, contact_point vec.Vec2[f32], zoomed_unit f32, color rl.Color, rot data.Rotation, chip_uid string, contact_points []data.ContactPoint, opacity f32) {
+fn Chip.draw_pin_labels(mut renderer data.IRenderer, app &data.App, contact_point vec.Vec2[f32], zoomed_unit f32, color rl.Color, rot data.Rotation, chip_uid string, contact_points []data.ContactPoint, opacity f32) {
 	low_color := data.get_low_color_from_high_color(color)
 	chip := app.catalog.chips[chip_uid]
 
@@ -289,7 +289,7 @@ fn (mut c Chip) draw_component_window(mut app data.App) {
 	}
 }
 
-pub fn (mut c Chip) step(app data.App, delta f32) {
+pub fn (mut c Chip) step(app &data.App, delta f32) {
 	if !c.lua_state_initialized || !c.script_capabilities.has_step {
 		return
 	}

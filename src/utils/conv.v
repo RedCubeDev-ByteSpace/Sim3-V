@@ -4,7 +4,7 @@ import math.vec
 import data
 import raylib
 
-pub fn get_drawing_variables(app data.App, c data.ComponentBase) (vec.Vec2[f32], f32) {
+pub fn get_drawing_variables(app &data.App, c data.ComponentBase) (vec.Vec2[f32], f32) {
 	pos := c.get_position().add(c.get_offset())
 	top_left := data.worldspace_to_screenspace(app, vec.vec2[f32](pos.x, pos.y))
 	zoomed_unit := data.one_simspace_unit_in_px * app.view.zoom

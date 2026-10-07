@@ -135,7 +135,7 @@ fn (mut c Clock) draw_component_window(mut app data.App) {
 	}
 }
 
-pub fn (mut c Clock) step(app data.App, delta f32) {
+pub fn (mut c Clock) step(app &data.App, delta f32) {
 	c.time_accumulator += delta
 	if c.time_accumulator >= 1.0 / c.frequency / 2 {
 		c.time_accumulator = 0

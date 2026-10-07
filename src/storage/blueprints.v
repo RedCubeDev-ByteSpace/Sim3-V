@@ -21,7 +21,7 @@ pub fn index_blueprint_directory(mut app data.App) {
 	app.storage.blueprints.blueprint_dir = index_directory(app, app.storage.blueprints_directory)
 }
 
-fn index_directory(app data.App, path string) data.BlueprintDirectory {
+fn index_directory(app &data.App, path string) data.BlueprintDirectory {
 	// create a new blueprint directory node
 	mut dir := data.BlueprintDirectory{}
 
@@ -109,7 +109,7 @@ pub fn create_blueprint_from_selected_components(mut app data.App, name string, 
 	index_blueprint_directory(mut app)
 }
 
-fn render_preview_texture(app data.App, cfgs []data.ComponentCfg) rl.Texture2D {
+fn render_preview_texture(app &data.App, cfgs []data.ComponentCfg) rl.Texture2D {
 	margin_in_worldspace := 3
 
 	// shift all cfgs over by the margin
