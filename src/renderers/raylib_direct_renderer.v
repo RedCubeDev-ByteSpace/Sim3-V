@@ -69,7 +69,7 @@ pub fn (mut r RaylibDirectRenderer) draw_centered_text_rotated(init_x_f f32, ini
 	}, rl.Vector2{
 		x: text_size.x / 2
 		y: text_size.y / 2
-	}, int(rot) * 90, font_size, 1, color)
+	}, rot_angle, font_size, 1, color)
 
 	return rl.Rectangle{
 		x:      x

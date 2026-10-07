@@ -2,8 +2,6 @@ module renderers
 
 import raylib as rl
 import data
-import chip_catalog
-import utils
 import math.vec
 
 pub fn get_component_rectangle_variables(init_x_f f32, init_y_f f32, unit f32, x f32, y f32, width f32, height f32, rot data.Rotation) rl.Rectangle {

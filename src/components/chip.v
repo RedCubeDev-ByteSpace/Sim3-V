@@ -171,13 +171,38 @@ fn (c &Chip) draw(mut app data.App) {
 }
 
 pub fn Chip.draw(mut renderer data.IRenderer, app data.App, contact_point vec.Vec2[f32], zoomed_unit f32, color rl.Color, rot data.Rotation, chip_uid string, contact_points []data.ContactPoint) {
+	Chip.draw_base(mut renderer, app, contact_point, zoomed_unit, color, rot, chip_uid,
+		contact_points)
+
+	// are we close enough to draw pin labels?
+	zoom_percent := if app.view.zoom >= 1 {
+		math.log(app.view.zoom) / math.log(12)
+	} else {
+		0
+	}
+
+	if zoom_percent < 0.5 {
+		return
+	}
+
+	opacity := if zoom_percent > 0.7 {
+		1
+	} else {
+		1.0 - (0.7 - zoom_percent) / 0.2
+	}
+
+	Chip.draw_pin_labels(mut renderer, app, contact_point, zoomed_unit, color, rot, chip_uid,
+		contact_points, f32(opacity))
+}
+
+fn Chip.draw_base(mut renderer data.IRenderer, app data.App, contact_point vec.Vec2[f32], zoomed_unit f32, color rl.Color, rot data.Rotation, chip_uid string, contact_points []data.ContactPoint) {
 	low_color := data.get_low_color_from_high_color(color)
 	chip := app.catalog.chips[chip_uid]
-	height := chip.pins.len / 2
+	height := f32(chip.pins.len / 2)
 
 	// draw the box
 	renderer.draw_component_rectangle(contact_point.x, contact_point.y, zoomed_unit, 1,
-		-f32(height) + 0.5, 2, height, rot, low_color)
+		-height + 0.5, 2, height, rot, low_color)
 
 	// draw the contacts
 	for i in 0 .. chip.pins.len / 2 {
@@ -210,24 +235,12 @@ pub fn Chip.draw(mut renderer data.IRenderer, app data.App, contact_point vec.Ve
 	renderer.draw_centered_text_rotated(contact_point.x, contact_point.y, zoomed_unit,
 		2, -(f32(height - 1) / 2.0), chip.name, app.fonts.chip_label_font_size, app.fonts.chip_label_font,
 		rot, low_color)
+}
 
-	// are we close enough to draw pin labels?
-	zoom_percent := if app.view.zoom >= 1 {
-		math.log(app.view.zoom) / math.log(12)
-	} else {
-		0
-	}
+fn Chip.draw_pin_labels(mut renderer data.IRenderer, app data.App, contact_point vec.Vec2[f32], zoomed_unit f32, color rl.Color, rot data.Rotation, chip_uid string, contact_points []data.ContactPoint, opacity f32) {
+	low_color := data.get_low_color_from_high_color(color)
+	chip := app.catalog.chips[chip_uid]
 
-	if zoom_percent < 0.5 {
-		return
-	}
-
-	// calculate the opacity
-	opacity := if zoom_percent > 0.7 {
-		1
-	} else {
-		1.0 - (0.7 - zoom_percent) / 0.2
-	}
 	label_color := rl.Color{
 		...low_color
 		a: u8(opacity * 255)
