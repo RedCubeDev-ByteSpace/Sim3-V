@@ -150,6 +150,13 @@ pub mut:
 		}
 	}
 
+	// renderers -------------------------------------------------------------------------------------------------------
+	// resources for component rendering
+	renderers struct {
+	pub mut:
+		raylib_direct_renderer IRenderer
+	}
+
 	// fonts -----------------------------------------------------------------------------------------------------------
 	// preloaded fonts for different use cases and sizes
 	fonts struct {

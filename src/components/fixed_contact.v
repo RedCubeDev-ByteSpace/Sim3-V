@@ -66,26 +66,27 @@ pub fn (mut f FixedContact) on_delete(mut app data.App) {
 	app.sim.wire_mesh_recalc_needed = true
 }
 
-fn (f &FixedContact) draw(app data.App) {
+fn (f &FixedContact) draw(mut app data.App) {
 	contact_point, zoomed_unit := utils.get_drawing_variables(app, f.ComponentBase)
-	FixedContact.draw(app, contact_point, zoomed_unit, f.color, f.state, f.rotation)
+	FixedContact.draw(mut app.renderers.raylib_direct_renderer, app, contact_point, zoomed_unit,
+		f.color, f.state, f.rotation)
 }
 
-pub fn FixedContact.draw(app data.App, contact_point vec.Vec2[f32], zoomed_unit f32, color rl.Color, state bool, rot data.Rotation) {
+pub fn FixedContact.draw(mut renderer data.IRenderer, app data.App, contact_point vec.Vec2[f32], zoomed_unit f32, color rl.Color, state bool, rot data.Rotation) {
 	low_color := data.get_low_color_from_high_color(color)
 	draw_color := if state { color } else { low_color }
 
-	rl.draw_circle_lines(int(contact_point.x), int(contact_point.y), int(zoomed_unit / 4),
-		draw_color)
-
-	utils.draw_contact_line(contact_point.x, contact_point.y, zoomed_unit, 0, 0, 0, -0.5,
+	renderer.draw_circle_lines(contact_point.x, contact_point.y, zoomed_unit, 0, 0, data.contact_point_size,
 		rot, draw_color)
 
-	utils.draw_component_rectangle(contact_point.x, contact_point.y, zoomed_unit, -0.5,
+	renderer.draw_contact_line(contact_point.x, contact_point.y, zoomed_unit, 0, 0, 0,
+		-0.5, rot, draw_color)
+
+	renderer.draw_component_rectangle(contact_point.x, contact_point.y, zoomed_unit, -0.5,
 		-1.5, 1, 1, rot, draw_color)
 
 	state_label := if state { '1' } else { '0' }
-	utils.draw_centered_text(app, contact_point.x, contact_point.y, zoomed_unit, 0, -1,
+	renderer.draw_centered_text(contact_point.x, contact_point.y, zoomed_unit, 0, -1,
 		state_label, app.fonts.fixed_contact_label_font_size, app.fonts.fixed_contact_label_font,
 		rot, draw_color)
 }

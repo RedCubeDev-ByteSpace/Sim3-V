@@ -81,22 +81,22 @@ pub fn (mut c Clock) on_delete(mut app data.App) {
 	app.sim.wire_mesh_recalc_needed = true
 }
 
-fn (c &Clock) draw(app data.App) {
+fn (c &Clock) draw(mut app data.App) {
 	contact_point, zoomed_unit := utils.get_drawing_variables(app, c.ComponentBase)
-	Clock.draw(contact_point, zoomed_unit, c.color, c.time_accumulator, 1.0 / c.frequency / 2,
-		c.rotation)
+	Clock.draw(mut app.renderers.raylib_direct_renderer, contact_point, zoomed_unit, c.color,
+		c.time_accumulator, 1.0 / c.frequency / 2, c.rotation)
 }
 
-pub fn Clock.draw(contact_point vec.Vec2[f32], zoomed_unit f32, color rl.Color, time f32, timeout f32, rot data.Rotation) {
+pub fn Clock.draw(mut renderer data.IRenderer, contact_point vec.Vec2[f32], zoomed_unit f32, color rl.Color, time f32, timeout f32, rot data.Rotation) {
 	low_color := data.get_low_color_from_high_color(color)
 
-	rl.draw_circle_lines(int(contact_point.x), int(contact_point.y), int(zoomed_unit / 4),
-		low_color)
-
-	utils.draw_contact_line(contact_point.x, contact_point.y, zoomed_unit, 0, 0, 0, -1,
+	renderer.draw_circle_lines(contact_point.x, contact_point.y, zoomed_unit, 0, 0, data.contact_point_size,
 		rot, low_color)
 
-	utils.draw_component_rectangle(contact_point.x, contact_point.y, zoomed_unit, -1,
+	renderer.draw_contact_line(contact_point.x, contact_point.y, zoomed_unit, 0, 0, 0,
+		-1, rot, low_color)
+
+	renderer.draw_component_rectangle(contact_point.x, contact_point.y, zoomed_unit, -1,
 		-3, 2, 2, rot, low_color)
 
 	angle := (time / timeout) * math.pi * 2 + math.pi_2
@@ -104,8 +104,8 @@ pub fn Clock.draw(contact_point vec.Vec2[f32], zoomed_unit f32, color rl.Color, 
 	outer_y := -2 + f32(math.sin(angle)) * 0.9
 	inner_x := f32(math.cos(angle)) * 0.3
 	inner_y := -2 + f32(math.sin(angle)) * 0.3
-	utils.draw_line(contact_point.x, contact_point.y, zoomed_unit, inner_x, inner_y, outer_x,
-		outer_y, 0.1, rot, color)
+	renderer.draw_line(contact_point.x, contact_point.y, zoomed_unit, inner_x, inner_y,
+		outer_x, outer_y, 0.1, rot, color)
 }
 
 fn (mut c Clock) draw_component_window(mut app data.App) {

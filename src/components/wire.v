@@ -67,16 +67,17 @@ pub fn (mut w Wire) on_delete(mut app data.App) {
 	app.sim.wire_mesh_recalc_needed = true
 }
 
-fn (w &Wire) draw(app data.App) {
-	Wire.draw(data.worldspace_to_screenspace(app, w.wire_from.add(w.offset_from)), data.worldspace_to_screenspace(app,
-		w.wire_to.add(w.offset_to)), app.view.zoom, w.state, w.color, false)
+fn (w &Wire) draw(mut app data.App) {
+	Wire.draw(mut app.renderers.raylib_direct_renderer, data.worldspace_to_screenspace(app,
+		w.wire_from.add(w.offset_from)), data.worldspace_to_screenspace(app, w.wire_to.add(w.offset_to)),
+		app.view.zoom, w.state, w.color, false)
 }
 
-pub fn Wire.draw(wire_from vec.Vec2[int], wire_to vec.Vec2[int], zoom f32, state data.WireState, color rl.Color, single_pixel_wire bool) {
+pub fn Wire.draw(mut renderer data.IRenderer, wire_from vec.Vec2[int], wire_to vec.Vec2[int], zoom f32, state data.WireState, color rl.Color, single_pixel_wire bool) {
 	draw_zoom := if zoom > 1 { 1 } else { zoom }
 
 	if state == .error {
-		rl.draw_line_ex(utils.vec_to_rl(wire_from), utils.vec_to_rl(wire_to), 2 * data.component_line_thickness * draw_zoom,
+		renderer.draw_direct_line(wire_from, wire_to, f32(2 * data.component_line_thickness * draw_zoom),
 			data.wire_error_color)
 	}
 
@@ -93,11 +94,10 @@ pub fn Wire.draw(wire_from vec.Vec2[int], wire_to vec.Vec2[int], zoom f32, state
 	}
 
 	if !single_pixel_wire {
-		rl.draw_line_ex(utils.vec_to_rl(wire_from), utils.vec_to_rl(wire_to), f32(wire_thickness * draw_zoom),
+		renderer.draw_direct_line(wire_from, wire_to, f32(wire_thickness * draw_zoom),
 			color)
 	} else {
-		rl.draw_line(int(wire_from.x), int(wire_from.y), int(wire_to.x), int(wire_to.y),
-			color)
+		renderer.draw_direct_line(wire_from, wire_to, 0, color)
 	}
 }
 

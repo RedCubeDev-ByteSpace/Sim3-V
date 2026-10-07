@@ -12,11 +12,11 @@ import cfg_utils
 // it supplies all the objects that are drawable in the simulation space
 // it also takes care of rendering those objects to the screen and drawing the background grid
 
-pub fn draw_view(app data.App) {
+pub fn draw_view(mut app data.App) {
 	draw_grid(app)
 	draw_selection(app)
-	draw_wires(app)
-	draw_components(app)
+	draw_wires(mut app)
+	draw_components(mut app)
 	draw_wire_branching_points(app)
 	draw_selected_component_outlines(app)
 	draw_wire_movement_handles(app)
@@ -26,7 +26,7 @@ pub fn draw_view(app data.App) {
 	draw_contact_points(app)
 }
 
-fn draw_wires(app data.App) {
+fn draw_wires(mut app data.App) {
 	if app.view.debug.draw_only_led {
 		return
 	}
@@ -42,7 +42,7 @@ fn draw_wires(app data.App) {
 
 		// only draw components that are touching the current viewports aabb
 		if data.do_aabbs_intersect(view_aabb, comp.get_aabb()) {
-			comp.draw(app)
+			comp.draw(mut app)
 
 			// if enabled: draw bounding boxes
 			if app.view.debug.show_aabb {
@@ -52,7 +52,7 @@ fn draw_wires(app data.App) {
 	}
 }
 
-fn draw_components(app data.App) {
+fn draw_components(mut app data.App) {
 	// get the AABB for the current viewport
 	view_aabb := data.get_viewport_aabb(app)
 
@@ -69,7 +69,7 @@ fn draw_components(app data.App) {
 
 		// only draw components that are touching the current viewports aabb
 		if data.do_aabbs_intersect(view_aabb, comp.get_aabb()) {
-			comp.draw(app)
+			comp.draw(mut app)
 
 			// if enabled: draw bounding boxes
 			if app.view.debug.show_aabb {
@@ -259,23 +259,26 @@ fn draw_preview_of_component_being_placed(app data.App) {
 		a: 150
 	}
 
+	mut renderer := &app.renderers.raylib_direct_renderer
+
 	// draw the preview using the components static draw function
 	match app.bench.placement.current_selected_component_type {
 		.none {}
 		.switch {
-			components.Switch.draw(pos, zoomed_unit, color, false, app.bench.placement.rotation)
+			components.Switch.draw(mut renderer, pos, zoomed_unit, color, false, app.bench.placement.rotation)
 		}
 		.fixed_contact {
-			components.FixedContact.draw(app, pos, zoomed_unit, color, false, app.bench.placement.rotation)
+			components.FixedContact.draw(mut renderer, app, pos, zoomed_unit, color, false,
+				app.bench.placement.rotation)
 		}
 		.clock {
-			components.Clock.draw(pos, zoomed_unit, color, 0, 0, app.bench.placement.rotation)
+			components.Clock.draw(mut renderer, pos, zoomed_unit, color, 0, 0, app.bench.placement.rotation)
 		}
 		.led {
-			components.LED.draw(pos, zoomed_unit, color, false, app.bench.placement.rotation)
+			components.LED.draw(mut renderer, pos, zoomed_unit, color, false, app.bench.placement.rotation)
 		}
 		.chip {
-			components.Chip.draw(app, pos, zoomed_unit, color, app.bench.placement.rotation,
+			components.Chip.draw(mut renderer, app, pos, zoomed_unit, color, app.bench.placement.rotation,
 				app.bench.placement.current_selected_chip_uid, []data.ContactPoint{})
 		}
 		.wire, .bus {

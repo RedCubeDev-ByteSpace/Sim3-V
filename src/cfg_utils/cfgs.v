@@ -76,43 +76,45 @@ pub fn rotate_cfgs(mut cfgs []data.ComponentCfg) {
 pub fn draw_component_from_cfg(app data.App, screen_pos vec.Vec2[f32], zoom f32, cfg data.ComponentCfg, color rl.Color, single_pixel_wires bool) {
 	// prepare the variables needed for drawing any components
 	zoomed_unit := data.one_simspace_unit_in_px * zoom
+	mut renderer := &app.renderers.raylib_direct_renderer
 
 	match cfg {
 		data.SwitchCfg {
 			offset := utils.vi_to_vf(cfg.pos).mul_scalar(zoomed_unit)
-			components.Switch.draw(screen_pos.add(offset), zoomed_unit, color, cfg.state,
-				data.Rotation.from_int(cfg.rot))
+			components.Switch.draw(mut renderer, screen_pos.add(offset), zoomed_unit,
+				color, cfg.state, data.Rotation.from_int(cfg.rot))
 		}
 		data.FixedContactCfg {
 			offset := utils.vi_to_vf(cfg.pos).mul_scalar(zoomed_unit)
-			components.FixedContact.draw(app, screen_pos.add(offset), zoomed_unit, color,
-				cfg.state, data.Rotation.from_int(cfg.rot))
+			components.FixedContact.draw(mut renderer, app, screen_pos.add(offset), zoomed_unit,
+				color, cfg.state, data.Rotation.from_int(cfg.rot))
 		}
 		data.ClockCfg {
 			offset := utils.vi_to_vf(cfg.pos).mul_scalar(zoomed_unit)
-			components.Clock.draw(screen_pos.add(offset), zoomed_unit, color, 0, cfg.frequency,
-				data.Rotation.from_int(cfg.rot))
+			components.Clock.draw(mut renderer, screen_pos.add(offset), zoomed_unit, color,
+				0, cfg.frequency, data.Rotation.from_int(cfg.rot))
 		}
 		data.LEDCfg {
 			offset := utils.vi_to_vf(cfg.pos).mul_scalar(zoomed_unit)
-			components.LED.draw(screen_pos.add(offset), zoomed_unit, color, false, data.Rotation.from_int(cfg.rot))
+			components.LED.draw(mut renderer, screen_pos.add(offset), zoomed_unit, color,
+				false, data.Rotation.from_int(cfg.rot))
 		}
 		data.ChipCfg {
 			offset := utils.vi_to_vf(cfg.pos).mul_scalar(zoomed_unit)
-			components.Chip.draw(app, screen_pos.add(offset), zoomed_unit, color, data.Rotation.from_int(cfg.rot),
-				cfg.chip_uid, []data.ContactPoint{})
+			components.Chip.draw(mut renderer, app, screen_pos.add(offset), zoomed_unit,
+				color, data.Rotation.from_int(cfg.rot), cfg.chip_uid, []data.ContactPoint{})
 		}
 		data.WireCfg {
 			wire_from := utils.vi_to_vf(cfg.wire_from).mul_scalar(zoomed_unit)
 			wire_to := utils.vi_to_vf(cfg.wire_to).mul_scalar(zoomed_unit)
-			components.Wire.draw(utils.vf_to_vi(wire_from.add(screen_pos)), utils.vf_to_vi(wire_to.add(screen_pos)),
-				zoom, .low, color, single_pixel_wires)
+			components.Wire.draw(mut renderer, utils.vf_to_vi(wire_from.add(screen_pos)),
+				utils.vf_to_vi(wire_to.add(screen_pos)), zoom, .low, color, single_pixel_wires)
 		}
 		data.BusCfg {
 			wire_from := utils.vi_to_vf(cfg.wire_from).mul_scalar(zoomed_unit)
 			wire_to := utils.vi_to_vf(cfg.wire_to).mul_scalar(zoomed_unit)
-			components.Bus.draw(utils.vf_to_vi(wire_from.add(screen_pos)), utils.vf_to_vi(wire_to.add(screen_pos)),
-				zoom, color, single_pixel_wires)
+			components.Bus.draw(mut renderer, utils.vf_to_vi(wire_from.add(screen_pos)),
+				utils.vf_to_vi(wire_to.add(screen_pos)), zoom, color, single_pixel_wires)
 		}
 	}
 }

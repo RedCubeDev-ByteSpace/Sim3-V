@@ -30,6 +30,27 @@ pub fn str_to_vec(s string) vec.Vec2[int] {
 	}
 }
 
+pub fn vrl_to_vf(v raylib.Vector2) vec.Vec2[f32] {
+	return vec.Vec2[f32]{
+		x: f32(v.x)
+		y: f32(v.y)
+	}
+}
+
+pub fn vf_to_vrl(v vec.Vec2[f32]) raylib.Vector2 {
+	return raylib.Vector2{
+		x: f32(v.x)
+		y: f32(v.y)
+	}
+}
+
+pub fn vi_to_vrl(v vec.Vec2[int]) raylib.Vector2 {
+	return raylib.Vector2{
+		x: f32(v.x)
+		y: f32(v.y)
+	}
+}
+
 pub fn vi_to_vf(v vec.Vec2[int]) vec.Vec2[f32] {
 	return vec.Vec2[f32]{
 		x: f32(v.x)

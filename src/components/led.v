@@ -63,27 +63,27 @@ pub fn (mut l LED) on_delete(mut app data.App) {
 	app.sim.wire_mesh_recalc_needed = true
 }
 
-fn (l &LED) draw(app data.App) {
+fn (l &LED) draw(mut app data.App) {
 	contact_point, zoomed_unit := utils.get_drawing_variables(app, l.ComponentBase)
-	LED.draw(contact_point, zoomed_unit, l.color, l.contact_point.input_state == .high,
-		l.rotation)
+	LED.draw(mut app.renderers.raylib_direct_renderer, contact_point, zoomed_unit, l.color,
+		l.contact_point.input_state == .high, l.rotation)
 }
 
-pub fn LED.draw(contact_point vec.Vec2[f32], zoomed_unit f32, color rl.Color, state bool, rot data.Rotation) {
+pub fn LED.draw(mut renderer data.IRenderer, contact_point vec.Vec2[f32], zoomed_unit f32, color rl.Color, state bool, rot data.Rotation) {
 	low_color := data.get_low_color_from_high_color(color)
 
-	rl.draw_circle_lines(int(contact_point.x), int(contact_point.y), int(zoomed_unit / 4),
-		low_color)
-
-	utils.draw_contact_line(contact_point.x, contact_point.y, zoomed_unit, 0, 0, 0, -1,
+	renderer.draw_circle_lines(contact_point.x, contact_point.y, zoomed_unit, 0, 0, data.contact_point_size,
 		rot, low_color)
 
-	utils.draw_circle_lines(contact_point.x, contact_point.y, zoomed_unit, 0, -2, 1, rot,
-		low_color)
+	renderer.draw_contact_line(contact_point.x, contact_point.y, zoomed_unit, 0, 0, 0,
+		-1, rot, low_color)
+
+	renderer.draw_circle_lines(contact_point.x, contact_point.y, zoomed_unit, 0, -2, 1,
+		rot, low_color)
 
 	if state {
-		utils.draw_circle_filled(contact_point.x, contact_point.y, zoomed_unit, 0, -2,
-			0.8, rot, color)
+		renderer.draw_circle_filled(contact_point.x, contact_point.y, zoomed_unit, 0,
+			-2, 0.8, rot, color)
 	}
 }
 

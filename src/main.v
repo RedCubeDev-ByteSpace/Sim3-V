@@ -11,6 +11,7 @@ import fonts
 import sim
 import chip_catalog
 import storage
+import renderers
 
 $if tinyc {
 	#flag @VMODROOT/hacks/tcc.c
@@ -40,6 +41,9 @@ fn main() {
 	rl.set_target_fps(60)
 	rl.set_exit_key(0)
 	rl.set_window_state(.flag_window_resizable)
+
+	// initialize a raylib renderer for drawing all the components
+	app.renderers.raylib_direct_renderer = renderers.RaylibDirectRenderer{}
 
 	// load fonts
 	fonts.init(mut app)
@@ -113,7 +117,7 @@ fn on_frame(mut app data.App) {
 	// draw all the components that are currently in view
 	fonts.recalculate_font_choices(mut app)
 	simview.step_marching_ants(mut app)
-	simview.draw_view(app)
+	simview.draw_view(mut app)
 
 	// draw the ui last so its always on top
 	gui.draw_ui(mut app)

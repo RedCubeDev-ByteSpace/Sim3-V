@@ -164,23 +164,24 @@ pub fn (mut c Chip) on_delete(mut app data.App) {
 	}
 }
 
-fn (c &Chip) draw(app data.App) {
+fn (c &Chip) draw(mut app data.App) {
 	contact_point, zoomed_unit := utils.get_drawing_variables(app, c.ComponentBase)
-	Chip.draw(app, contact_point, zoomed_unit, c.color, c.rotation, c.chip_uid, c.contact_points)
+	Chip.draw(mut app.renderers.raylib_direct_renderer, app, contact_point, zoomed_unit,
+		c.color, c.rotation, c.chip_uid, c.contact_points)
 }
 
-pub fn Chip.draw(app data.App, contact_point vec.Vec2[f32], zoomed_unit f32, color rl.Color, rot data.Rotation, chip_uid string, contact_points []data.ContactPoint) {
+pub fn Chip.draw(mut renderer data.IRenderer, app data.App, contact_point vec.Vec2[f32], zoomed_unit f32, color rl.Color, rot data.Rotation, chip_uid string, contact_points []data.ContactPoint) {
 	low_color := data.get_low_color_from_high_color(color)
 	chip := app.catalog.chips[chip_uid]
 	height := chip.pins.len / 2
 
 	// draw the box
-	utils.draw_component_rectangle(contact_point.x, contact_point.y, zoomed_unit, 1, -f32(height) +
-		0.5, 2, height, rot, low_color)
+	renderer.draw_component_rectangle(contact_point.x, contact_point.y, zoomed_unit, 1,
+		-f32(height) + 0.5, 2, height, rot, low_color)
 
 	// draw the contacts
 	for i in 0 .. chip.pins.len / 2 {
-		utils.draw_contact_line(contact_point.x, contact_point.y, zoomed_unit, 0, -i,
+		renderer.draw_contact_line(contact_point.x, contact_point.y, zoomed_unit, 0, -i,
 			1, -i, rot, low_color)
 
 		idx_left := chip.pins.len / 2 - i - 1
@@ -189,10 +190,10 @@ pub fn Chip.draw(app data.App, contact_point vec.Vec2[f32], zoomed_unit f32, col
 		} else {
 			data.ContactPoint{}
 		}
-		utils.draw_chip_pin(contact_point.x, contact_point.y, zoomed_unit, 0, -i, contact_point_left,
+		renderer.draw_chip_pin(contact_point.x, contact_point.y, zoomed_unit, 0, -i, contact_point_left,
 			chip.pins[idx_left], true, rot, low_color)
 
-		utils.draw_contact_line(contact_point.x, contact_point.y, zoomed_unit, 3, -i,
+		renderer.draw_contact_line(contact_point.x, contact_point.y, zoomed_unit, 3, -i,
 			4, -i, rot, low_color)
 
 		idx_right := chip.pins.len / 2 + i
@@ -201,12 +202,12 @@ pub fn Chip.draw(app data.App, contact_point vec.Vec2[f32], zoomed_unit f32, col
 		} else {
 			data.ContactPoint{}
 		}
-		utils.draw_chip_pin(contact_point.x, contact_point.y, zoomed_unit, 4, -i, contact_point_right,
+		renderer.draw_chip_pin(contact_point.x, contact_point.y, zoomed_unit, 4, -i, contact_point_right,
 			chip.pins[idx_right], false, rot, low_color)
 	}
 
 	// draw the chip label
-	utils.draw_centered_text_rotated(app, contact_point.x, contact_point.y, zoomed_unit,
+	renderer.draw_centered_text_rotated(contact_point.x, contact_point.y, zoomed_unit,
 		2, -(f32(height - 1) / 2.0), chip.name, app.fonts.chip_label_font_size, app.fonts.chip_label_font,
 		rot, low_color)
 
@@ -234,23 +235,25 @@ pub fn Chip.draw(app data.App, contact_point vec.Vec2[f32], zoomed_unit f32, col
 
 	// draw pin labels!
 	for i in 0 .. chip.pins.len / 2 {
-		rect_left := utils.draw_centered_text_rotated(app, contact_point.x, contact_point.y,
+		rect_left := renderer.draw_centered_text_rotated(contact_point.x, contact_point.y,
 			zoomed_unit, 1.25, -i, chip.pins[chip.pins.len / 2 - i - 1].label, app.fonts.chip_pin_label_font_size,
 			app.fonts.chip_pin_label_font, rot, label_color)
 
 		if chip.pins[chip.pins.len / 2 - i - 1].is_active_low {
-			utils.draw_contact_line(contact_point.x, contact_point.y, zoomed_unit, rect_left.x +
-				rect_left.height / 2, rect_left.y - rect_left.width / 2.0, rect_left.x +
-				rect_left.height / 2, rect_left.y + rect_left.width / 2.0, rot, label_color)
+			renderer.draw_contact_line(contact_point.x, contact_point.y, zoomed_unit,
+				rect_left.x + rect_left.height / 2, rect_left.y - rect_left.width / 2.0,
+				rect_left.x + rect_left.height / 2, rect_left.y + rect_left.width / 2.0,
+				rot, label_color)
 		}
 
-		rect_right := utils.draw_centered_text_rotated(app, contact_point.x, contact_point.y,
+		rect_right := renderer.draw_centered_text_rotated(contact_point.x, contact_point.y,
 			zoomed_unit, 2.75, -i, chip.pins[chip.pins.len / 2 + i].label, app.fonts.chip_pin_label_font_size,
 			app.fonts.chip_pin_label_font, rot, label_color)
 		if chip.pins[chip.pins.len / 2 + i].is_active_low {
-			utils.draw_contact_line(contact_point.x, contact_point.y, zoomed_unit, rect_right.x +
-				rect_right.height / 2, rect_right.y - rect_right.width / 2.0, rect_right.x +
-				rect_right.height / 2, rect_right.y + rect_right.width / 2.0, rot, label_color)
+			renderer.draw_contact_line(contact_point.x, contact_point.y, zoomed_unit,
+				rect_right.x + rect_right.height / 2, rect_right.y - rect_right.width / 2.0,
+				rect_right.x + rect_right.height / 2, rect_right.y + rect_right.width / 2.0,
+				rot, label_color)
 		}
 	}
 }

@@ -4,6 +4,7 @@ import math.vec
 import raylib as rl
 
 pub interface IComponent {
+	draw(mut app App)
 	get_cfg() ComponentCfg
 
 	get_comp_id() i64
@@ -14,8 +15,6 @@ pub interface IComponent {
 
 	has_interaction() bool
 	has_step() bool
-
-	draw(app App)
 mut:
 	set_offset(offset vec.Vec2[int])
 	set_offset_from(offset vec.Vec2[int])
