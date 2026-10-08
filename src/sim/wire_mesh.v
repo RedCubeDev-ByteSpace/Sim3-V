@@ -237,7 +237,7 @@ fn update_wire_meshes(mut app data.App) {
 		}
 		// if there are contacts that are high and contacts that are low
 		// -> this is a dead short! not fantastic!!
-		else if num_contacts_low > 0 && num_contacts_high == 0 {
+		else if num_contacts_low > 0 && num_contacts_high > 0 {
 			wire_mesh_state = .error
 		}
 		// if all connection points are floating (probably because theyre inputs)
