@@ -38,9 +38,15 @@ pub fn add_component(mut app data.App, component data.IComponent) data.SlotMapHa
 		app.sim.component_views.non_wires << handle
 	}
 
+	// keep track of any chip components because they may be stepped through separately
+	if component.is_chip() {
+		app.sim.component_views.chips << handle
+		return handle
+	}
+
 	// also separately keep track of components that have a step() function
 	if component.has_step() {
-		app.sim.component_views.steppable_components << handle
+		app.sim.component_views.other_steppables << handle
 	}
 
 	return handle
@@ -74,11 +80,19 @@ pub fn remove_component(mut app data.App, component data.IComponent) {
 		}
 	}
 
-	// if this has a step function -> remove it from the step view
-	if component.has_step() {
-		for i, comp_handle in app.sim.component_views.steppable_components {
+	if component.is_chip() {
+		for i, comp_handle in app.sim.component_views.chips {
 			if comp_handle == handle {
-				app.sim.component_views.steppable_components.delete(i)
+				app.sim.component_views.chips.delete(i)
+				return
+			}
+		}
+	}
+	// if this has a step function -> remove it from the step view
+	else if component.has_step() {
+		for i, comp_handle in app.sim.component_views.other_steppables {
+			if comp_handle == handle {
+				app.sim.component_views.other_steppables.delete(i)
 				return
 			}
 		}
