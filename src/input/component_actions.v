@@ -17,7 +17,7 @@ fn handle_component_interaction(mut app data.App) bool {
 			// if yes AND component is not currectly selected -> interact
 			if comp.hit_test(mouse_pos_in_world_space)
 				&& comp.get_handle() !in app.bench.selected_components {
-				comp.interact()
+				comp.interact(mut app)
 				return true
 			}
 		}

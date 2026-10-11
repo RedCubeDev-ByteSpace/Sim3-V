@@ -102,7 +102,8 @@ pub fn draw_component_from_cfg(app &data.App, screen_pos vec.Vec2[f32], zoom f32
 		data.ChipCfg {
 			offset := utils.vi_to_vf(cfg.pos).mul_scalar(zoomed_unit)
 			components.Chip.draw(mut renderer, app, screen_pos.add(offset), zoomed_unit,
-				color, data.Rotation.from_int(cfg.rot), cfg.chip_uid, []data.ContactPoint{})
+				color, data.Rotation.from_int(cfg.rot), app.catalog.chips[cfg.chip_uid],
+				[]data.ContactPoint{})
 		}
 		data.WireCfg {
 			wire_from := utils.vi_to_vf(cfg.wire_from).mul_scalar(zoomed_unit)

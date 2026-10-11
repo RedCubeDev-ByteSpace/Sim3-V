@@ -11,9 +11,11 @@ import math
 @[heap]
 struct Chip {
 	data.ComponentBase // properties for this switch component
-	chip_uid string
+	chip_uid      string
+	catalog_entry chip_catalog.ChipEntry
 mut:
-	contact_points []data.ContactPoint
+	contact_points    []data.ContactPoint
+	last_input_states []data.WireState
 
 	lua_state_initialized bool
 	lua_state             voidptr
@@ -34,7 +36,8 @@ mut:
 pub fn Chip.new(mut app data.App, cfg data.ChipCfg) Chip {
 	// initialize a new component with all its unique data
 	mut c := Chip{
-		chip_uid: cfg.chip_uid
+		chip_uid:      cfg.chip_uid
+		catalog_entry: app.catalog.chips[cfg.chip_uid]
 	}
 	chip_entry := app.catalog.chips[cfg.chip_uid]
 	height := chip_entry.pins.len / 2
@@ -42,6 +45,8 @@ pub fn Chip.new(mut app data.App, cfg data.ChipCfg) Chip {
 	// initialize the component base with all the standardized data
 	c.ComponentBase = data.ComponentBase.new(mut app, cfg.pos, vec.vec2[int](height, 2),
 		data.Rotation.from_int(cfg.rot), cfg.color.to_rl(), false)
+
+	c.is_chip = true
 	c.has_step = true
 
 	// add this to the global component list
@@ -93,7 +98,13 @@ pub fn Chip.new(mut app data.App, cfg data.ChipCfg) Chip {
 		c.script_capabilities.has_save_state = lua.has_function(c.lua_state, 'SaveState')
 	}
 
-	c.setup_pins()
+	c.setup_pins(mut app)
+
+	// initialize our last input state array so we can check if any inputs changed
+	c.last_input_states = []data.WireState{len: chip_entry.pins.len}
+	for i in 0 .. c.last_input_states.len {
+		c.last_input_states[i] = .uninitialized
+	}
 
 	// done :)
 	return c
@@ -108,17 +119,17 @@ pub fn (c Chip) get_cfg() data.ComponentCfg {
 	}
 }
 
-fn (mut c Chip) setup_pins() {
+fn (mut c Chip) setup_pins(mut app data.App) {
 	if !c.lua_state_initialized || !c.script_capabilities.has_pin_setup {
 		return
 	}
 
 	// call the pin setup method
-	lua.do_pin_setup(c.lua_state, mut c.contact_points)
+	lua.do_pin_setup(mut app, c.lua_state, mut c.contact_points)
 }
 
 pub fn (mut c Chip) on_move(mut app data.App) {
-	chip_entry := app.catalog.chips[c.chip_uid]
+	chip_entry := c.catalog_entry
 	for i in 0 .. chip_entry.pins.len / 2 {
 		index_left := chip_entry.pins.len / 2 - i - 1
 		lx, ly := utils.translate_point(c.pos, 0, -i, c.rotation)
@@ -131,7 +142,7 @@ pub fn (mut c Chip) on_move(mut app data.App) {
 }
 
 pub fn (mut c Chip) on_moved(mut app data.App) {
-	chip_entry := app.catalog.chips[c.chip_uid]
+	chip_entry := c.catalog_entry
 	for i in 0 .. chip_entry.pins.len / 2 {
 		index_left := chip_entry.pins.len / 2 - i - 1
 		lx, ly := utils.translate_point(c.pos, 0, -i, c.rotation)
@@ -145,7 +156,7 @@ pub fn (mut c Chip) on_moved(mut app data.App) {
 }
 
 pub fn (mut c Chip) on_delete(mut app data.App) {
-	chip_entry := app.catalog.chips[c.chip_uid]
+	chip_entry := c.catalog_entry
 	for i in 0 .. chip_entry.pins.len / 2 {
 		index_left := chip_entry.pins.len / 2 - i - 1
 		lx, ly := utils.translate_point(c.pos, 0, -i, c.rotation)
@@ -169,12 +180,11 @@ pub fn (mut c Chip) on_delete(mut app data.App) {
 fn (c &Chip) draw(mut app data.App) {
 	contact_point, zoomed_unit := utils.get_drawing_variables(app, c.ComponentBase)
 	Chip.draw(mut app.renderers.raylib_direct_renderer, app, contact_point, zoomed_unit,
-		c.color, c.rotation, c.chip_uid, c.contact_points)
+		c.color, c.rotation, c.catalog_entry, c.contact_points)
 }
 
-pub fn Chip.draw(mut renderer data.IRenderer, app &data.App, contact_point vec.Vec2[f32], zoomed_unit f32, color rl.Color, rot data.Rotation, chip_uid string, contact_points []data.ContactPoint) {
-	Chip.draw_base(mut renderer, app, contact_point, zoomed_unit, color, rot, chip_uid,
-		contact_points)
+pub fn Chip.draw(mut renderer data.IRenderer, app &data.App, contact_point vec.Vec2[f32], zoomed_unit f32, color rl.Color, rot data.Rotation, chip chip_catalog.ChipEntry, contact_points []data.ContactPoint) {
+	Chip.draw_base(mut renderer, app, contact_point, zoomed_unit, color, rot, chip, contact_points)
 
 	// are we close enough to draw pin labels?
 	zoom_percent := if app.view.zoom >= 1 {
@@ -193,13 +203,12 @@ pub fn Chip.draw(mut renderer data.IRenderer, app &data.App, contact_point vec.V
 		1.0 - (0.7 - zoom_percent) / 0.2
 	}
 
-	Chip.draw_pin_labels(mut renderer, app, contact_point, zoomed_unit, color, rot, chip_uid,
+	Chip.draw_pin_labels(mut renderer, app, contact_point, zoomed_unit, color, rot, chip,
 		contact_points, f32(opacity))
 }
 
-fn Chip.draw_base(mut renderer data.IRenderer, app &data.App, contact_point vec.Vec2[f32], zoomed_unit f32, color rl.Color, rot data.Rotation, chip_uid string, contact_points []data.ContactPoint) {
+fn Chip.draw_base(mut renderer data.IRenderer, app &data.App, contact_point vec.Vec2[f32], zoomed_unit f32, color rl.Color, rot data.Rotation, chip chip_catalog.ChipEntry, contact_points []data.ContactPoint) {
 	low_color := data.get_low_color_from_high_color(color)
-	chip := app.catalog.chips[chip_uid]
 	height := f32(chip.pins.len / 2)
 
 	// draw the box
@@ -242,9 +251,8 @@ fn Chip.draw_base(mut renderer data.IRenderer, app &data.App, contact_point vec.
 		rot, low_color)
 }
 
-fn Chip.draw_pin_labels(mut renderer data.IRenderer, app &data.App, contact_point vec.Vec2[f32], zoomed_unit f32, color rl.Color, rot data.Rotation, chip_uid string, contact_points []data.ContactPoint, opacity f32) {
+fn Chip.draw_pin_labels(mut renderer data.IRenderer, app &data.App, contact_point vec.Vec2[f32], zoomed_unit f32, color rl.Color, rot data.Rotation, chip chip_catalog.ChipEntry, contact_points []data.ContactPoint, opacity f32) {
 	low_color := data.get_low_color_from_high_color(color)
-	chip := app.catalog.chips[chip_uid]
 
 	label_color := rl.Color{
 		...low_color
@@ -295,13 +303,32 @@ fn (mut c Chip) draw_component_window(mut app data.App) {
 	}
 }
 
-pub fn (mut c Chip) step(app &data.App, delta f32) {
+pub fn (mut c Chip) step(mut app data.App, delta f32) {
 	if !c.lua_state_initialized || !c.script_capabilities.has_step {
 		return
 	}
 
+	// only do a chip step if any of the inputs changed
+	mut has_changed := false
+	for i, contact in c.contact_points {
+		if contact.input_state != c.last_input_states[i] {
+			has_changed = true
+			break
+		}
+	}
+
+	// nothing to do
+	if !has_changed {
+		return
+	}
+
+	// remember this state for later
+	for i, contact in c.contact_points {
+		c.last_input_states[i] = contact.input_state
+	}
+
 	// do a stateless step
-	lua.do_step(c.lua_state, mut c.contact_points)
+	lua.do_step(mut app, c.lua_state, mut c.contact_points)
 
 	// if this is a stateless chip -> we're done!
 	chip_entry := app.catalog.chips[c.chip_uid]
@@ -322,13 +349,13 @@ pub fn (mut c Chip) step(app &data.App, delta f32) {
 	// rising
 	if current_clock_state {
 		if c.script_capabilities.has_step_rising {
-			lua.do_step_rising(c.lua_state, mut c.contact_points)
+			lua.do_step_rising(mut app, c.lua_state, mut c.contact_points)
 		}
 
 		// falling
 	} else {
 		if c.script_capabilities.has_step_falling {
-			lua.do_step_falling(c.lua_state, mut c.contact_points)
+			lua.do_step_falling(mut app, c.lua_state, mut c.contact_points)
 		}
 	}
 

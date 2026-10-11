@@ -97,7 +97,7 @@ pub fn (mut r RaylibDirectRenderer) draw_chip_pin(init_x_f f32, init_y_f f32, un
 	}
 
 	// floating pins are inputs
-	if contact_point.output_state == .floating {
+	if contact_point.get_output_state() == .floating {
 		r.draw_rotated_triangle(draw_x, draw_y, data.contact_point_size * unit, draw_rot,
 			color, if contact_point.input_state == .high { color } else { rl.raywhite })
 		return
@@ -105,7 +105,7 @@ pub fn (mut r RaylibDirectRenderer) draw_chip_pin(init_x_f f32, init_y_f f32, un
 
 	// otherwise -> output
 	r.draw_rotated_triangle(draw_x, draw_y, data.contact_point_size * unit, inverted_draw_rot,
-		color, if contact_point.output_state == .high { color } else { rl.raywhite })
+		color, if contact_point.get_output_state() == .high { color } else { rl.raywhite })
 }
 
 fn (mut r RaylibDirectRenderer) draw_rotated_triangle(x f32, y f32, size f32, rot data.Rotation, line_color rl.Color, fill_color rl.Color) {

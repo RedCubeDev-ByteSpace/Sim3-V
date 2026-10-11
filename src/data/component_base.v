@@ -16,6 +16,7 @@ mut:
 	color                 rl.Color
 	has_interaction       bool
 	has_step              bool
+	is_chip               bool
 	component_window_open bool
 }
 
@@ -99,13 +100,17 @@ pub fn (c ComponentBase) has_interaction() bool {
 	return c.has_interaction
 }
 
+pub fn (c ComponentBase) is_chip() bool {
+	return c.is_chip
+}
+
 pub fn (c ComponentBase) has_step() bool {
 	return c.has_step
 }
 
-pub fn (mut c ComponentBase) interact() {}
+pub fn (mut c ComponentBase) interact(mut app App) {}
 
-pub fn (mut c ComponentBase) step(app &App, delta f32) {}
+pub fn (mut c ComponentBase) step(mut app App, delta f32) {}
 
 pub fn (mut c ComponentBase) open_component_window() {
 	c.component_window_open = true

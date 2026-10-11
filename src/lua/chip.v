@@ -63,7 +63,7 @@ pub fn has_function(state voidptr, func_name string) bool {
 	return is_function
 }
 
-pub fn do_pin_setup(state voidptr, mut pins []data.ContactPoint) {
+pub fn do_pin_setup(mut app data.App, state voidptr, mut pins []data.ContactPoint) {
 	// load a reference to the setup function
 	C.lua_getglobal(state, c'PinSetup')
 
@@ -79,10 +79,10 @@ pub fn do_pin_setup(state voidptr, mut pins []data.ContactPoint) {
 	}
 
 	// read the pin table back in
-	read_pin_table(state, mut pins)
+	read_pin_table(mut app, state, mut pins)
 }
 
-pub fn do_step(state voidptr, mut pins []data.ContactPoint) {
+pub fn do_step(mut app data.App, state voidptr, mut pins []data.ContactPoint) {
 	// load a reference to the step function
 	C.lua_getglobal(state, c'Step')
 
@@ -98,10 +98,10 @@ pub fn do_step(state voidptr, mut pins []data.ContactPoint) {
 	}
 
 	// read the pin table back in
-	read_pin_table(state, mut pins)
+	read_pin_table(mut app, state, mut pins)
 }
 
-pub fn do_step_rising(state voidptr, mut pins []data.ContactPoint) {
+pub fn do_step_rising(mut app data.App, state voidptr, mut pins []data.ContactPoint) {
 	// load a reference to the step rising function
 	C.lua_getglobal(state, c'StepRising')
 
@@ -117,10 +117,10 @@ pub fn do_step_rising(state voidptr, mut pins []data.ContactPoint) {
 	}
 
 	// read the pin table back in
-	read_pin_table(state, mut pins)
+	read_pin_table(mut app, state, mut pins)
 }
 
-pub fn do_step_falling(state voidptr, mut pins []data.ContactPoint) {
+pub fn do_step_falling(mut app data.App, state voidptr, mut pins []data.ContactPoint) {
 	// load a reference to the step rising function
 	C.lua_getglobal(state, c'StepFalling')
 
@@ -136,7 +136,7 @@ pub fn do_step_falling(state voidptr, mut pins []data.ContactPoint) {
 	}
 
 	// read the pin table back in
-	read_pin_table(state, mut pins)
+	read_pin_table(mut app, state, mut pins)
 }
 
 fn build_pin_table(state voidptr, pins []data.ContactPoint, include_input_state bool) {
@@ -151,7 +151,7 @@ fn build_pin_table(state voidptr, pins []data.ContactPoint, include_input_state 
 		// state 0 = LOW
 		//       1 = HIGH
 		//       2 = FLOATING
-		output_state := match pin.output_state {
+		output_state := match pin.get_output_state() {
 			.low { 0 }
 			.high { 1 }
 			.floating { 2 }
@@ -180,7 +180,7 @@ fn build_pin_table(state voidptr, pins []data.ContactPoint, include_input_state 
 	C.lua_setglobal(state, c'pins')
 }
 
-fn read_pin_table(state voidptr, mut pins []data.ContactPoint) {
+fn read_pin_table(mut app data.App, state voidptr, mut pins []data.ContactPoint) {
 	// get the "pins" global
 	C.lua_getglobal(state, c'pins')
 
@@ -203,11 +203,11 @@ fn read_pin_table(state voidptr, mut pins []data.ContactPoint) {
 		}
 
 		C.lua_pop(state, 2)
-		pin.output_state = match pin_state {
+		pin.set_output_state(mut app, match pin_state {
 			0 { .low }
 			1 { .high }
 			else { .floating }
-		}
+		})
 	}
 
 	C.lua_pop(state, 1)

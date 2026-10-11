@@ -4,4 +4,5 @@ pub enum WireState {
 	low
 	high
 	error
+	uninitialized
 }

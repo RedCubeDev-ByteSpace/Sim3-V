@@ -204,7 +204,7 @@ fn update_wire_meshes(mut app data.App) {
 		mut num_contacts_floating := 0
 
 		for contact_point in mesh.contact_points {
-			match contact_point.output_state {
+			match contact_point.get_output_state() {
 				.low {
 					num_contacts_low++
 				}

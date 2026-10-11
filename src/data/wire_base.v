@@ -150,9 +150,13 @@ pub fn (w WireBase) has_step() bool {
 	return false
 }
 
-pub fn (mut w WireBase) interact() {}
+pub fn (w WireBase) is_chip() bool {
+	return false
+}
 
-pub fn (mut w WireBase) step(app &App, delta f32) {}
+pub fn (mut w WireBase) interact(mut app App) {}
+
+pub fn (mut w WireBase) step(mut app App, delta f32) {}
 
 pub fn (mut w WireBase) open_component_window() {
 	w.component_window_open = true

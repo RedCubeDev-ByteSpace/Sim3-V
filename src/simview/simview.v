@@ -273,7 +273,7 @@ fn draw_preview_of_component_being_placed(app &data.App) {
 		}
 		.chip {
 			components.Chip.draw(mut renderer, app, pos, zoomed_unit, color, app.bench.placement.rotation,
-				app.bench.placement.current_selected_chip_uid, []data.ContactPoint{})
+				app.catalog.chips[app.bench.placement.current_selected_chip_uid], []data.ContactPoint{})
 		}
 		.wire, .bus {
 			if !app.bench.placement.placed_wire_starting_point {

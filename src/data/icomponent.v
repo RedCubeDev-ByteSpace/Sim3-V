@@ -15,6 +15,7 @@ pub interface IComponent {
 
 	has_interaction() bool
 	has_step() bool
+	is_chip() bool
 mut:
 	set_offset(offset vec.Vec2[int])
 	set_offset_from(offset vec.Vec2[int])
@@ -28,8 +29,8 @@ mut:
 	on_moved(mut app App)
 	on_delete(mut app App)
 
-	interact()
+	interact(mut app App)
 	open_component_window()
 	draw_component_window(mut app App)
-	step(app &App, delta f32)
+	step(mut app App, delta f32)
 }

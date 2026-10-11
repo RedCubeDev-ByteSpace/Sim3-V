@@ -84,7 +84,7 @@ pub fn Wire.draw(mut renderer data.IRenderer, wire_from vec.Vec2[int], wire_to v
 	}
 
 	wire_thickness := match state {
-		.low {
+		.low, .uninitialized {
 			data.component_line_thickness
 		}
 		.high {

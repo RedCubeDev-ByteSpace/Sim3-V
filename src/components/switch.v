@@ -52,9 +52,9 @@ pub fn (s Switch) get_cfg() data.ComponentCfg {
 	}
 }
 
-fn (mut s Switch) interact() {
+fn (mut s Switch) interact(mut app data.App) {
 	s.state = !s.state
-	s.contact_point.output_state = if s.state { .high } else { .low }
+	s.contact_point.set_output_state(mut app, if s.state { .high } else { .low })
 }
 
 pub fn (mut s Switch) on_move(mut app data.App) {
@@ -112,7 +112,7 @@ fn (mut s Switch) draw_component_window(mut app data.App) {
 
 		app.mu.label('State')
 		if app.mu.checkbox('', s.state) {
-			s.contact_point.output_state = if s.state { .high } else { .low }
+			s.contact_point.set_output_state(mut app, if s.state { .high } else { .low })
 		}
 
 		app.mu.end_window_bool_controlled(s.component_window_open)

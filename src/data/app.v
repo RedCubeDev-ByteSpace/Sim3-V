@@ -75,9 +75,10 @@ pub mut:
 
 		component_views struct {
 		pub mut:
-			steppable_components []SlotMapHandle
-			wires                []SlotMapHandle
-			non_wires            []SlotMapHandle
+			chips            []SlotMapHandle
+			other_steppables []SlotMapHandle
+			wires            []SlotMapHandle
+			non_wires        []SlotMapHandle
 		}
 
 		wire_mesh_recalc_needed bool
@@ -88,6 +89,7 @@ pub mut:
 		global_contact_point_counter i64
 		contact_point_table          map[i64]&ContactPoint
 		contact_point_positions      map[string][]i64
+		contact_point_output_changed bool
 
 		steps_per_frame f32 = 5
 	}
