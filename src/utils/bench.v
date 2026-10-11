@@ -22,8 +22,67 @@ pub fn exit_component_placement(mut app data.App) {
 	app.bench.bench_state = .idle
 }
 
-pub fn add_component(mut app data.App, component data.IComponent) {
-	app.sim.components[component.get_comp_id()] = component
+pub fn add_component(mut app data.App, component data.IComponent) data.SlotMapHandle {
+	handle := app.sim.components.add(component)
+
+	// also add this component to all relevant views
+	is_wire := component is data.IWireBase
+
+	// if this is a wire...
+	if is_wire {
+		// add to the wire list
+		app.sim.component_views.wires << handle
+		return handle
+	} else {
+		// otherwise: add to the non-wire list
+		app.sim.component_views.non_wires << handle
+	}
+
+	// also separately keep track of components that have a step() function
+	if component.has_step() {
+		app.sim.component_views.steppable_components << handle
+	}
+
+	return handle
+}
+
+pub fn remove_component(mut app data.App, component data.IComponent) {
+	handle := component.get_handle()
+	app.sim.components.remove(handle)
+
+	// also add this component to all relevant views
+	is_wire := component is data.IWireBase
+
+	// if this is a wire...
+	if is_wire {
+		// remove it from the wire view
+		for i, wire_handle in app.sim.component_views.wires {
+			if wire_handle == handle {
+				app.sim.component_views.wires.delete(i)
+				return
+			}
+		}
+
+		return
+	} else {
+		// otherwise: remove it from the non-wire view
+		for i, comp_handle in app.sim.component_views.non_wires {
+			if comp_handle == handle {
+				app.sim.component_views.non_wires.delete(i)
+				break
+			}
+		}
+	}
+
+	// if this has a step function -> remove it from the step view
+	if component.has_step() {
+		for i, comp_handle in app.sim.component_views.steppable_components {
+			if comp_handle == handle {
+				app.sim.component_views.steppable_components.delete(i)
+				return
+			}
+		}
+	}
 }
 
 // this is required because C will always round towards zero

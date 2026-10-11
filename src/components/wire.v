@@ -5,6 +5,7 @@ import math.vec
 import raylib as rl
 import utils
 
+@[heap]
 pub struct Wire {
 	data.WireBase
 mut:
@@ -21,15 +22,15 @@ pub fn Wire.new(mut app data.App, cfg data.WireCfg) Wire {
 	// initialize the component base with all the standardized data
 	w.WireBase = data.WireBase.new(mut app, cfg.wire_from, cfg.wire_to, cfg.color.to_rl())
 
-	// create a dummy name for this component
-	w.comp_name = 'Wire ${w.comp_id}'
-
 	// add this wire to the global component list
-	utils.add_component(mut app, w)
+	w.comp_handle = utils.add_component(mut app, w)
+
+	// create a dummy name for this component
+	w.comp_name = 'Wire (${w.comp_handle.id}:${w.comp_handle.gen})'
 
 	// register this wire on the map
-	utils.register_wire(mut app, w.wire_from, w.comp_id)
-	utils.register_wire(mut app, w.wire_to, w.comp_id)
+	utils.register_wire(mut app, w.wire_from, w.comp_handle)
+	utils.register_wire(mut app, w.wire_to, w.comp_handle)
 
 	// new wire! recalculate the meshes
 	app.sim.wire_mesh_recalc_needed = true
@@ -51,20 +52,21 @@ pub fn (mut w Wire) set_state(wire_state data.WireState) {
 }
 
 pub fn (mut w Wire) on_move(mut app data.App) {
-	utils.unregister_wire(mut app, w.wire_from, w.comp_id)
-	utils.unregister_wire(mut app, w.wire_to, w.comp_id)
+	utils.unregister_wire(mut app, w.wire_from, w.comp_handle)
+	utils.unregister_wire(mut app, w.wire_to, w.comp_handle)
 }
 
 pub fn (mut w Wire) on_moved(mut app data.App) {
-	utils.register_wire(mut app, w.wire_from, w.comp_id)
-	utils.register_wire(mut app, w.wire_to, w.comp_id)
+	utils.register_wire(mut app, w.wire_from, w.comp_handle)
+	utils.register_wire(mut app, w.wire_to, w.comp_handle)
 	app.sim.wire_mesh_recalc_needed = true
 }
 
 pub fn (mut w Wire) on_delete(mut app data.App) {
-	utils.unregister_wire(mut app, w.wire_from, w.comp_id)
-	utils.unregister_wire(mut app, w.wire_to, w.comp_id)
+	utils.unregister_wire(mut app, w.wire_from, w.comp_handle)
+	utils.unregister_wire(mut app, w.wire_to, w.comp_handle)
 	app.sim.wire_mesh_recalc_needed = true
+	utils.remove_component(mut app, w)
 }
 
 fn (w &Wire) draw(mut app data.App) {
@@ -107,8 +109,9 @@ fn (mut w Wire) draw_component_window(mut app data.App) {
 	}
 
 	pos_in_screen_space := data.worldspace_to_screenspace(app, w.wire_from.add(w.wire_to).div_scalar[f32](2))
-	if app.mu.begin_window_ex_bool_controlled('Wire (id: ${w.comp_id})', rl.Rectangle{pos_in_screen_space.x, pos_in_screen_space.y, 200, 85},
-		.noscroll | .noresize, w.component_window_open)
+	if app.mu.begin_window_ex_bool_controlled('Wire (${w.comp_handle.id}:${w.comp_handle.gen})',
+		rl.Rectangle{pos_in_screen_space.x, pos_in_screen_space.y, 200, 85}, .noscroll | .noresize,
+		w.component_window_open)
 	{
 		app.mu.layout_row([50, -1], 0)
 

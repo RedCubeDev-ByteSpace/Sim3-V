@@ -2,7 +2,7 @@ module data
 
 pub struct WireMesh {
 pub:
-	wires []i64
+	wires []SlotMapHandle
 pub mut:
 	contact_points []&ContactPoint
 }

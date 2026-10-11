@@ -16,7 +16,7 @@ pub fn draw_ui(mut app data.App) {
 	draw_chip_select_window(mut app)
 	draw_blueprints_windows(mut app)
 
-	for mut comp in app.sim.components.values() {
+	for mut comp in app.sim.components.data {
 		comp.draw_component_window(mut app)
 	}
 

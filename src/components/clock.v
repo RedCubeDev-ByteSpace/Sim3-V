@@ -38,8 +38,12 @@ pub fn Clock.new(mut app data.App, cfg data.ClockCfg) Clock {
 		cfg.color.to_rl(), false)
 	c.has_step = true
 
+	// add this wire to the global component list
+	c.comp_handle = utils.add_component(mut app, c)
+	app.sim.wire_mesh_recalc_needed = true
+
 	// create a dummy name for this component
-	c.comp_name = 'Clock ${c.comp_id}'
+	c.comp_name = 'Clock (${c.comp_handle.id}:${c.comp_handle.gen})'
 
 	// calculate where this components bounding box is based on its rotation
 	c.aabb_offset = utils.get_aabb_offset_for_rotation(-1, -3, 2, 2, data.Rotation.from_int(cfg.rot))
@@ -48,10 +52,6 @@ pub fn Clock.new(mut app data.App, cfg data.ClockCfg) Clock {
 	c.contact_point = data.ContactPoint.new(mut app, .low)
 	app.sim.contact_point_table[c.contact_point.cont_id] = &c.contact_point
 	utils.register_contact_point(mut app, c.pos, c.contact_point.cont_id)
-
-	// add this wire to the global component list
-	utils.add_component(mut app, c)
-	app.sim.wire_mesh_recalc_needed = true
 
 	// done :)
 	return c
@@ -79,6 +79,7 @@ pub fn (mut c Clock) on_delete(mut app data.App) {
 	utils.unregister_contact_point(mut app, c.pos, c.contact_point.cont_id)
 	app.sim.contact_point_table.delete(c.contact_point.cont_id)
 	app.sim.wire_mesh_recalc_needed = true
+	utils.remove_component(mut app, c)
 }
 
 fn (c &Clock) draw(mut app data.App) {
@@ -114,8 +115,9 @@ fn (mut c Clock) draw_component_window(mut app data.App) {
 	}
 
 	pos_in_screen_space := data.worldspace_to_screenspace(app, c.pos)
-	if app.mu.begin_window_ex_bool_controlled('Clock (id: ${c.comp_id})', rl.Rectangle{pos_in_screen_space.x, pos_in_screen_space.y, 250, 105},
-		.noscroll | .noresize, c.component_window_open)
+	if app.mu.begin_window_ex_bool_controlled('Clock (${c.comp_handle.id}:${c.comp_handle.gen})',
+		rl.Rectangle{pos_in_screen_space.x, pos_in_screen_space.y, 250, 105}, .noscroll | .noresize,
+		c.component_window_open)
 	{
 		app.mu.layout_row([55, -1], 0)
 

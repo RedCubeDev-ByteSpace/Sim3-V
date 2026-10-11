@@ -46,9 +46,9 @@ fn handle_rectangle_select(mut app data.App) bool {
 			height: end_pos_world_space.y - start_pos_world_space.y
 		}
 
-		for comp in app.sim.components.values() {
+		for comp in app.sim.components.data {
 			if data.do_aabbs_intersect(selection_aabb, comp.get_aabb()) {
-				app.bench.selected_components << comp
+				app.bench.selected_components << comp.get_handle()
 			}
 		}
 

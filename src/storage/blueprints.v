@@ -86,8 +86,8 @@ pub fn create_blueprint_from_selected_components(mut app data.App, name string, 
 
 	// create a new blueprint object
 	mut cfgs := []data.ComponentCfg{}
-	for comp in app.bench.selected_components {
-		cfgs << comp.get_cfg()
+	for comp_handle in app.bench.selected_components {
+		cfgs << app.sim.components.get(comp_handle).get_cfg()
 	}
 	cfg_utils.normalize_cfgs(mut cfgs)
 

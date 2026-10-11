@@ -11,7 +11,9 @@ fn handle_component_move(mut app data.App) bool {
 	if app.bench.bench_state == .idle
 		&& rl.is_mouse_button_pressed(int(rl.MouseButton.mouse_button_left)) {
 		mouse_pos_in_world_space := data.screenspace_to_worldspace(app, app.input.mouse_pos)
-		for comp in app.bench.selected_components {
+		for comp_handle in app.bench.selected_components {
+			comp := app.sim.components.get(comp_handle)
+
 			if !comp.hit_test(mouse_pos_in_world_space) {
 				continue
 			}
@@ -29,7 +31,8 @@ fn handle_component_move(mut app data.App) bool {
 		mouse_pos_in_world_space := data.screenspace_to_worldspace(app, app.input.mouse_pos)
 		new_offset := mouse_pos_in_world_space.sub(app.input.component_move_start_pos)
 
-		for mut comp in app.bench.selected_components {
+		for mut comp_handle in app.bench.selected_components {
+			mut comp := app.sim.components.get(comp_handle)
 			comp.set_offset(vec.vec2[int](int(new_offset.x), int(new_offset.y)))
 		}
 	}
@@ -37,7 +40,9 @@ fn handle_component_move(mut app data.App) bool {
 	// if we're currently moving and theres a mouse up -> end and commit movement
 	if app.bench.bench_state == .moving_components
 		&& rl.is_mouse_button_released(int(rl.MouseButton.mouse_button_left)) {
-		for mut comp in app.bench.selected_components {
+		for mut comp_handle in app.bench.selected_components {
+			mut comp := app.sim.components.get(comp_handle)
+
 			// prepare the component for its move
 			comp.on_move(mut app)
 
@@ -64,10 +69,12 @@ fn handle_wire_move(mut app data.App) bool {
 		app.bench.wire_moving.draw_hover_box = false
 
 		// are we currently hovering a movement box of a wire?
-		for wire in app.sim.components.values() {
+		for wire_handle in app.sim.component_views.wires {
+			wire := app.sim.components.get(wire_handle)
+
 			// dont target any wires that are already selected, moving the entire wire takes precedence over moving only
 			// one of its points
-			if wire in app.bench.selected_components {
+			if wire_handle in app.bench.selected_components {
 				continue
 			}
 
@@ -77,7 +84,7 @@ fn handle_wire_move(mut app data.App) bool {
 				// if the mouse cursor is inside the "from" movement handle
 				if data.is_point_inside_aabb(base.get_from_aabb(), mouse_pos_in_world_space) {
 					// -> draw a box around it
-					app.bench.wire_moving.wire_id = base.get_comp_id()
+					app.bench.wire_moving.wire_handle = base.get_handle()
 					app.bench.wire_moving.wire_end = .from
 					app.bench.wire_moving.draw_hover_box = true
 					break
@@ -86,7 +93,7 @@ fn handle_wire_move(mut app data.App) bool {
 				// if the mouse cursor is inside the "to" movement handle
 				if data.is_point_inside_aabb(base.get_to_aabb(), mouse_pos_in_world_space) {
 					// -> draw a box around it
-					app.bench.wire_moving.wire_id = base.get_comp_id()
+					app.bench.wire_moving.wire_handle = base.get_handle()
 					app.bench.wire_moving.wire_end = .to
 					app.bench.wire_moving.draw_hover_box = true
 					break
@@ -112,7 +119,7 @@ fn handle_wire_move(mut app data.App) bool {
 		new_offset_f := mouse_pos_in_world_space.sub(app.input.wire_move_start_pos)
 		new_offset := utils.roundificate_to_whole_point(new_offset_f)
 
-		mut comp := app.sim.components[app.bench.wire_moving.wire_id]
+		mut comp := app.sim.components.get(app.bench.wire_moving.wire_handle)
 		match app.bench.wire_moving.wire_end {
 			.from {
 				comp.set_offset_from(new_offset)
@@ -126,7 +133,7 @@ fn handle_wire_move(mut app data.App) bool {
 	// if we're currently moving and theres a mouse up -> end and commit movement
 	if app.bench.bench_state == .moving_wire
 		&& rl.is_mouse_button_released(int(rl.MouseButton.mouse_button_left)) {
-		mut comp := app.sim.components[app.bench.wire_moving.wire_id]
+		mut comp := app.sim.components.get(app.bench.wire_moving.wire_handle)
 
 		// prepare the component for its move
 		comp.on_move(mut app)

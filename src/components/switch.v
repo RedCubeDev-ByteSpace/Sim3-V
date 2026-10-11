@@ -24,8 +24,12 @@ pub fn Switch.new(mut app data.App, cfg data.SwitchCfg) Switch {
 	s.ComponentBase = data.ComponentBase.new(mut app, cfg.pos, vec.vec2[int](2, 2), data.Rotation.from_int(cfg.rot),
 		cfg.color.to_rl(), true)
 
+	// add this wire to the global component list
+	s.comp_handle = utils.add_component(mut app, s)
+	app.sim.wire_mesh_recalc_needed = true
+
 	// create a dummy name for this component
-	s.comp_name = 'Switch ${s.comp_id}'
+	s.comp_name = 'Switch (${s.comp_handle.id}:${s.comp_handle.gen})'
 
 	// calculate where this components bounding box is based on its rotation
 	s.aabb_offset = utils.get_aabb_offset_for_rotation(-1, -3, 2, 2, data.Rotation.from_int(cfg.rot))
@@ -34,10 +38,6 @@ pub fn Switch.new(mut app data.App, cfg data.SwitchCfg) Switch {
 	s.contact_point = data.ContactPoint.new(mut app, if cfg.state { .high } else { .low })
 	app.sim.contact_point_table[s.contact_point.cont_id] = &s.contact_point
 	utils.register_contact_point(mut app, s.pos, s.contact_point.cont_id)
-
-	// add this wire to the global component list
-	utils.add_component(mut app, s)
-	app.sim.wire_mesh_recalc_needed = true
 
 	// done :)
 	return s
@@ -70,6 +70,7 @@ pub fn (mut s Switch) on_delete(mut app data.App) {
 	utils.unregister_contact_point(mut app, s.pos, s.contact_point.cont_id)
 	app.sim.contact_point_table.delete(s.contact_point.cont_id)
 	app.sim.wire_mesh_recalc_needed = true
+	utils.remove_component(mut app, s)
 }
 
 fn (s &Switch) draw(mut app data.App) {
@@ -100,8 +101,9 @@ fn (mut s Switch) draw_component_window(mut app data.App) {
 	}
 
 	pos_in_screen_space := data.worldspace_to_screenspace(app, s.pos)
-	if app.mu.begin_window_ex_bool_controlled('Switch (id: ${s.comp_id})', rl.Rectangle{pos_in_screen_space.x, pos_in_screen_space.y, 200, 85},
-		.noscroll | .noresize, s.component_window_open)
+	if app.mu.begin_window_ex_bool_controlled('Switch (${s.comp_handle.id}:${s.comp_handle.gen})',
+		rl.Rectangle{pos_in_screen_space.x, pos_in_screen_space.y, 200, 85}, .noscroll | .noresize,
+		s.component_window_open)
 	{
 		app.mu.layout_row([50, -1], 0)
 

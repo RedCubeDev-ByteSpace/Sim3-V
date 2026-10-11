@@ -3,11 +3,10 @@ module data
 import math.vec
 import raylib as rl
 
-@[heap]
 pub struct ComponentBase {
 mut:
 	// base component properties
-	comp_id               i64
+	comp_handle           SlotMapHandle
 	comp_name             string
 	pos                   vec.Vec2[int]
 	aabb_offset           vec.Vec2[f32] = vec.vec2[f32](0, 0)
@@ -22,7 +21,6 @@ mut:
 
 pub fn ComponentBase.new(mut app App, pos vec.Vec2[int], size vec.Vec2[int], rot Rotation, color rl.Color, has_interaction bool) ComponentBase {
 	return ComponentBase{
-		comp_id:         app.sim.global_id_counter++
 		pos:             pos
 		size:            size
 		rotation:        rot
@@ -31,8 +29,8 @@ pub fn ComponentBase.new(mut app App, pos vec.Vec2[int], size vec.Vec2[int], rot
 	}
 }
 
-pub fn (c ComponentBase) get_comp_id() i64 {
-	return c.comp_id
+pub fn (c ComponentBase) get_handle() SlotMapHandle {
+	return c.comp_handle
 }
 
 pub fn (c ComponentBase) get_position() vec.Vec2[int] {

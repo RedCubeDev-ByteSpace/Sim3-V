@@ -69,15 +69,25 @@ pub mut:
 	// everything concerning the simulation
 	sim struct {
 	pub mut:
-		global_id_counter            i64
-		wire_mesh_recalc_needed      bool
-		components                   map[i64]IComponent
-		wire_positions               map[string][]i64 // vec2 -> comp_id
-		wire_meshes                  []WireMesh = []
+		global_id_counter i64
+
+		components SlotMap[IComponent]
+
+		component_views struct {
+		pub mut:
+			steppable_components []SlotMapHandle
+			wires                []SlotMapHandle
+			non_wires            []SlotMapHandle
+		}
+
+		wire_mesh_recalc_needed bool
+		wire_positions          map[string][]SlotMapHandle // vec2 -> comp_id
+		wire_meshes             []WireMesh           = []
+		wire_branching_points   []WireBranchingPoint = []
+
 		global_contact_point_counter i64
 		contact_point_table          map[i64]&ContactPoint
 		contact_point_positions      map[string][]i64
-		wire_branching_points        []WireBranchingPoint = []
 
 		steps_per_frame f32 = 5
 	}
@@ -88,13 +98,13 @@ pub mut:
 	pub mut:
 		bench_state                   BenchState
 		return_after_move_bench_state BenchState
-		selected_components           []IComponent = []
+		selected_components           []SlotMapHandle
 		marching_ants_starting_point  int
 		marching_ants_frame_counter   int
 
 		wire_moving struct {
 		pub mut:
-			wire_id        i64
+			wire_handle    SlotMapHandle
 			wire_end       WireEnd
 			draw_hover_box bool
 		}

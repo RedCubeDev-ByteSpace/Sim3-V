@@ -21,8 +21,12 @@ pub fn LED.new(mut app data.App, cfg data.LEDCfg) LED {
 	l.ComponentBase = data.ComponentBase.new(mut app, cfg.pos, vec.vec2[int](2, 2), data.Rotation.from_int(cfg.rot),
 		cfg.color.to_rl(), false)
 
+	// add this wire to the global component list
+	l.comp_handle = utils.add_component(mut app, l)
+	app.sim.wire_mesh_recalc_needed = true
+
 	// create a dummy name for this component
-	l.comp_name = 'LED ${l.comp_id}'
+	l.comp_name = 'LED (${l.comp_handle.id}:${l.comp_handle.gen})'
 
 	// calculate where this components bounding box is based on its rotation
 	l.aabb_offset = utils.get_aabb_offset_for_rotation(-1, -3, 2, 2, data.Rotation.from_int(cfg.rot))
@@ -31,10 +35,6 @@ pub fn LED.new(mut app data.App, cfg data.LEDCfg) LED {
 	l.contact_point = data.ContactPoint.new(mut app, .floating)
 	app.sim.contact_point_table[l.contact_point.cont_id] = &l.contact_point
 	utils.register_contact_point(mut app, l.pos, l.contact_point.cont_id)
-
-	// add this wire to the global component list
-	utils.add_component(mut app, l)
-	app.sim.wire_mesh_recalc_needed = true
 
 	// done :)
 	return l
@@ -61,6 +61,7 @@ pub fn (mut l LED) on_delete(mut app data.App) {
 	utils.unregister_contact_point(mut app, l.pos, l.contact_point.cont_id)
 	app.sim.contact_point_table.delete(l.contact_point.cont_id)
 	app.sim.wire_mesh_recalc_needed = true
+	utils.remove_component(mut app, l)
 }
 
 fn (l &LED) draw(mut app data.App) {
@@ -93,8 +94,9 @@ fn (mut l LED) draw_component_window(mut app data.App) {
 	}
 
 	pos_in_screen_space := data.worldspace_to_screenspace(app, l.pos)
-	if app.mu.begin_window_ex_bool_controlled('Switch (id: ${l.comp_id})', rl.Rectangle{pos_in_screen_space.x, pos_in_screen_space.y, 200, 85},
-		.noscroll | .noresize, l.component_window_open)
+	if app.mu.begin_window_ex_bool_controlled('LED (${l.comp_handle.id}:${l.comp_handle.gen})',
+		rl.Rectangle{pos_in_screen_space.x, pos_in_screen_space.y, 200, 85}, .noscroll | .noresize,
+		l.component_window_open)
 	{
 		app.mu.layout_row([50, -1], 0)
 

@@ -23,8 +23,8 @@ fn recalculate_wire_meshes(mut app data.App) {
 
 	mut current_wire_positions := app.sim.wire_positions.clone()
 	mut current_contact_point_positions := app.sim.contact_point_positions.clone()
-	mut wires_to_visit_queue := []i64{}
-	mut visited_wires := []i64{}
+	mut wires_to_visit_queue := []data.SlotMapHandle{}
+	mut visited_wires := []data.SlotMapHandle{}
 
 	for {
 		// if there are no (more) wires to go through -> we're done
@@ -32,12 +32,12 @@ fn recalculate_wire_meshes(mut app data.App) {
 			return
 		}
 
-		mut wire_mesh_wire_ids := []i64{}
+		mut wire_mesh_wire_ids := []data.SlotMapHandle{}
 		mut wire_mesh_contact_point_ids := []i64{}
 
 		// find a starting wire for mesh building
 		for wire_stack in current_wire_positions.values() {
-			wires := wire_stack.filter(app.sim.components[it] is components.Wire)
+			wires := wire_stack.filter(app.sim.components.get(it) is components.Wire)
 			if wires.len > 0 {
 				wires_to_visit_queue << wires[0]
 				break
@@ -52,19 +52,18 @@ fn recalculate_wire_meshes(mut app data.App) {
 		// go through the wires_to_visit_queue until theres nothing left
 		for wires_to_visit_queue.len > 0 {
 			// dequeue the first element in the queue
-			wire_comp_id := wires_to_visit_queue[0]
-			wires_to_visit_queue.delete(0)
+			wire_handle := wires_to_visit_queue.pop()
 
 			// have we already looked at this wire?
-			if wire_comp_id in visited_wires {
+			if wire_handle in visited_wires {
 				continue
 			}
 
 			// make sure we wont visit this wire twice
-			visited_wires << wire_comp_id
+			visited_wires << wire_handle
 
 			// get the wire table entry for this wire
-			wire := app.sim.components[wire_comp_id]
+			wire := app.sim.components.get(wire_handle)
 
 			// skip any busses, they're not real wires (posers)
 			if wire is components.Bus {
@@ -73,7 +72,7 @@ fn recalculate_wire_meshes(mut app data.App) {
 
 			if wire is components.Wire {
 				// add this element to our current wire mesh
-				wire_mesh_wire_ids << wire.get_comp_id()
+				wire_mesh_wire_ids << wire.get_handle()
 
 				// add any wires it was connected to
 				wire_from := utils.vec_to_str(wire.get_wire_from())
@@ -83,7 +82,7 @@ fn recalculate_wire_meshes(mut app data.App) {
 					utils.add_wire_branching_point(mut app, current_wire_positions, wire_from)
 
 					wires_to_visit_queue << resolve_any_busses(app, current_wire_positions[wire_from],
-						wire_comp_id)
+						wire_handle)
 					current_wire_positions.delete(wire_from)
 				}
 				if wire_to in current_wire_positions {
@@ -91,7 +90,7 @@ fn recalculate_wire_meshes(mut app data.App) {
 					utils.add_wire_branching_point(mut app, current_wire_positions, wire_to)
 
 					wires_to_visit_queue << resolve_any_busses(app, current_wire_positions[wire_to],
-						wire_comp_id)
+						wire_handle)
 					current_wire_positions.delete(wire_to)
 				}
 
@@ -124,15 +123,16 @@ fn recalculate_wire_meshes(mut app data.App) {
 	}
 }
 
-fn resolve_any_busses(app &data.App, wire_ids []i64, entry_wire i64) []i64 {
+fn resolve_any_busses(app &data.App, wire_ids []data.SlotMapHandle, entry_wire data.SlotMapHandle) []data.SlotMapHandle {
 	// first: filter out all non busses, we will pass these right through
-	mut wires := wire_ids.filter(app.sim.components[it] is components.Wire)
+	mut wires := wire_ids.filter(app.sim.components.get(it) is components.Wire)
 
 	// then: filter out all busses
-	busses := wire_ids.filter(app.sim.components[it] is components.Bus)
+	busses := wire_ids.filter(app.sim.components.get(it) is components.Bus)
 
 	// resolve all wires of the same color that are connected to this bus
-	color := app.sim.components[entry_wire].get_color()
+	wire := app.sim.components.get(entry_wire)
+	color := wire.get_color()
 	for bus_id in busses {
 		wires << get_bus_endpoints_for_color(app, bus_id, color)
 	}
@@ -140,15 +140,14 @@ fn resolve_any_busses(app &data.App, wire_ids []i64, entry_wire i64) []i64 {
 	return wires
 }
 
-fn get_bus_endpoints_for_color(app &data.App, initial_bus_id i64, wire_color rl.Color) []i64 {
+fn get_bus_endpoints_for_color(app &data.App, initial_bus_id data.SlotMapHandle, wire_color rl.Color) []data.SlotMapHandle {
 	mut busses_to_visit := [initial_bus_id]
-	mut visited_busses := []i64{}
-	mut wires_found := []i64{}
+	mut visited_busses := []data.SlotMapHandle{}
+	mut wires_found := []data.SlotMapHandle{}
 
 	for busses_to_visit.len > 0 {
 		// dequeue this bus
-		bus_id := busses_to_visit[0]
-		busses_to_visit.delete(0)
+		bus_id := busses_to_visit.pop()
 
 		// skip any busses we've looked at before
 		if bus_id in visited_busses {
@@ -157,10 +156,10 @@ fn get_bus_endpoints_for_color(app &data.App, initial_bus_id i64, wire_color rl.
 		visited_busses << bus_id
 
 		// is this bus segment connected to any other bus segments?
-		bus := app.sim.components[bus_id]
+		bus := app.sim.components.get(bus_id)
 
 		if bus is components.Bus {
-			mut wires_to_look_through := []i64{}
+			mut wires_to_look_through := []data.SlotMapHandle{}
 			if utils.vec_to_str(bus.get_wire_from()) in app.sim.wire_positions {
 				wires_to_look_through << app.sim.wire_positions[utils.vec_to_str(bus.get_wire_from())]
 			}
@@ -173,7 +172,7 @@ fn get_bus_endpoints_for_color(app &data.App, initial_bus_id i64, wire_color rl.
 					continue
 				}
 
-				comp := app.sim.components[wire]
+				comp := app.sim.components.get(wire)
 
 				// is this an actual real real life legit wire?
 				if comp is components.Wire {
@@ -253,7 +252,7 @@ fn update_wire_meshes(mut app data.App) {
 
 		// distribute the new wire mesh state to all wires inside this mesh for drawing
 		for wire_id in mesh.wires {
-			mut comp := app.sim.components[wire_id]
+			mut comp := app.sim.components.get(wire_id)
 			if mut comp is components.Wire {
 				comp.set_state(wire_mesh_state)
 			}

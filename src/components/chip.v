@@ -44,8 +44,12 @@ pub fn Chip.new(mut app data.App, cfg data.ChipCfg) Chip {
 		data.Rotation.from_int(cfg.rot), cfg.color.to_rl(), false)
 	c.has_step = true
 
+	// add this to the global component list
+	c.comp_handle = utils.add_component(mut app, c)
+	app.sim.wire_mesh_recalc_needed = true
+
 	// create a dummy name for this component
-	c.comp_name = '${chip_entry.name} ${c.comp_id}'
+	c.comp_name = '${chip_entry.name} (${c.comp_handle.id}:${c.comp_handle.gen})'
 
 	// calculate where this components bounding box is based on its rotation
 	c.aabb_offset = utils.get_aabb_offset_for_rotation(1, -f32(height) + 0.5, 2, height,
@@ -71,10 +75,6 @@ pub fn Chip.new(mut app data.App, cfg data.ChipCfg) Chip {
 		rx, ry := utils.translate_point(cfg.pos, 4, -i, data.Rotation.from_int(cfg.rot))
 		utils.register_contact_point(mut app, vec.vec2(rx, ry), c.contact_points[index_right].cont_id)
 	}
-
-	// add this wire to the global component list
-	utils.add_component(mut app, c)
-	app.sim.wire_mesh_recalc_needed = true
 
 	// try to load the script for this chip
 	c.lua_state_initialized = true
@@ -162,6 +162,8 @@ pub fn (mut c Chip) on_delete(mut app data.App) {
 	if c.lua_state_initialized {
 		lua.destroy_lua_state(c.lua_state)
 	}
+
+	utils.remove_component(mut app, c)
 }
 
 fn (c &Chip) draw(mut app data.App) {
@@ -280,8 +282,9 @@ fn (mut c Chip) draw_component_window(mut app data.App) {
 	}
 
 	pos_in_screen_space := data.worldspace_to_screenspace(app, c.pos)
-	if app.mu.begin_window_ex_bool_controlled('Chip (id: ${c.comp_id})', rl.Rectangle{pos_in_screen_space.x, pos_in_screen_space.y, 200, 85},
-		.noscroll | .noresize, c.component_window_open)
+	if app.mu.begin_window_ex_bool_controlled('Chip (${c.comp_handle.id}:${c.comp_handle.gen})',
+		rl.Rectangle{pos_in_screen_space.x, pos_in_screen_space.y, 200, 85}, .noscroll | .noresize,
+		c.component_window_open)
 	{
 		app.mu.layout_row([50, -1], 0)
 

@@ -5,6 +5,7 @@ import math.vec
 import raylib as rl
 import utils
 
+@[heap]
 pub struct Bus {
 	data.WireBase
 }
@@ -16,15 +17,15 @@ pub fn Bus.new(mut app data.App, cfg data.BusCfg) Bus {
 	// initialize the component base with all the standardized data
 	b.WireBase = data.WireBase.new(mut app, cfg.wire_from, cfg.wire_to, cfg.color.to_rl())
 
-	// create a dummy name for this component
-	b.comp_name = 'Bus ${b.comp_id}'
-
 	// add this wire to the global component list
-	utils.add_component(mut app, b)
+	b.comp_handle = utils.add_component(mut app, b)
+
+	// create a dummy name for this component
+	b.comp_name = 'Bus (${b.comp_handle.id}:${b.comp_handle.gen})'
 
 	// register this wire on the map
-	utils.register_wire(mut app, b.wire_from, b.comp_id)
-	utils.register_wire(mut app, b.wire_to, b.comp_id)
+	utils.register_wire(mut app, b.wire_from, b.comp_handle)
+	utils.register_wire(mut app, b.wire_to, b.comp_handle)
 
 	// new wire! recalculate the meshes
 	app.sim.wire_mesh_recalc_needed = true
@@ -42,20 +43,21 @@ pub fn (b Bus) get_cfg() data.ComponentCfg {
 }
 
 pub fn (mut b Bus) on_move(mut app data.App) {
-	utils.unregister_wire(mut app, b.wire_from, b.comp_id)
-	utils.unregister_wire(mut app, b.wire_to, b.comp_id)
+	utils.unregister_wire(mut app, b.wire_from, b.comp_handle)
+	utils.unregister_wire(mut app, b.wire_to, b.comp_handle)
 }
 
 pub fn (mut b Bus) on_moved(mut app data.App) {
-	utils.register_wire(mut app, b.wire_from, b.comp_id)
-	utils.register_wire(mut app, b.wire_to, b.comp_id)
+	utils.register_wire(mut app, b.wire_from, b.comp_handle)
+	utils.register_wire(mut app, b.wire_to, b.comp_handle)
 	app.sim.wire_mesh_recalc_needed = true
 }
 
 pub fn (mut b Bus) on_delete(mut app data.App) {
-	utils.unregister_wire(mut app, b.wire_from, b.comp_id)
-	utils.unregister_wire(mut app, b.wire_to, b.comp_id)
+	utils.unregister_wire(mut app, b.wire_from, b.comp_handle)
+	utils.unregister_wire(mut app, b.wire_to, b.comp_handle)
 	app.sim.wire_mesh_recalc_needed = true
+	utils.remove_component(mut app, b)
 }
 
 pub fn (b &Bus) draw(mut app data.App) {
@@ -81,8 +83,9 @@ fn (mut b Bus) draw_component_window(mut app data.App) {
 	}
 
 	pos_in_screen_space := data.worldspace_to_screenspace(app, b.wire_from.add(b.wire_to).div_scalar[f32](2))
-	if app.mu.begin_window_ex_bool_controlled('Bus (id: ${b.comp_id})', rl.Rectangle{pos_in_screen_space.x, pos_in_screen_space.y, 200, 85},
-		.noscroll | .noresize, b.component_window_open)
+	if app.mu.begin_window_ex_bool_controlled('Bus (${b.comp_handle.id}:${b.comp_handle.gen})',
+		rl.Rectangle{pos_in_screen_space.x, pos_in_screen_space.y, 200, 85}, .noscroll | .noresize,
+		b.component_window_open)
 	{
 		app.mu.layout_row([50, -1], 0)
 

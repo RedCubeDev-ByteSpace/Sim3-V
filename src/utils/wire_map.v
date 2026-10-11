@@ -3,7 +3,7 @@ module utils
 import math.vec
 import data
 
-pub fn register_wire(mut app data.App, pos vec.Vec2[int], wire_comp_id i64) {
+pub fn register_wire(mut app data.App, pos vec.Vec2[int], wire_handle data.SlotMapHandle) {
 	key := vec_to_str(pos)
 
 	// if this position has no list yet -> create it
@@ -12,10 +12,10 @@ pub fn register_wire(mut app data.App, pos vec.Vec2[int], wire_comp_id i64) {
 	}
 
 	// add this wire to the list at this position
-	app.sim.wire_positions[key] << wire_comp_id
+	app.sim.wire_positions[key] << wire_handle
 }
 
-pub fn unregister_wire(mut app data.App, pos vec.Vec2[int], wire_comp_id i64) {
+pub fn unregister_wire(mut app data.App, pos vec.Vec2[int], wire_handle data.SlotMapHandle) {
 	key := vec_to_str(pos)
 
 	if key !in app.sim.wire_positions {
@@ -23,8 +23,8 @@ pub fn unregister_wire(mut app data.App, pos vec.Vec2[int], wire_comp_id i64) {
 	}
 
 	// go through the list of registered wires
-	for i, wcid in app.sim.wire_positions[key] {
-		if wcid != wire_comp_id {
+	for i, handle in app.sim.wire_positions[key] {
+		if handle != wire_handle {
 			continue
 		}
 
@@ -44,9 +44,10 @@ pub fn unregister_wire(mut app data.App, pos vec.Vec2[int], wire_comp_id i64) {
 }
 
 @[inline]
-pub fn add_wire_branching_point(mut app data.App, wire_positions map[string][]i64, pos string) {
+pub fn add_wire_branching_point(mut app data.App, wire_positions map[string][]data.SlotMapHandle, pos string) {
 	if wire_positions[pos].len > 2 {
-		wire := app.sim.components[wire_positions[pos][0]]
+		wire := app.sim.components.get(wire_positions[pos][0])
+
 		app.sim.wire_branching_points << data.WireBranchingPoint{
 			pos:   str_to_vec(pos)
 			color: wire.get_color()

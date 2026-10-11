@@ -7,7 +7,7 @@ pub interface IComponent {
 	draw(mut app App)
 	get_cfg() ComponentCfg
 
-	get_comp_id() i64
+	get_handle() SlotMapHandle
 	get_aabb() AABB
 	hit_test(pos vec.Vec2[f32]) bool
 	get_rotation() Rotation

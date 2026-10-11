@@ -19,8 +19,8 @@ fn handle_copy_paste(mut app data.App) bool {
 		app.bench.clipboard.current_clip_board.clear()
 
 		// get the cfgs of all currently selected components and store them in the clipboard
-		for comp in app.bench.selected_components {
-			app.bench.clipboard.current_clip_board << comp.get_cfg()
+		for comp_handle in app.bench.selected_components {
+			app.bench.clipboard.current_clip_board << app.sim.components.get(comp_handle).get_cfg()
 		}
 
 		cfg_utils.normalize_cfgs(mut app.bench.clipboard.current_clip_board)

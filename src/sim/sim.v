@@ -19,11 +19,8 @@ pub fn step_simulation(mut app data.App) {
 }
 
 fn step_components(mut app data.App, delta f32) {
-	for mut comp in app.sim.components.values() {
-		if !comp.has_step() {
-			continue
-		}
-
+	for mut comp_handle in app.sim.component_views.steppable_components {
+		mut comp := app.sim.components.get(comp_handle)
 		comp.step(app, delta)
 	}
 }

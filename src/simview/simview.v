@@ -37,11 +37,8 @@ fn draw_wires(mut app data.App, view_aabb data.AABB) {
 		return
 	}
 
-	for comp in app.sim.components.values() {
-		if comp is data.IWireBase {
-		} else {
-			continue
-		}
+	for comp_handle in app.sim.component_views.wires {
+		comp := app.sim.components.get(comp_handle)
 
 		// only draw components that are touching the current viewports aabb
 		if data.do_aabbs_intersect(view_aabb, comp.get_aabb()) {
@@ -56,16 +53,8 @@ fn draw_wires(mut app data.App, view_aabb data.AABB) {
 }
 
 fn draw_components(mut app data.App, view_aabb data.AABB) {
-	for comp in app.sim.components.values() {
-		if comp is data.IWireBase {
-			continue
-		}
-		if app.view.debug.draw_only_led {
-			if comp is components.LED {
-			} else {
-				continue
-			}
-		}
+	for comp_handle in app.sim.component_views.non_wires {
+		comp := app.sim.components.get(comp_handle)
 
 		// only draw components that are touching the current viewports aabb
 		if data.do_aabbs_intersect(view_aabb, comp.get_aabb()) {
@@ -123,7 +112,9 @@ fn draw_selection(app &data.App) {
 }
 
 fn draw_selected_component_outlines(app &data.App) {
-	for comp in app.bench.selected_components {
+	for comp_handle in app.bench.selected_components {
+		comp := app.sim.components.get(comp_handle)
+
 		aabb := comp.get_aabb()
 		top_left := data.worldspace_to_screenspace(app, vec.vec2[f32](aabb.x, aabb.y))
 		zoomed_unit := data.one_simspace_unit_in_px * app.view.zoom
@@ -137,7 +128,7 @@ fn draw_wire_movement_handles(app &data.App) {
 		return
 	}
 
-	wire := app.sim.components[app.bench.wire_moving.wire_id]
+	wire := app.sim.components.get(app.bench.wire_moving.wire_handle)
 	if wire is data.IWireBase {
 		base := wire.get_base()
 		rect_world := if app.bench.wire_moving.wire_end == .from {

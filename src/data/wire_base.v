@@ -7,11 +7,10 @@ pub interface IWireBase {
 	get_base() WireBase
 }
 
-@[heap]
 pub struct WireBase {
 mut:
 	// base component properties
-	comp_id               i64
+	comp_handle           SlotMapHandle
 	comp_name             string
 	wire_from             vec.Vec2[int]
 	wire_to               vec.Vec2[int]
@@ -23,15 +22,14 @@ mut:
 
 pub fn WireBase.new(mut app App, wire_from vec.Vec2[int], wire_to vec.Vec2[int], color rl.Color) WireBase {
 	return WireBase{
-		comp_id:   app.sim.global_id_counter++
 		wire_from: wire_from
 		wire_to:   wire_to
 		color:     color
 	}
 }
 
-pub fn (c WireBase) get_comp_id() i64 {
-	return c.comp_id
+pub fn (c WireBase) get_handle() SlotMapHandle {
+	return c.comp_handle
 }
 
 pub fn (c WireBase) get_base() WireBase {
