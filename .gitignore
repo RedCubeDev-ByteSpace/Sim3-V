@@ -4,6 +4,9 @@ sim3
 *.exe
 *.exe~
 *.so
+*.a
+*.o
+*.lib
 *.dylib
 *.dll
 
@@ -26,3 +29,8 @@ bin/
 # Modules installed with `v install --local` land beside this file, one
 # directory per module. Add them here if they should stay out of the repo.
 *.code-workspace
+
+# Local build caches
+build/
+bin/
+cache/

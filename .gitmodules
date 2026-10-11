@@ -1,0 +1,6 @@
+[submodule "thirdparty/cimgui"]
+	path = thirdparty/cimgui
+	url = https://github.com/cimgui/cimgui
+[submodule "thirdparty/rlimgui"]
+	path = thirdparty/rlimgui
+	url = https://github.com/raylib-extras/rlImGui
