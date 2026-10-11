@@ -209,26 +209,29 @@ fn Chip.draw_base(mut renderer data.IRenderer, app &data.App, contact_point vec.
 		renderer.draw_contact_line(contact_point.x, contact_point.y, zoomed_unit, 0, -i,
 			1, -i, rot, low_color)
 
-		idx_left := chip.pins.len / 2 - i - 1
-		contact_point_left := if contact_points.len > 0 {
-			contact_points[idx_left]
-		} else {
-			data.ContactPoint{}
-		}
-		renderer.draw_chip_pin(contact_point.x, contact_point.y, zoomed_unit, 0, -i, contact_point_left,
-			chip.pins[idx_left], true, rot, low_color)
-
 		renderer.draw_contact_line(contact_point.x, contact_point.y, zoomed_unit, 3, -i,
 			4, -i, rot, low_color)
 
-		idx_right := chip.pins.len / 2 + i
-		contact_point_right := if contact_points.len > 0 {
-			contact_points[idx_right]
-		} else {
-			data.ContactPoint{}
+		// only draw the individual context when we're close enough to see them
+		if app.view.draw_details {
+			idx_left := chip.pins.len / 2 - i - 1
+			contact_point_left := if contact_points.len > 0 {
+				contact_points[idx_left]
+			} else {
+				data.ContactPoint{}
+			}
+			renderer.draw_chip_pin(contact_point.x, contact_point.y, zoomed_unit, 0, -i,
+				contact_point_left, chip.pins[idx_left], true, rot, low_color)
+
+			idx_right := chip.pins.len / 2 + i
+			contact_point_right := if contact_points.len > 0 {
+				contact_points[idx_right]
+			} else {
+				data.ContactPoint{}
+			}
+			renderer.draw_chip_pin(contact_point.x, contact_point.y, zoomed_unit, 4, -i,
+				contact_point_right, chip.pins[idx_right], false, rot, low_color)
 		}
-		renderer.draw_chip_pin(contact_point.x, contact_point.y, zoomed_unit, 4, -i, contact_point_right,
-			chip.pins[idx_right], false, rot, low_color)
 	}
 
 	// draw the chip label

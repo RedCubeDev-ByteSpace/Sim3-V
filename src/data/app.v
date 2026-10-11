@@ -32,6 +32,8 @@ pub mut:
 		camera_offset   vec.Vec2[f32] = vec.Vec2[f32]{0, 0}
 		zoom            f32           = 1
 
+		draw_details bool
+
 		grid struct {
 		pub mut:
 			draw_grid_movement_trails bool

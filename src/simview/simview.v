@@ -13,11 +13,17 @@ import cfg_utils
 // it also takes care of rendering those objects to the screen and drawing the background grid
 
 pub fn draw_view(mut app data.App) {
+	// only draw more expensive details if they're big enough to be seen
+	app.view.draw_details = app.view.zoom > 0.5
+
+	// get the AABB for the current viewport
+	view_aabb := data.get_viewport_aabb(app)
+
 	draw_grid(app)
 	draw_selection(app)
-	draw_wires(mut app)
-	draw_components(mut app)
-	draw_wire_branching_points(app)
+	draw_wires(mut app, view_aabb)
+	draw_components(mut app, view_aabb)
+	draw_wire_branching_points(app, view_aabb)
 	draw_selected_component_outlines(app)
 	draw_wire_movement_handles(app)
 	draw_preview_of_component_being_placed(app)
@@ -26,13 +32,10 @@ pub fn draw_view(mut app data.App) {
 	draw_contact_points(app)
 }
 
-fn draw_wires(mut app data.App) {
+fn draw_wires(mut app data.App, view_aabb data.AABB) {
 	if app.view.debug.draw_only_led {
 		return
 	}
-
-	// get the AABB for the current viewport
-	view_aabb := data.get_viewport_aabb(app)
 
 	for comp in app.sim.components.values() {
 		if comp is data.IWireBase {
@@ -52,10 +55,7 @@ fn draw_wires(mut app data.App) {
 	}
 }
 
-fn draw_components(mut app data.App) {
-	// get the AABB for the current viewport
-	view_aabb := data.get_viewport_aabb(app)
-
+fn draw_components(mut app data.App, view_aabb data.AABB) {
 	for comp in app.sim.components.values() {
 		if comp is data.IWireBase {
 			continue
@@ -79,14 +79,17 @@ fn draw_components(mut app data.App) {
 	}
 }
 
-fn draw_wire_branching_points(app &data.App) {
-	if app.view.debug.draw_only_led {
+fn draw_wire_branching_points(app &data.App, view_aabb data.AABB) {
+	if app.view.debug.draw_only_led || !app.view.draw_details {
 		return
 	}
 
 	for marker in app.sim.wire_branching_points {
-		marker_pos := data.worldspace_to_screenspace(app, marker.pos)
+		if !data.is_point_inside_aabb(view_aabb, utils.vi_to_vf(marker.pos)) {
+			continue
+		}
 
+		marker_pos := data.worldspace_to_screenspace(app, marker.pos)
 		rl.draw_circle(marker_pos.x, marker_pos.y, app.view.zoom * 3, marker.color)
 	}
 }
