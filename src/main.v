@@ -12,6 +12,7 @@ import sim
 import chip_catalog
 import storage
 import renderers
+import imgui
 
 $if tinyc {
 	#flag @VMODROOT/hacks/tcc.c
@@ -90,6 +91,9 @@ fn main() {
 	app.view.camera_position = vec.vec2[f32](initial_window_width / data.one_simspace_unit_in_px / 2,
 		initial_window_height / data.one_simspace_unit_in_px / 2)
 
+	// set up imgui for raylib
+	imgui.rl_imgui_setup(false)
+
 	// run the main draw loop!
 	$if emscripten ? {
 		C.emscripten_set_main_loop_arg(on_frame, app, 0, 1)
@@ -98,6 +102,9 @@ fn main() {
 			on_frame(mut app)
 		}
 	}
+
+	// clean up imgui for raylib
+	imgui.rl_imgui_shutdown()
 
 	// clean up
 	rl.close_window()
@@ -120,7 +127,11 @@ fn on_frame(mut app data.App) {
 	simview.draw_view(mut app)
 
 	// draw the ui last so its always on top
-	gui.draw_ui(mut app)
+	// gui.draw_ui(mut app)
+
+	imgui.rl_imgui_begin()
+	imgui.show_demo_window(unsafe { nil })
+	imgui.rl_imgui_end()
 
 	rl.end_drawing()
 }

@@ -51,5 +51,8 @@ jobs:
         run: |
           v version
 
+      - name: Compile ImGui
+        run: (v ./build.vsh)
+
       - name: Compile project
-        run: (cd src && v install && v .)
+        run: (cd src && v install && v -cc gcc .)
