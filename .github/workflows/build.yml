@@ -34,7 +34,7 @@ jobs:
       
       - name: Install Raylib
         run: |
-          git clone --depth 1 --branch 5.0 https://github.com/raysan5/raylib.git
+          git clone --depth 1 --branch 6.0 https://github.com/raysan5/raylib.git
           cd raylib/src
           make PLATFORM=PLATFORM_DESKTOP
           sudo make install
