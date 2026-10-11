@@ -91,8 +91,16 @@ fn main() {
 	app.view.camera_position = vec.vec2[f32](initial_window_width / data.one_simspace_unit_in_px / 2,
 		initial_window_height / data.one_simspace_unit_in_px / 2)
 
+	// ----------------------------------------------------------------------------------------------------------------
 	// set up imgui for raylib
 	imgui.rl_imgui_setup(false)
+
+	// load a font for imgui
+	mut io := imgui.get_io_nil()
+	app.fonts.imgui_font = imgui.im_font_atlas_add_font_from_file_ttf(io.Fonts, c'./src/res/tahoma.ttf',
+		13, unsafe { nil }, unsafe { nil })
+	mut imstyle := imgui.get_style()
+	imstyle.FrameBorderSize = 1
 
 	// run the main draw loop!
 	$if emscripten ? {
@@ -127,11 +135,7 @@ fn on_frame(mut app data.App) {
 	simview.draw_view(mut app)
 
 	// draw the ui last so its always on top
-	// gui.draw_ui(mut app)
-
-	imgui.rl_imgui_begin()
-	imgui.show_demo_window(unsafe { nil })
-	imgui.rl_imgui_end()
+	gui.draw_ui(mut app)
 
 	rl.end_drawing()
 }

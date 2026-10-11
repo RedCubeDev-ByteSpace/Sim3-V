@@ -1,4 +1,4 @@
-module gui
+module mgui
 
 import raylib as rl
 import data

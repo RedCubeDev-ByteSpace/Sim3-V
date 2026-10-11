@@ -4,6 +4,7 @@ import microui
 import math.vec
 import raylib as rl
 import chip_catalog
+import imgui
 
 pub const one_simspace_unit_in_px = 20
 pub const component_line_thickness = 2
@@ -91,7 +92,7 @@ pub mut:
 		contact_point_positions      map[string][]i64
 		contact_point_output_changed bool
 
-		steps_per_frame f32 = 5
+		steps_per_frame i32 = 5
 	}
 
 	// bench -----------------------------------------------------------------------------------------------------------
@@ -175,7 +176,8 @@ pub mut:
 	// preloaded fonts for different use cases and sizes
 	fonts struct {
 	pub mut:
-		fonts []microui.SizedFont
+		fonts      []microui.SizedFont
+		imgui_font &imgui.ImFont = unsafe { nil }
 
 		last_zoom f32
 
