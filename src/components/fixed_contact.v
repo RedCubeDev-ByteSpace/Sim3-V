@@ -119,7 +119,9 @@ fn (mut f FixedContact) draw_component_window(mut app data.App) {
 			utils.gui_do_label('State')
 
 			imgui.table_set_column_index(1)
-			imgui.checkbox(c'##state_check', f.state)
+			if imgui.checkbox(c'##state_check', f.state) {
+				f.contact_point.set_output_state(mut app, if f.state { .high } else { .low })
+			}
 
 			imgui.end_table()
 		}

@@ -104,7 +104,8 @@ pub struct WireCfg {
 pub struct SwitchCfg {
 	ComponentBaseCfg
 pub:
-	state bool
+	tri_state bool
+	state     int
 }
 
 @[params]

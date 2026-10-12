@@ -14,6 +14,9 @@ pub fn step_simulation(mut app data.App) {
 	// reconstruct the wire meshes, if needed
 	recalculate_wire_meshes(mut app)
 
+	// always do at least one step of everything per frame
+	app.sim.contact_point_output_changed = true
+
 	for _ in 0 .. int(app.sim.steps_per_frame) {
 		// step any steppable components that arent chips
 		step_components(mut app, delta)

@@ -259,7 +259,7 @@ fn draw_preview_of_component_being_placed(app &data.App) {
 	match app.bench.placement.current_selected_component_type {
 		.none {}
 		.switch {
-			components.Switch.draw(mut renderer, pos, zoomed_unit, color, false, app.bench.placement.rotation)
+			components.Switch.draw(mut renderer, pos, zoomed_unit, color, 0, app.bench.placement.rotation)
 		}
 		.fixed_contact {
 			components.FixedContact.draw(mut renderer, app, pos, zoomed_unit, color, false,

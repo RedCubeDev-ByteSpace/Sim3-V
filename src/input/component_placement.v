@@ -41,10 +41,11 @@ fn handle_component_placement(mut app data.App) bool {
 			.none {}
 			.switch {
 				components.Switch.new(mut app,
-					pos:   placement_pos
-					rot:   rotation
-					color: color
-					state: false
+					pos:       placement_pos
+					rot:       rotation
+					color:     color
+					tri_state: false
+					state:     0
 				)
 			}
 			.fixed_contact {
