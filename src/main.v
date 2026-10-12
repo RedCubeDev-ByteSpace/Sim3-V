@@ -1,7 +1,6 @@
 module main
 
 import raylib as rl
-import microui // look mom its my wrapper!
 import gui
 import data
 import simview
@@ -61,35 +60,6 @@ fn main() {
 
 	// setup storage things
 	storage.setup_storage(mut app)
-
-	// ----------------------------------------------------------------------------------------------------------------
-	// initialize microui
-	app.mu = microui.new_context()
-
-	// customize the microui style
-	mut style := app.mu.get_style()
-
-	// set the font spacing to 1
-	style.font = microui.SizedFont{
-		size: 15
-		font: rl.load_font_ex('./src/res/tahoma.ttf', 15, unsafe { nil }, unsafe { nil })
-	}
-
-	// change some of the colors
-	style.colors[microui.Color.text] = rl.Color{50, 50, 50, 255}
-	style.colors[microui.Color.titletext] = rl.Color{50, 50, 50, 255}
-	style.colors[microui.Color.titlebg] = rl.Color{255, 255, 255, 255}
-	style.colors[microui.Color.windowbg] = rl.Color{230, 230, 230, 255}
-	style.colors[microui.Color.base] = rl.Color{255, 255, 255, 255}
-	style.colors[microui.Color.basehover] = rl.Color{240, 240, 240, 255}
-	style.colors[microui.Color.basefocus] = rl.Color{200, 200, 200, 255}
-	style.colors[microui.Color.button] = rl.Color{255, 255, 255, 255}
-	style.colors[microui.Color.buttonhover] = rl.Color{240, 240, 240, 255}
-	style.colors[microui.Color.buttonfocus] = rl.Color{220, 220, 220, 255}
-	style.colors[microui.Color.scrollbase] = rl.Color{210, 210, 210, 255}
-	style.colors[microui.Color.scrollthumb] = rl.Color{180, 180, 180, 255}
-
-	app.mu.set_style(style)
 
 	// initialize the camera so its pointing at 0,0
 	app.view.camera_position = vec.vec2[f32](initial_window_width / data.one_simspace_unit_in_px / 2,

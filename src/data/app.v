@@ -1,6 +1,5 @@
 module data
 
-import microui
 import math.vec
 import raylib as rl
 import chip_catalog
@@ -23,8 +22,6 @@ pub const marching_ants_segment_size = 6
 @[heap]
 pub struct App {
 pub mut:
-	mu microui.Context
-
 	// view ------------------------------------------------------------------------------------------------------------
 	// everything concerning the current view on the simspace
 	view struct {
