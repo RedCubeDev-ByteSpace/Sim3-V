@@ -103,8 +103,13 @@ fn main() {
 	mut io := imgui.get_io_nil()
 	app.fonts.imgui_font = imgui.im_font_atlas_add_font_from_file_ttf(io.Fonts, c'./src/res/tahoma.ttf',
 		13, unsafe { nil }, unsafe { nil })
+
 	mut imstyle := imgui.get_style()
 	imstyle.FrameBorderSize = 1
+	imstyle.Colors[int(imgui.Col_.button)] = imstyle.Colors[int(imgui.Col_.window_bg)]
+	imstyle.Colors[int(imgui.Col_.button_hovered)] = imstyle.Colors[int(imgui.Col_.header)]
+
+	io.ConfigWindowsMoveFromTitleBarOnly = true
 
 	// run the main draw loop!
 	$if emscripten ? {

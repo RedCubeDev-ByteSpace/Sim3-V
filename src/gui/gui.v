@@ -10,6 +10,7 @@ pub fn draw_ui(mut app data.App) {
 	draw_debug_window(mut app)
 	draw_color_window(mut app)
 	draw_component_choice_window(mut app)
+	draw_chip_select_window(mut app)
 
 	// imgui.show_demo_window(unsafe { nil })
 

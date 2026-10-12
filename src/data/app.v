@@ -116,6 +116,7 @@ pub mut:
 		pub mut:
 			current_selected_color_idx      int
 			current_selected_chip_uid       string
+			current_hovered_chip_uid        string
 			current_selected_component_type SelectedComponentType
 			rotation                        Rotation
 
