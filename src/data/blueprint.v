@@ -5,6 +5,7 @@ import x.json2
 
 pub struct BlueprintDirectory {
 pub mut:
+	path                  string
 	name                  string
 	blueprint_directories []BlueprintDirectory
 	blueprints            []Blueprint

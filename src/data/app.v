@@ -8,7 +8,7 @@ import imgui
 
 pub const one_simspace_unit_in_px = 20
 pub const component_line_thickness = 2
-pub const blueprint_preview_size = 60
+pub const blueprint_preview_size = 100
 pub const contact_point_size = 0.1
 pub const zoom_lerp_cutoff = 0.001
 pub const zoom_trail_cutoff = 0.005
@@ -116,9 +116,11 @@ pub mut:
 		pub mut:
 			current_selected_color_idx      int
 			current_selected_chip_uid       string
-			current_hovered_chip_uid        string
 			current_selected_component_type SelectedComponentType
 			rotation                        Rotation
+
+			current_hovered_chip_uid       string
+			current_hovered_blueprint_path string
 
 			placed_wire_starting_point bool
 		}
@@ -153,15 +155,16 @@ pub mut:
 
 		blueprints struct {
 		pub mut:
-			blueprint_dir BlueprintDirectory
+			blueprint_dir       BlueprintDirectory
+			blueprint_dir_paths []string
 
 			gui struct {
 			pub mut:
 				is_showing_new_blueprint_dialog bool
 				has_set_dialog_size             bool
 
-				new_blueprint_name string
-				new_blueprint_path string
+				new_blueprint_name_buffer  [32]char
+				new_blueprint_selected_dir int
 			}
 		}
 	}

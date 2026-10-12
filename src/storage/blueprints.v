@@ -17,13 +17,22 @@ pub fn index_blueprint_directory(mut app data.App) {
 	// unload the textures of the old dir index
 	unload_directory(app.storage.blueprints.blueprint_dir)
 
+	// clear the list of directory paths
+	app.storage.blueprints.blueprint_dir_paths.clear()
+
 	// index!
-	app.storage.blueprints.blueprint_dir = index_directory(app, app.storage.blueprints_directory)
+	app.storage.blueprints.blueprint_dir = index_directory(mut app, app.storage.blueprints_directory,
+		'/')
 }
 
-fn index_directory(app &data.App, path string) data.BlueprintDirectory {
+fn index_directory(mut app data.App, path string, internal_path string) data.BlueprintDirectory {
 	// create a new blueprint directory node
-	mut dir := data.BlueprintDirectory{}
+	mut dir := data.BlueprintDirectory{
+		path: internal_path
+	}
+
+	// remember this path for the dropdown when creating a blueprint
+	app.storage.blueprints.blueprint_dir_paths << internal_path
 
 	// use the directory's name
 	dir.name = os.file_name(path)
@@ -38,7 +47,7 @@ fn index_directory(app &data.App, path string) data.BlueprintDirectory {
 		// is this file actually a directory?
 		// -> index it
 		if os.is_dir(file_path) {
-			dir.blueprint_directories << index_directory(app, file_path)
+			dir.blueprint_directories << index_directory(mut app, file_path, '${internal_path}${file}/')
 		}
 
 		// otherwise: is it a json?
@@ -157,6 +166,8 @@ fn render_preview_texture(app &data.App, cfgs []data.ComponentCfg) rl.Texture2D 
 	rl.unload_render_texture(render_texture)
 
 	rl.image_alpha_crop(&img, 0.1)
+	rl.image_flip_vertical(&img)
+
 	texture := rl.load_texture_from_image(img)
 	rl.set_texture_filter(texture, int(rl.TextureFilter.texture_filter_bilinear))
 
