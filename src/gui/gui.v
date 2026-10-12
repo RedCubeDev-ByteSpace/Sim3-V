@@ -13,7 +13,9 @@ pub fn draw_ui(mut app data.App) {
 	draw_chip_select_window(mut app)
 	draw_blueprints_window(mut app)
 
-	// imgui.show_demo_window(unsafe { nil })
+	for mut comp in app.sim.components.data {
+		comp.draw_component_window(mut app)
+	}
 
 	imgui.pop_font()
 	imgui.rl_imgui_end()

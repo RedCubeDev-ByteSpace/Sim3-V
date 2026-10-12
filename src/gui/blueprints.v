@@ -3,6 +3,7 @@ module gui
 import imgui
 import data
 import storage
+import utils
 
 fn draw_blueprints_window(mut app data.App) {
 	hovered_bp := app.bench.placement.current_hovered_blueprint_path
@@ -18,7 +19,7 @@ fn draw_blueprints_window(mut app data.App) {
 		if imgui.button(c'New Blueprint!', imgui.ImVec2{avail_width, 20}) {
 			// make sure we have anything selected
 			if app.bench.selected_components.len > 0 {
-				app.storage.blueprints.gui.new_blueprint_name_buffer[0] = 0
+				app.storage.blueprints.gui.new_blueprint_name = 'New Blueprint'
 				app.storage.blueprints.gui.new_blueprint_selected_dir = 0
 				app.storage.blueprints.gui.is_showing_new_blueprint_dialog = true
 				imgui.open_popup_str(c'Create New Blueprint', 0)
@@ -127,9 +128,10 @@ fn draw_new_blueprint_dialog(mut app data.App) {
 			imgui.table_set_column_index(1)
 
 			imgui.set_next_item_width(imgui.get_content_region_avail().x)
-			imgui.input_text(c'##name_input', &app.storage.blueprints.gui.new_blueprint_name_buffer[0],
-				usize(app.storage.blueprints.gui.new_blueprint_name_buffer.len), 0, unsafe { nil },
-				unsafe { nil })
+			utils.gui_load_buffer(mut app, app.storage.blueprints.gui.new_blueprint_name)
+			imgui.input_text(c'##name_input', &app.gui.input_buffer[0], usize(app.gui.input_buffer.len),
+				0, unsafe { nil }, unsafe { nil })
+			app.storage.blueprints.gui.new_blueprint_name = utils.gui_read_buffer(mut app)
 
 			imgui.table_next_row(0, 0)
 			imgui.table_set_column_index(0)
@@ -161,7 +163,7 @@ fn draw_new_blueprint_dialog(mut app data.App) {
 		if imgui.button(c'Create!', imgui.ImVec2{}) {
 			app.storage.blueprints.gui.is_showing_new_blueprint_dialog = false
 
-			storage.create_blueprint_from_selected_components(mut app, unsafe { cstring_to_vstring(&app.storage.blueprints.gui.new_blueprint_name_buffer[0]) },
+			storage.create_blueprint_from_selected_components(mut app, app.storage.blueprints.gui.new_blueprint_name,
 				app.storage.blueprints.blueprint_dir_paths[app.storage.blueprints.gui.new_blueprint_selected_dir])
 		}
 

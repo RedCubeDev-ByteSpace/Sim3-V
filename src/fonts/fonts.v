@@ -1,7 +1,6 @@
 module fonts
 
 import data
-import microui
 import raylib as rl
 
 pub fn init(mut app data.App) {
@@ -9,7 +8,7 @@ pub fn init(mut app data.App) {
 	sizes := [3, 5, 8, 10, 12, 15, 16, 20, 30, 40, 50, 100, 150, 170]
 
 	for size in sizes {
-		sized_font := microui.SizedFont{
+		sized_font := data.SizedFont{
 			font: rl.load_font_ex('./src/res/cmunbx.ttf', size, unsafe { nil }, 0)
 			size: size
 		}

@@ -7,6 +7,7 @@ import utils
 import lua
 import chip_catalog
 import math
+import imgui
 
 @[heap]
 struct Chip {
@@ -290,17 +291,23 @@ fn (mut c Chip) draw_component_window(mut app data.App) {
 	}
 
 	pos_in_screen_space := data.worldspace_to_screenspace(app, c.pos)
-	if app.mu.begin_window_ex_bool_controlled('Chip (${c.comp_handle.id}:${c.comp_handle.gen})',
-		rl.Rectangle{pos_in_screen_space.x, pos_in_screen_space.y, 200, 85}, .noscroll | .noresize,
-		c.component_window_open)
-	{
-		app.mu.layout_row([50, -1], 0)
+	imgui.set_next_window_pos(imgui.ImVec2{pos_in_screen_space.x, pos_in_screen_space.y},
+		int(imgui.Cond_.appearing), imgui.ImVec2{})
 
-		app.mu.label('Name')
-		app.mu.textbox(c.comp_name)
+	if utils.gui_begin_component_window(c, 'Chip', c.component_window_open) {
+		if utils.gui_begin_comp_layout_table(50, 100) {
+			imgui.table_next_row(0, 0)
 
-		app.mu.end_window_bool_controlled(c.component_window_open)
+			imgui.table_set_column_index(0)
+			utils.gui_do_label('Name')
+
+			imgui.table_set_column_index(1)
+			c.comp_name = utils.gui_do_text_input(mut app, '##name_input', c.comp_name)
+
+			imgui.end_table()
+		}
 	}
+	imgui.end()
 }
 
 pub fn (mut c Chip) step(mut app data.App, delta f32) {

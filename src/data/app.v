@@ -163,7 +163,7 @@ pub mut:
 				is_showing_new_blueprint_dialog bool
 				has_set_dialog_size             bool
 
-				new_blueprint_name_buffer  [32]char
+				new_blueprint_name         string
 				new_blueprint_selected_dir int
 			}
 		}
@@ -180,7 +180,7 @@ pub mut:
 	// preloaded fonts for different use cases and sizes
 	fonts struct {
 	pub mut:
-		fonts      []microui.SizedFont
+		fonts      []SizedFont
 		imgui_font &imgui.ImFont = unsafe { nil }
 
 		last_zoom f32
@@ -209,5 +209,12 @@ pub mut:
 			led_button           rl.RenderTexture2D
 			chip_button          rl.RenderTexture2D
 		}
+	}
+
+	// gui -------------------------------------------------------------------------------------------------------------
+	// helpers needed for gui thingies
+	gui struct {
+	pub mut:
+		input_buffer [100]char
 	}
 }

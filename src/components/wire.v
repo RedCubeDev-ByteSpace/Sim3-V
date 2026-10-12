@@ -4,6 +4,7 @@ import data
 import math.vec
 import raylib as rl
 import utils
+import imgui
 
 @[heap]
 pub struct Wire {
@@ -109,15 +110,21 @@ fn (mut w Wire) draw_component_window(mut app data.App) {
 	}
 
 	pos_in_screen_space := data.worldspace_to_screenspace(app, w.wire_from.add(w.wire_to).div_scalar[f32](2))
-	if app.mu.begin_window_ex_bool_controlled('Wire (${w.comp_handle.id}:${w.comp_handle.gen})',
-		rl.Rectangle{pos_in_screen_space.x, pos_in_screen_space.y, 200, 85}, .noscroll | .noresize,
-		w.component_window_open)
-	{
-		app.mu.layout_row([50, -1], 0)
+	imgui.set_next_window_pos(imgui.ImVec2{pos_in_screen_space.x, pos_in_screen_space.y},
+		int(imgui.Cond_.appearing), imgui.ImVec2{})
 
-		app.mu.label('Name')
-		app.mu.textbox(w.comp_name)
+	if utils.gui_begin_component_window(w, 'Wire', w.component_window_open) {
+		if utils.gui_begin_comp_layout_table(50, 100) {
+			imgui.table_next_row(0, 0)
 
-		app.mu.end_window_bool_controlled(w.component_window_open)
+			imgui.table_set_column_index(0)
+			utils.gui_do_label('Name')
+
+			imgui.table_set_column_index(1)
+			w.comp_name = utils.gui_do_text_input(mut app, '##name_input', w.comp_name)
+
+			imgui.end_table()
+		}
 	}
+	imgui.end()
 }

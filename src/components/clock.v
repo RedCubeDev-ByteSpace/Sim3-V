@@ -6,6 +6,7 @@ import data
 import utils
 import microui
 import math
+import imgui
 
 const frequency_exponent = 4.0
 
@@ -115,26 +116,46 @@ fn (mut c Clock) draw_component_window(mut app data.App) {
 	}
 
 	pos_in_screen_space := data.worldspace_to_screenspace(app, c.pos)
-	if app.mu.begin_window_ex_bool_controlled('Clock (${c.comp_handle.id}:${c.comp_handle.gen})',
-		rl.Rectangle{pos_in_screen_space.x, pos_in_screen_space.y, 250, 105}, .noscroll | .noresize,
-		c.component_window_open)
-	{
-		app.mu.layout_row([55, -1], 0)
+	imgui.set_next_window_pos(imgui.ImVec2{pos_in_screen_space.x, pos_in_screen_space.y},
+		int(imgui.Cond_.appearing), imgui.ImVec2{})
 
-		app.mu.label('Name')
-		app.mu.textbox(c.comp_name)
+	if utils.gui_begin_component_window(c, 'Clock', c.component_window_open) {
+		if utils.gui_begin_comp_layout_table(50, 200) {
+			imgui.table_next_row(0, 0)
 
-		app.mu.label('Timeout')
-		if app.mu.slider_ex(c.frequency_slider, 0, 1, 0.005, '${c.frequency:.2} Hz', microui.Opt.zero()) {
-			// apply a power curve mapping
-			c.frequency = f32(frequency_min_val +(math.pow(c.frequency_slider, frequency_exponent) * (frequency_max_val - frequency_min_val)))
+			imgui.table_set_column_index(0)
+			utils.gui_do_label('Name')
+
+			imgui.table_set_column_index(1)
+			c.comp_name = utils.gui_do_text_input(mut app, '##name_input', c.comp_name)
+
+			imgui.table_next_row(0, 0)
+
+			imgui.table_set_column_index(0)
+			utils.gui_do_label('Timeout')
+
+			imgui.table_set_column_index(1)
+			imgui.set_next_item_width(imgui.get_content_region_avail().x)
+			if imgui.slider_float(c'##frequency_slider', c.frequency_slider, 0, 1, '${c.frequency:.2} Hz'.str,
+				0)
+			{
+				// apply a power curve mapping
+				c.frequency = f32(frequency_min_val +(math.pow(c.frequency_slider, frequency_exponent) * (frequency_max_val - frequency_min_val)))
+			}
+
+			imgui.table_next_row(0, 0)
+
+			imgui.table_set_column_index(0)
+			utils.gui_do_label('Elapsed')
+
+			imgui.table_set_column_index(1)
+			utils.gui_do_label('${c.time_accumulator +
+				if !c.state { 1.0 / c.frequency / 2 } else { 0 }:.1f}s')
+
+			imgui.end_table()
 		}
-
-		app.mu.label('Elapsed')
-		app.mu.label('${c.time_accumulator + if !c.state { 1.0 / c.frequency / 2 } else { 0 }:.1f}s')
-
-		app.mu.end_window_bool_controlled(c.component_window_open)
 	}
+	imgui.end()
 }
 
 pub fn (mut c Clock) step(mut app data.App, delta f32) {
