@@ -62,7 +62,7 @@ fn index_directory(mut app data.App, path string, internal_path string) data.Blu
 		mut blueprint := json2.decode[data.Blueprint](file_content) or { panic(err) }
 		blueprint.path = file_path
 		blueprint.date = time.unix(os.file_last_mod_unix(file_path)).local().format_ss()
-		blueprint.preview = render_preview_texture(app, blueprint.components)
+		blueprint.preview = render_preview_texture(mut app, blueprint.components)
 
 		// store it in the index
 		dir.blueprints << blueprint
@@ -103,7 +103,7 @@ pub fn create_blueprint_from_selected_components(mut app data.App, name string, 
 	blueprint := data.Blueprint{
 		name:       name
 		components: cfgs
-		preview:    render_preview_texture(app, cfgs)
+		preview:    render_preview_texture(mut app, cfgs)
 	}
 
 	// serialize it
@@ -118,7 +118,7 @@ pub fn create_blueprint_from_selected_components(mut app data.App, name string, 
 	index_blueprint_directory(mut app)
 }
 
-fn render_preview_texture(app &data.App, cfgs []data.ComponentCfg) rl.Texture2D {
+fn render_preview_texture(mut app data.App, cfgs []data.ComponentCfg) rl.Texture2D {
 	margin_in_worldspace := 3
 
 	// shift all cfgs over by the margin
@@ -154,10 +154,24 @@ fn render_preview_texture(app &data.App, cfgs []data.ComponentCfg) rl.Texture2D 
 	rl.begin_texture_mode(render_texture)
 	rl.clear_background(rl.Color{0, 0, 0, 0})
 
+	// todo: this is absolute garbage
+	// calculate the sizes for the texts
+	mut chip_label_font_size := f32(0)
+	mut chip_pin_label_font_size := f32(0)
+	mut fixed_contact_label_font_size := f32(0)
+
+	app.fonts.chip_label_font_size, chip_label_font_size = chip_label_font_size, app.fonts.chip_label_font_size
+	app.fonts.chip_pin_label_font_size, chip_pin_label_font_size = chip_pin_label_font_size, app.fonts.chip_pin_label_font_size
+	app.fonts.fixed_contact_label_font_size, fixed_contact_label_font_size = fixed_contact_label_font_size, app.fonts.fixed_contact_label_font_size
+
 	for cfg in cfgs {
 		cfg_utils.draw_component_from_cfg(app, vec.vec2[f32](50, 50), f32(zoom), cfg,
 			cfg.color.to_rl(), true)
 	}
+
+	app.fonts.chip_label_font_size, chip_label_font_size = chip_label_font_size, app.fonts.chip_label_font_size
+	app.fonts.chip_pin_label_font_size, chip_pin_label_font_size = chip_pin_label_font_size, app.fonts.chip_pin_label_font_size
+	app.fonts.fixed_contact_label_font_size, fixed_contact_label_font_size = fixed_contact_label_font_size, app.fonts.fixed_contact_label_font_size
 
 	rl.end_texture_mode()
 
