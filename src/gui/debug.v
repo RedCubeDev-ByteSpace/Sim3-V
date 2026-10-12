@@ -8,8 +8,8 @@ import math
 fn draw_debug_window(mut app data.App) {
 	// make sure this window sticks to the right side of the screen
 	screen_width := rl.get_screen_width()
-	window_width := 250
-	window_height := 300
+	window_width := 200
+	window_height := 260
 	margin := 5
 
 	imgui.set_next_window_pos(imgui.ImVec2_c{screen_width - window_width - margin, margin},
@@ -66,22 +66,9 @@ fn draw_debug_window(mut app data.App) {
 		imgui.checkbox(c'Draw Contact Points', app.view.debug.show_contacts)
 		imgui.checkbox(c'Only Draw LEDs', app.view.debug.draw_only_led)
 
-		if imgui.begin_table(c'dbg_slider_table', 2, 0, imgui.ImVec2{0, 0}, 0) {
-			imgui.table_setup_column(c'##labels', int(imgui.TableColumnFlags_.width_stretch),
-				0, unsafe { nil })
-			imgui.table_setup_column(c'##controls', int(imgui.TableColumnFlags_.width_stretch),
-				0, unsafe { nil })
-
-			imgui.table_next_column()
-			imgui.text(c'Sim-Steps per Frame')
-
-			imgui.table_next_column()
-			available_width := imgui.get_content_region_avail().x
-			imgui.set_next_item_width(available_width)
-			imgui.slider_int(c'##sspf', app.sim.steps_per_frame, 1, 50, c'%d', 0)
-
-			imgui.end_table()
-		}
+		imgui.set_next_item_width(-1)
+		imgui.slider_int(c'##sspf', app.sim.steps_per_frame, 1, 50, c'%d sim steps per frame',
+			0)
 	}
 	imgui.end()
 }
