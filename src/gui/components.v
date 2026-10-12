@@ -40,8 +40,8 @@ fn draw_component_button(mut app data.App, id string, comp_type data.SelectedCom
 
 	is_selected := app.bench.placement.current_selected_component_type == comp_type
 	if is_selected {
-		imgui.push_style_color_vec4(int(imgui.Col_.border), imgui.ImVec4{0, 0, 0, 1})
-		imgui.push_style_var_float(int(imgui.StyleVar_.frame_border_size), 1.5)
+		style := imgui.get_style()
+		imgui.push_style_color_vec4(int(imgui.Col_.button), style.Colors[int(imgui.Col_.button_hovered)])
 	}
 
 	if imgui.image_button(id.str, texture_ref, size, uv0, uv1, bg_color, tint_color) {
@@ -50,7 +50,6 @@ fn draw_component_button(mut app data.App, id string, comp_type data.SelectedCom
 
 	if is_selected {
 		imgui.pop_style_color(1)
-		imgui.pop_style_var(1)
 	}
 
 	imgui.same_line(0, 5)
