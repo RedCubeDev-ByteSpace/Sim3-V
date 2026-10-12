@@ -13,6 +13,7 @@ import chip_catalog
 import storage
 import renderers
 import imgui
+import icons
 
 $if tinyc {
 	#flag @VMODROOT/hacks/tcc.c
@@ -48,6 +49,9 @@ fn main() {
 
 	// load fonts
 	fonts.init(mut app)
+
+	// generate icons
+	icons.generate(mut app)
 
 	// load the chips!!! wow i really need to clean up my initialization jesus
 	app.catalog.chips, app.catalog.groups = chip_catalog.load_catalogs('./src/res/chips/catalogs') or {

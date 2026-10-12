@@ -190,4 +190,20 @@ pub mut:
 		fixed_contact_label_font      rl.Font
 		fixed_contact_label_font_size f32
 	}
+
+	// icons -----------------------------------------------------------------------------------------------------------
+	// generated icons to be used all around the ui
+	icons struct {
+	pub mut:
+		components struct {
+		pub mut:
+			wire_button          rl.RenderTexture2D
+			bus_button           rl.RenderTexture2D
+			switch_button        rl.RenderTexture2D
+			fixed_contact_button rl.RenderTexture2D
+			clock_button         rl.RenderTexture2D
+			led_button           rl.RenderTexture2D
+			chip_button          rl.RenderTexture2D
+		}
+	}
 }
