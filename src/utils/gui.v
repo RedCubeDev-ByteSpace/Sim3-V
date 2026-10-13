@@ -14,7 +14,7 @@ pub fn gui_load_buffer(mut app data.App, text string) {
 		app.gui.input_buffer[i] = byte
 	}
 
-	app.gui.input_buffer[app.gui.input_buffer.len - 1] = 0
+	app.gui.input_buffer[bytes.len] = 0
 }
 
 pub fn gui_read_buffer(mut app data.App) string {

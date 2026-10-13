@@ -121,7 +121,7 @@ pub fn do_step_rising(mut app data.App, state voidptr, mut pins []data.ContactPo
 }
 
 pub fn do_step_falling(mut app data.App, state voidptr, mut pins []data.ContactPoint) {
-	// load a reference to the step rising function
+	// load a reference to the step falling function
 	C.lua_getglobal(state, c'StepFalling')
 
 	// convert the states of all pins into a lua table
@@ -137,6 +137,60 @@ pub fn do_step_falling(mut app data.App, state voidptr, mut pins []data.ContactP
 
 	// read the pin table back in
 	read_pin_table(mut app, state, mut pins)
+}
+
+pub fn do_save_state(state voidptr) string {
+	// load a reference to the serialization function
+	C.lua_getglobal(state, c'__serialize')
+
+	// load a reference to the save state function
+	C.lua_getglobal(state, c'SaveState')
+
+	// call the SaveState() function
+	if C.lua_pcall(state, 0, 1, 0) != 0 {
+		str := unsafe { cstring_to_vstring(C.lua_tostring(state, -1)) }
+		println('SaveState crashed!! \n' + str)
+		C.lua_pop(state, 1)
+		return ''
+	}
+
+	// call the __serialize() function
+	if C.lua_pcall(state, 1, 1, 0) != 0 {
+		str := unsafe { cstring_to_vstring(C.lua_tostring(state, -1)) }
+		println('__serialize crashed!! \n' + str)
+		C.lua_pop(state, 1)
+		return ''
+	}
+
+	// get the serialized data
+	chip_state := unsafe { cstring_to_vstring(C.lua_tostring(state, -1)) }
+	return chip_state
+}
+
+pub fn do_load_state(state voidptr, chip_state string) {
+	// load a reference to the load state function
+	C.lua_getglobal(state, c'LoadState')
+
+	// load a reference to the deserialization function
+	C.lua_getglobal(state, c'__deserialize')
+
+	// load the state as an argument
+	C.lua_pushstring(state, chip_state.str)
+
+	// call the __deserialize() function
+	if C.lua_pcall(state, 1, 1, 0) != 0 {
+		str := unsafe { cstring_to_vstring(C.lua_tostring(state, -1)) }
+		println('__deserialize crashed!! \n' + str)
+		C.lua_pop(state, 1)
+		return
+	}
+
+	// call the LoadState() function
+	if C.lua_pcall(state, 1, 0, 0) != 0 {
+		str := unsafe { cstring_to_vstring(C.lua_tostring(state, -1)) }
+		println('LoadState crashed!! \n' + str)
+		C.lua_pop(state, 1)
+	}
 }
 
 fn build_pin_table(state voidptr, pins []data.ContactPoint, include_input_state bool) {

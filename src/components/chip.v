@@ -119,7 +119,16 @@ pub fn Chip.new(mut app data.App, cfg data.ChipCfg) Chip {
 		c.script_capabilities.has_save_state = lua.has_function(c.lua_state, 'SaveState')
 	}
 
+	// run the scripts pin setup
 	c.setup_pins(mut app)
+
+	// if this is a stateful chip -> try loading the state
+	if c.catalog_entry.script.has_state && cfg.chip_state.len > 0 {
+		lua.do_load_state(c.lua_state, cfg.chip_state)
+	}
+
+	// also remember the previous clock state so we dont accidentally tick this chip even though it shouldn't be ticked
+	c.previous_clock_state = cfg.clock_pin_state
 
 	// initialize our last input state array so we can check if any inputs changed
 	c.last_input_states = []data.WireState{len: num_pins}
@@ -133,10 +142,16 @@ pub fn Chip.new(mut app data.App, cfg data.ChipCfg) Chip {
 
 pub fn (c Chip) get_cfg() data.ComponentCfg {
 	return data.ChipCfg{
-		pos:      c.pos
-		rot:      c.rotation.to_int()
-		color:    data.Color.from_rl(c.color)
-		chip_uid: c.chip_uid
+		pos:             c.pos
+		rot:             c.rotation.to_int()
+		color:           data.Color.from_rl(c.color)
+		chip_uid:        c.chip_uid
+		clock_pin_state: c.previous_clock_state
+		chip_state:      if c.catalog_entry.script.has_state && c.script_capabilities.has_save_state {
+			lua.do_save_state(c.lua_state)
+		} else {
+			''
+		}
 	}
 }
 
