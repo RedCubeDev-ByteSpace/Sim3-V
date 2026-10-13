@@ -33,7 +33,7 @@ fn recalculate_wire_meshes(mut app data.App) {
 		}
 
 		mut wire_mesh_wire_ids := []data.ComponentHandle{}
-		mut wire_mesh_contact_point_ids := []i64{}
+		mut wire_mesh_contact_point_ids := []data.ContactPointHandle{}
 
 		// find a starting wire for mesh building
 		for wire_stack in current_wire_positions.values() {
@@ -96,11 +96,11 @@ fn recalculate_wire_meshes(mut app data.App) {
 
 				// are there any contact points at this position?
 				if wire_from in current_contact_point_positions {
-					wire_mesh_contact_point_ids << current_contact_point_positions[wire_from]
+					wire_mesh_contact_point_ids << current_contact_point_positions[wire_from].handles()
 					current_contact_point_positions.delete(wire_from)
 				}
 				if wire_to in current_contact_point_positions {
-					wire_mesh_contact_point_ids << current_contact_point_positions[wire_to]
+					wire_mesh_contact_point_ids << current_contact_point_positions[wire_to].handles()
 					current_contact_point_positions.delete(wire_to)
 				}
 			}
@@ -109,8 +109,8 @@ fn recalculate_wire_meshes(mut app data.App) {
 		if wire_mesh_wire_ids.len > 0 {
 			// translate all contact point ids into real references
 			mut contact_points := []&data.ContactPoint{}
-			for cont_id in wire_mesh_contact_point_ids {
-				contact_points << app.sim.contact_point_table[cont_id] or { continue }
+			for cont_handle in wire_mesh_contact_point_ids {
+				contact_points << app.sim.contact_points.get_value(cont_handle)
 			}
 
 			// if theres no more wires to connect to this mesh

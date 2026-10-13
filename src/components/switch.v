@@ -43,8 +43,8 @@ pub fn Switch.new(mut app data.App, cfg data.SwitchCfg) Switch {
 		1 { .high }
 		else { .floating }
 	})
-	app.sim.contact_point_table[s.contact_point.cont_id] = &s.contact_point
-	utils.register_contact_point(mut app, s.pos, s.contact_point.cont_id)
+	s.contact_point.contact_handle = utils.add_contact_point(mut app, s.contact_point)
+	utils.register_contact_point(mut app, s.pos.x, s.pos.y, mut s.contact_point)
 
 	// done :)
 	return s
@@ -72,17 +72,17 @@ fn (mut s Switch) interact(mut app data.App) {
 }
 
 pub fn (mut s Switch) on_move(mut app data.App) {
-	utils.unregister_contact_point(mut app, s.pos, s.contact_point.cont_id)
+	utils.unregister_contact_point(mut app, mut s.contact_point)
 }
 
 pub fn (mut s Switch) on_moved(mut app data.App) {
-	utils.register_contact_point(mut app, s.pos, s.contact_point.cont_id)
+	utils.register_contact_point(mut app, s.pos.x, s.pos.y, mut s.contact_point)
 	app.sim.wire_mesh_recalc_needed = true
 }
 
 pub fn (mut s Switch) on_delete(mut app data.App) {
-	utils.unregister_contact_point(mut app, s.pos, s.contact_point.cont_id)
-	app.sim.contact_point_table.delete(s.contact_point.cont_id)
+	utils.unregister_contact_point(mut app, mut s.contact_point)
+	app.sim.contact_points.remove(s.contact_point.contact_handle)
 	app.sim.wire_mesh_recalc_needed = true
 	utils.remove_component(mut app, s)
 }

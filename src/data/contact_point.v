@@ -9,16 +9,15 @@ pub enum ContactPointState {
 pub struct ContactPoint {
 mut:
 	output_state ContactPointState
-pub:
-	cont_id i64
 pub mut:
-	label       string
-	input_state WireState
+	contact_handle ContactPointHandle
+	pos_key        string
+	label          string
+	input_state    WireState
 }
 
 pub fn ContactPoint.new(mut app App, state ContactPointState) ContactPoint {
 	return ContactPoint{
-		cont_id:      app.sim.global_contact_point_counter++
 		output_state: state
 	}
 }

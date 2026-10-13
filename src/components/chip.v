@@ -40,8 +40,9 @@ pub fn Chip.new(mut app data.App, cfg data.ChipCfg) Chip {
 		chip_uid:      cfg.chip_uid
 		catalog_entry: app.catalog.chips[cfg.chip_uid]
 	}
-	chip_entry := app.catalog.chips[cfg.chip_uid]
-	height := chip_entry.pins.len / 2
+
+	// calculate the height of the chip based on the number of pins it has
+	height := c.catalog_entry.pins.len / 2
 
 	// initialize the component base with all the standardized data
 	c.ComponentBase = data.ComponentBase.new_chip(mut app, cfg.pos, vec.vec2[int](height,
@@ -52,31 +53,53 @@ pub fn Chip.new(mut app data.App, cfg data.ChipCfg) Chip {
 	app.sim.wire_mesh_recalc_needed = true
 
 	// create a dummy name for this component
-	c.comp_name = '${chip_entry.name} (${c.comp_handle.id}:${c.comp_handle.gen})'
+	c.comp_name = '${c.catalog_entry.name} (${c.comp_handle.id}:${c.comp_handle.gen})'
 
 	// calculate where this components bounding box is based on its rotation
 	c.aabb_offset = utils.get_aabb_offset_for_rotation(1, -f32(height) + 0.5, 2, height,
 		data.Rotation.from_int(cfg.rot))
 
+	// -----------------------------------------------------------------------------------------------------------------
 	// create a new contact points where wires can connect to
-	c.contact_points = []data.ContactPoint{len: chip_entry.pins.len}
-	for i in 0 .. chip_entry.pins.len / 2 {
-		index_left := chip_entry.pins.len / 2 - i - 1
+	num_pins := c.catalog_entry.pins.len
+
+	// create a new buffer for all contact points
+	c.contact_points = []data.ContactPoint{len: num_pins}
+
+	// go through half of the pins
+	// -> we will create a pair of pins per simulation
+	//   +---+
+	//  [|   |] <- and so on
+	//  [|   |] <- then these
+	//  [|   |] <- then these
+	//  [|   |] <- these two first
+	//   +---+
+	for i in 0 .. num_pins / 2 {
+		// first the left sides entry
+		index_left := num_pins / 2 - i - 1
+
+		// create a contact point
 		c.contact_points[index_left] = data.ContactPoint.new(mut app, .floating)
-		c.contact_points[index_left].label = chip_entry.pins[index_left].label
 
-		app.sim.contact_point_table[c.contact_points[index_left].cont_id] = &c.contact_points[index_left]
+		// assign it its label
+		c.contact_points[index_left].label = c.catalog_entry.pins[index_left].label
 
+		// add it to the global contact point register
 		lx, ly := utils.translate_point(cfg.pos, 0, -i, data.Rotation.from_int(cfg.rot))
-		utils.register_contact_point(mut app, vec.vec2(lx, ly), c.contact_points[index_left].cont_id)
+		c.contact_points[index_left].contact_handle = utils.add_contact_point(mut app,
+			c.contact_points[index_left])
 
-		index_right := chip_entry.pins.len / 2 + i
+		// place it at a location in the sim space
+		utils.register_contact_point(mut app, lx, ly, mut c.contact_points[index_left])
+
+		// then do the other side, same thing as above
+		index_right := num_pins / 2 + i
 		c.contact_points[index_right] = data.ContactPoint.new(mut app, .floating)
-		c.contact_points[index_right].label = chip_entry.pins[index_right].label
-		app.sim.contact_point_table[c.contact_points[index_right].cont_id] = &c.contact_points[index_right]
-
+		c.contact_points[index_right].label = c.catalog_entry.pins[index_right].label
 		rx, ry := utils.translate_point(cfg.pos, 4, -i, data.Rotation.from_int(cfg.rot))
-		utils.register_contact_point(mut app, vec.vec2(rx, ry), c.contact_points[index_right].cont_id)
+		c.contact_points[index_right].contact_handle = utils.add_contact_point(mut app,
+			c.contact_points[index_right])
+		utils.register_contact_point(mut app, rx, ry, mut c.contact_points[index_right])
 	}
 
 	// try to load the script for this chip
@@ -99,7 +122,7 @@ pub fn Chip.new(mut app data.App, cfg data.ChipCfg) Chip {
 	c.setup_pins(mut app)
 
 	// initialize our last input state array so we can check if any inputs changed
-	c.last_input_states = []data.WireState{len: chip_entry.pins.len}
+	c.last_input_states = []data.WireState{len: num_pins}
 	for i in 0 .. c.last_input_states.len {
 		c.last_input_states[i] = .uninitialized
 	}
@@ -127,44 +150,32 @@ fn (mut c Chip) setup_pins(mut app data.App) {
 }
 
 pub fn (mut c Chip) on_move(mut app data.App) {
-	chip_entry := c.catalog_entry
-	for i in 0 .. chip_entry.pins.len / 2 {
-		index_left := chip_entry.pins.len / 2 - i - 1
-		lx, ly := utils.translate_point(c.pos, 0, -i, c.rotation)
-		utils.unregister_contact_point(mut app, vec.vec2(lx, ly), c.contact_points[index_left].cont_id)
-
-		index_right := chip_entry.pins.len / 2 + i
-		rx, ry := utils.translate_point(c.pos, 4, -i, c.rotation)
-		utils.unregister_contact_point(mut app, vec.vec2(rx, ry), c.contact_points[index_right].cont_id)
+	// unregister all contact points from the location they were placed in
+	for i in 0 .. c.contact_points.len {
+		utils.unregister_contact_point(mut app, mut c.contact_points[i])
 	}
 }
 
 pub fn (mut c Chip) on_moved(mut app data.App) {
+	// reregister all contact points at their new positions
 	chip_entry := c.catalog_entry
 	for i in 0 .. chip_entry.pins.len / 2 {
 		index_left := chip_entry.pins.len / 2 - i - 1
 		lx, ly := utils.translate_point(c.pos, 0, -i, c.rotation)
-		utils.register_contact_point(mut app, vec.vec2(lx, ly), c.contact_points[index_left].cont_id)
+		utils.register_contact_point(mut app, lx, ly, mut c.contact_points[index_left])
 
 		index_right := chip_entry.pins.len / 2 + i
 		rx, ry := utils.translate_point(c.pos, 4, -i, c.rotation)
-		utils.register_contact_point(mut app, vec.vec2(rx, ry), c.contact_points[index_right].cont_id)
+		utils.register_contact_point(mut app, rx, ry, mut c.contact_points[index_right])
 	}
 	app.sim.wire_mesh_recalc_needed = true
 }
 
 pub fn (mut c Chip) on_delete(mut app data.App) {
-	chip_entry := c.catalog_entry
-	for i in 0 .. chip_entry.pins.len / 2 {
-		index_left := chip_entry.pins.len / 2 - i - 1
-		lx, ly := utils.translate_point(c.pos, 0, -i, c.rotation)
-		utils.unregister_contact_point(mut app, vec.vec2(lx, ly), c.contact_points[index_left].cont_id)
-		app.sim.contact_point_table.delete(c.contact_points[index_left].cont_id)
-
-		index_right := chip_entry.pins.len / 2 + i
-		rx, ry := utils.translate_point(c.pos, 4, -i, c.rotation)
-		utils.unregister_contact_point(mut app, vec.vec2(rx, ry), c.contact_points[index_right].cont_id)
-		app.sim.contact_point_table.delete(c.contact_points[index_right].cont_id)
+	// unregister all contact points
+	for i in 0 .. c.contact_points.len {
+		utils.unregister_contact_point(mut app, mut c.contact_points[i])
+		app.sim.contact_points.remove(c.contact_points[i].contact_handle)
 	}
 	app.sim.wire_mesh_recalc_needed = true
 

@@ -37,8 +37,8 @@ pub fn FixedContact.new(mut app data.App, cfg data.FixedContactCfg) FixedContact
 
 	// create a new contact point where wires can connect to
 	c.contact_point = data.ContactPoint.new(mut app, if cfg.state { .high } else { .low })
-	app.sim.contact_point_table[c.contact_point.cont_id] = &c.contact_point
-	utils.register_contact_point(mut app, c.pos, c.contact_point.cont_id)
+	c.contact_point.contact_handle = utils.add_contact_point(mut app, c.contact_point)
+	utils.register_contact_point(mut app, c.pos.x, c.pos.y, mut c.contact_point)
 
 	// done :)
 	return c
@@ -54,17 +54,17 @@ pub fn (f FixedContact) get_cfg() data.ComponentCfg {
 }
 
 pub fn (mut f FixedContact) on_move(mut app data.App) {
-	utils.unregister_contact_point(mut app, f.pos, f.contact_point.cont_id)
+	utils.unregister_contact_point(mut app, mut f.contact_point)
 }
 
 pub fn (mut f FixedContact) on_moved(mut app data.App) {
-	utils.register_contact_point(mut app, f.pos, f.contact_point.cont_id)
+	utils.register_contact_point(mut app, f.pos.x, f.pos.y, mut f.contact_point)
 	app.sim.wire_mesh_recalc_needed = true
 }
 
 pub fn (mut f FixedContact) on_delete(mut app data.App) {
-	utils.unregister_contact_point(mut app, f.pos, f.contact_point.cont_id)
-	app.sim.contact_point_table.delete(f.contact_point.cont_id)
+	utils.unregister_contact_point(mut app, mut f.contact_point)
+	app.sim.contact_points.remove(f.contact_point.contact_handle)
 	app.sim.wire_mesh_recalc_needed = true
 	utils.remove_component(mut app, f)
 }

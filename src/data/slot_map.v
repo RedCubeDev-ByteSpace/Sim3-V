@@ -93,6 +93,26 @@ pub fn (sm SlotMap[T]) get(e SlotMapHandle) &T {
 	return &sm.data[slot.index]
 }
 
+// Safely retrieve a value copy if needed
+pub fn (sm SlotMap[T]) get_value(e SlotMapHandle) T {
+	// sorry mate
+	if e.id < 0 || e.id >= sm.slots.len {
+		panic('Invalid handle passed into SlotMap.get()!')
+	}
+
+	// get the slot pointed to by the handle
+	slot := sm.slots[e.id]
+
+	// has the data inside the slot changed or was it freed?
+	if slot.gen != e.gen || slot.index == -1 {
+		// sorry
+		panic('Handle to already freed entry passed into SlotMap.get()!')
+	}
+
+	// otherwise: return the data!
+	return sm.data[slot.index]
+}
+
 // Remove a component using swap-and-pop to maintain a packed dense array
 pub fn (mut sm SlotMap[T]) remove(e SlotMapHandle) bool {
 	if e.id < 0 || e.id >= sm.slots.len {

@@ -34,8 +34,8 @@ pub fn LED.new(mut app data.App, cfg data.LEDCfg) LED {
 
 	// create a new contact point where wires can connect to
 	l.contact_point = data.ContactPoint.new(mut app, .floating)
-	app.sim.contact_point_table[l.contact_point.cont_id] = &l.contact_point
-	utils.register_contact_point(mut app, l.pos, l.contact_point.cont_id)
+	l.contact_point.contact_handle = utils.add_contact_point(mut app, l.contact_point)
+	utils.register_contact_point(mut app, l.pos.x, l.pos.y, mut l.contact_point)
 
 	// done :)
 	return l
@@ -50,17 +50,17 @@ pub fn (l LED) get_cfg() data.ComponentCfg {
 }
 
 pub fn (mut l LED) on_move(mut app data.App) {
-	utils.unregister_contact_point(mut app, l.pos, l.contact_point.cont_id)
+	utils.unregister_contact_point(mut app, mut l.contact_point)
 }
 
 pub fn (mut l LED) on_moved(mut app data.App) {
-	utils.register_contact_point(mut app, l.pos, l.contact_point.cont_id)
+	utils.register_contact_point(mut app, l.pos.x, l.pos.y, mut l.contact_point)
 	app.sim.wire_mesh_recalc_needed = true
 }
 
 pub fn (mut l LED) on_delete(mut app data.App) {
-	utils.unregister_contact_point(mut app, l.pos, l.contact_point.cont_id)
-	app.sim.contact_point_table.delete(l.contact_point.cont_id)
+	utils.unregister_contact_point(mut app, mut l.contact_point)
+	app.sim.contact_points.remove(l.contact_point.contact_handle)
 	app.sim.wire_mesh_recalc_needed = true
 	utils.remove_component(mut app, l)
 }
