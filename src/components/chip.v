@@ -44,11 +44,8 @@ pub fn Chip.new(mut app data.App, cfg data.ChipCfg) Chip {
 	height := chip_entry.pins.len / 2
 
 	// initialize the component base with all the standardized data
-	c.ComponentBase = data.ComponentBase.new(mut app, cfg.pos, vec.vec2[int](height, 2),
-		data.Rotation.from_int(cfg.rot), cfg.color.to_rl(), false)
-
-	c.is_chip = true
-	c.has_step = true
+	c.ComponentBase = data.ComponentBase.new_chip(mut app, cfg.pos, vec.vec2[int](height,
+		2), data.Rotation.from_int(cfg.rot), cfg.color.to_rl())
 
 	// add this to the global component list
 	c.comp_handle = utils.add_component(mut app, c)

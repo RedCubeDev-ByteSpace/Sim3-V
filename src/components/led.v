@@ -20,7 +20,7 @@ pub fn LED.new(mut app data.App, cfg data.LEDCfg) LED {
 
 	// initialize the component base with all the standardized data
 	l.ComponentBase = data.ComponentBase.new(mut app, cfg.pos, vec.vec2[int](2, 2), data.Rotation.from_int(cfg.rot),
-		cfg.color.to_rl(), false)
+		cfg.color.to_rl())
 
 	// add this wire to the global component list
 	l.comp_handle = utils.add_component(mut app, l)

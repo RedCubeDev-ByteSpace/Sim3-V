@@ -24,8 +24,8 @@ pub fn Switch.new(mut app data.App, cfg data.SwitchCfg) Switch {
 	}
 
 	// initialize the component base with all the standardized data
-	s.ComponentBase = data.ComponentBase.new(mut app, cfg.pos, vec.vec2[int](2, 2), data.Rotation.from_int(cfg.rot),
-		cfg.color.to_rl(), true)
+	s.ComponentBase = data.ComponentBase.new_interactable(mut app, cfg.pos, vec.vec2[int](2,
+		2), data.Rotation.from_int(cfg.rot), cfg.color.to_rl())
 
 	// add this wire to the global component list
 	s.comp_handle = utils.add_component(mut app, s)

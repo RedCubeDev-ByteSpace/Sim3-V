@@ -23,7 +23,7 @@ pub fn FixedContact.new(mut app data.App, cfg data.FixedContactCfg) FixedContact
 
 	// initialize the component base with all the standardized data
 	c.ComponentBase = data.ComponentBase.new(mut app, cfg.pos, vec.vec2[int](1, 1), data.Rotation.from_int(cfg.rot),
-		cfg.color.to_rl(), false)
+		cfg.color.to_rl())
 
 	// add this wire to the global component list
 	c.comp_handle = utils.add_component(mut app, c)

@@ -78,6 +78,7 @@ fn main() {
 	imstyle.FrameBorderSize = 1
 	imstyle.Colors[int(imgui.Col_.button)] = imstyle.Colors[int(imgui.Col_.window_bg)]
 	imstyle.Colors[int(imgui.Col_.button_hovered)] = imstyle.Colors[int(imgui.Col_.header)]
+	imstyle.Colors[int(imgui.Col_.header)] = imstyle.Colors[int(imgui.Col_.window_bg)]
 
 	io.ConfigWindowsMoveFromTitleBarOnly = true
 

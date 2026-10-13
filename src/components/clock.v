@@ -34,9 +34,8 @@ pub fn Clock.new(mut app data.App, cfg data.ClockCfg) Clock {
 	}
 
 	// initialize the component base with all the standardized data
-	c.ComponentBase = data.ComponentBase.new(mut app, cfg.pos, vec.vec2[int](2, 2), data.Rotation.from_int(cfg.rot),
-		cfg.color.to_rl(), false)
-	c.has_step = true
+	c.ComponentBase = data.ComponentBase.new_steppable(mut app, cfg.pos, vec.vec2[int](2,
+		2), data.Rotation.from_int(cfg.rot), cfg.color.to_rl(), false)
 
 	// add this wire to the global component list
 	c.comp_handle = utils.add_component(mut app, c)

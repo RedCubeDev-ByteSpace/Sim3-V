@@ -8,6 +8,9 @@ pub:
 	gen int
 }
 
+pub type ComponentHandle = SlotMapHandle
+pub type ContactPointHandle = SlotMapHandle
+
 // ---------------------------------------------------------------------------------------------------------------------
 // An internal slot for sparse lookup inside a slot map
 struct Slot {

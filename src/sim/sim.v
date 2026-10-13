@@ -37,14 +37,14 @@ pub fn step_simulation(mut app data.App) {
 }
 
 fn step_components(mut app data.App, delta f32) {
-	for mut comp_handle in app.sim.component_views.other_steppables {
+	for mut comp_handle in app.sim.component_views.other_steppables.handles() {
 		mut comp := app.sim.components.get(comp_handle)
 		comp.step(mut app, delta)
 	}
 }
 
 fn step_chips(mut app data.App) {
-	for mut comp_handle in app.sim.component_views.chips {
+	for mut comp_handle in app.sim.component_views.chips.handles() {
 		mut comp := app.sim.components.get(comp_handle)
 		comp.step(mut app, 0)
 	}

@@ -6,7 +6,7 @@ import raylib as rl
 pub struct ComponentBase {
 mut:
 	// base component properties
-	comp_handle           SlotMapHandle
+	comp_handle           ComponentHandle
 	comp_name             string
 	pos                   vec.Vec2[int]
 	aabb_offset           vec.Vec2[f32] = vec.vec2[f32](0, 0)
@@ -20,17 +20,48 @@ mut:
 	component_window_open bool
 }
 
-pub fn ComponentBase.new(mut app App, pos vec.Vec2[int], size vec.Vec2[int], rot Rotation, color rl.Color, has_interaction bool) ComponentBase {
+pub fn ComponentBase.new(mut app App, pos vec.Vec2[int], size vec.Vec2[int], rot Rotation, color rl.Color) ComponentBase {
+	return ComponentBase{
+		pos:      pos
+		size:     size
+		rotation: rot
+		color:    color
+	}
+}
+
+pub fn ComponentBase.new_interactable(mut app App, pos vec.Vec2[int], size vec.Vec2[int], rot Rotation, color rl.Color) ComponentBase {
 	return ComponentBase{
 		pos:             pos
 		size:            size
 		rotation:        rot
 		color:           color
+		has_interaction: true
+	}
+}
+
+pub fn ComponentBase.new_steppable(mut app App, pos vec.Vec2[int], size vec.Vec2[int], rot Rotation, color rl.Color, has_interaction bool) ComponentBase {
+	return ComponentBase{
+		pos:             pos
+		size:            size
+		rotation:        rot
+		color:           color
+		has_step:        true
 		has_interaction: has_interaction
 	}
 }
 
-pub fn (c ComponentBase) get_handle() SlotMapHandle {
+pub fn ComponentBase.new_chip(mut app App, pos vec.Vec2[int], size vec.Vec2[int], rot Rotation, color rl.Color) ComponentBase {
+	return ComponentBase{
+		pos:      pos
+		size:     size
+		rotation: rot
+		color:    color
+		has_step: true
+		is_chip:  true
+	}
+}
+
+pub fn (c ComponentBase) get_handle() ComponentHandle {
 	return c.comp_handle
 }
 

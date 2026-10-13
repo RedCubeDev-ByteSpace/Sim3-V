@@ -33,7 +33,7 @@ pub fn Wire.new(mut app data.App, cfg data.WireCfg) Wire {
 	utils.register_wire(mut app, w.wire_from, w.comp_handle)
 	utils.register_wire(mut app, w.wire_to, w.comp_handle)
 
-	// new wire! recalculate the meshes
+	// new wire! recalculate the meshes!!
 	app.sim.wire_mesh_recalc_needed = true
 
 	// done :)

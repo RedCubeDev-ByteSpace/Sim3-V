@@ -73,14 +73,14 @@ pub mut:
 
 		component_views struct {
 		pub mut:
-			chips            []SlotMapHandle
-			other_steppables []SlotMapHandle
-			wires            []SlotMapHandle
-			non_wires        []SlotMapHandle
+			chips            HandleList[ComponentHandle]
+			other_steppables HandleList[ComponentHandle]
+			wires            HandleList[ComponentHandle]
+			non_wires        HandleList[ComponentHandle]
 		}
 
 		wire_mesh_recalc_needed bool
-		wire_positions          map[string][]SlotMapHandle // vec2 -> comp_id
+		wire_positions          map[string]HandleList[ComponentHandle] // vec2 -> comp_id
 		wire_meshes             []WireMesh           = []
 		wire_branching_points   []WireBranchingPoint = []
 
@@ -98,13 +98,13 @@ pub mut:
 	pub mut:
 		bench_state                   BenchState
 		return_after_move_bench_state BenchState
-		selected_components           []SlotMapHandle
+		selected_components           []ComponentHandle
 		marching_ants_starting_point  int
 		marching_ants_frame_counter   int
 
 		wire_moving struct {
 		pub mut:
-			wire_handle    SlotMapHandle
+			wire_handle    ComponentHandle
 			wire_end       WireEnd
 			draw_hover_box bool
 		}

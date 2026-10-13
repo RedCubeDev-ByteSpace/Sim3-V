@@ -69,7 +69,7 @@ fn handle_wire_move(mut app data.App) bool {
 		app.bench.wire_moving.draw_hover_box = false
 
 		// are we currently hovering a movement box of a wire?
-		for wire_handle in app.sim.component_views.wires {
+		for wire_handle in app.sim.component_views.wires.handles() {
 			wire := app.sim.components.get(wire_handle)
 
 			// dont target any wires that are already selected, moving the entire wire takes precedence over moving only

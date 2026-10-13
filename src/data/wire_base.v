@@ -10,7 +10,7 @@ pub interface IWireBase {
 pub struct WireBase {
 mut:
 	// base component properties
-	comp_handle           SlotMapHandle
+	comp_handle           ComponentHandle
 	comp_name             string
 	wire_from             vec.Vec2[int]
 	wire_to               vec.Vec2[int]
@@ -28,7 +28,7 @@ pub fn WireBase.new(mut app App, wire_from vec.Vec2[int], wire_to vec.Vec2[int],
 	}
 }
 
-pub fn (c WireBase) get_handle() SlotMapHandle {
+pub fn (c WireBase) get_handle() ComponentHandle {
 	return c.comp_handle
 }
 

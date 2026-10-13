@@ -37,7 +37,7 @@ fn draw_wires(mut app data.App, view_aabb data.AABB) {
 		return
 	}
 
-	for comp_handle in app.sim.component_views.wires {
+	for comp_handle in app.sim.component_views.wires.handles() {
 		comp := app.sim.components.get(comp_handle)
 
 		// only draw components that are touching the current viewports aabb
@@ -53,7 +53,7 @@ fn draw_wires(mut app data.App, view_aabb data.AABB) {
 }
 
 fn draw_components(mut app data.App, view_aabb data.AABB) {
-	for comp_handle in app.sim.component_views.non_wires {
+	for comp_handle in app.sim.component_views.non_wires.handles() {
 		comp := app.sim.components.get(comp_handle)
 
 		// only draw components that are touching the current viewports aabb

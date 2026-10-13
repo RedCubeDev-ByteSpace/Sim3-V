@@ -22,31 +22,32 @@ pub fn exit_component_placement(mut app data.App) {
 	app.bench.bench_state = .idle
 }
 
-pub fn add_component(mut app data.App, component data.IComponent) data.SlotMapHandle {
+pub fn add_component(mut app data.App, component data.IComponent) data.ComponentHandle {
 	handle := app.sim.components.add(component)
 
+	// -----------------------------------------------------------------------------------------------------------------
 	// also add this component to all relevant views
 	is_wire := component is data.IWireBase
 
 	// if this is a wire...
 	if is_wire {
-		// add to the wire list
-		app.sim.component_views.wires << handle
+		// sort it into the wire list
+		app.sim.component_views.wires.add(handle)
 		return handle
 	} else {
-		// otherwise: add to the non-wire list
-		app.sim.component_views.non_wires << handle
+		// otherwise: sort it into the non-wire list
+		app.sim.component_views.non_wires.add(handle)
 	}
 
-	// keep track of any chip components because they may be stepped through separately
+	// keep track of any chip components because they may be skipped when stepping the sim for performance reasons
 	if component.is_chip() {
-		app.sim.component_views.chips << handle
+		app.sim.component_views.chips.add(handle)
 		return handle
 	}
 
 	// also separately keep track of components that have a step() function
 	if component.has_step() {
-		app.sim.component_views.other_steppables << handle
+		app.sim.component_views.other_steppables.add(handle)
 	}
 
 	return handle
@@ -56,47 +57,11 @@ pub fn remove_component(mut app data.App, component data.IComponent) {
 	handle := component.get_handle()
 	app.sim.components.remove(handle)
 
-	// also add this component to all relevant views
-	is_wire := component is data.IWireBase
-
-	// if this is a wire...
-	if is_wire {
-		// remove it from the wire view
-		for i, wire_handle in app.sim.component_views.wires {
-			if wire_handle == handle {
-				app.sim.component_views.wires.delete(i)
-				return
-			}
-		}
-
-		return
-	} else {
-		// otherwise: remove it from the non-wire view
-		for i, comp_handle in app.sim.component_views.non_wires {
-			if comp_handle == handle {
-				app.sim.component_views.non_wires.delete(i)
-				break
-			}
-		}
-	}
-
-	if component.is_chip() {
-		for i, comp_handle in app.sim.component_views.chips {
-			if comp_handle == handle {
-				app.sim.component_views.chips.delete(i)
-				return
-			}
-		}
-	}
-	// if this has a step function -> remove it from the step view
-	else if component.has_step() {
-		for i, comp_handle in app.sim.component_views.other_steppables {
-			if comp_handle == handle {
-				app.sim.component_views.other_steppables.delete(i)
-				return
-			}
-		}
-	}
+	// make sure it gets removed from any views
+	app.sim.component_views.wires.remove(handle)
+	app.sim.component_views.non_wires.remove(handle)
+	app.sim.component_views.chips.remove(handle)
+	app.sim.component_views.other_steppables.remove(handle)
 }
 
 // this is required because C will always round towards zero
