@@ -182,8 +182,7 @@
     ],
     "script": {
       "source": "stateful/74LS161.lua",
-      "has_state": true,
-      "ClockPin": 2
+      "has_state": true
     }
   },
   {
@@ -211,8 +210,7 @@
     ],
     "script": {
       "source": "stateful/74LS162.lua",
-      "has_state": true,
-      "ClockPin": 2
+      "has_state": true
     }
   },
   {
@@ -221,27 +219,24 @@
     "group": "Stateful Chips",
     "description": "8-Bit SIPO Shift Register",
     "pins": [
-      { "label": "CLR", "is_active_low": true },
-      { "label": "CLK", "is_clock": true },
-      { "label": "A"   },
-      { "label": "B"   },
-      { "label": "C"   },
-      { "label": "D"   },
-      { "label": "ENP" },
+      { "label": "A"  },
+      { "label": "B"  },
+      { "label": "QA" },
+      { "label": "QB" },
+      { "label": "QC" },
+      { "label": "QD" },
       { "label": "GND", "is_power": true },
-      { "label": "LOAD", "is_active_low": true },
-      { "label": "ENT" },
-      { "label": "QD"  },
-      { "label": "QC"  },
-      { "label": "QB"  },
-      { "label": "QA"  },
-      { "label": "RCO" },
+      { "label": "CLK", "is_clock": true },
+      { "label": "CLR", "is_active_low": true },
+      { "label": "QE" },
+      { "label": "QF" },
+      { "label": "QG" },
+      { "label": "QH" },
       { "label": "VCC", "is_power": true }
     ],
     "script": {
-      "source": "stateful/74LS162.lua",
-      "has_state": true,
-      "ClockPin": 2
+      "source": "stateful/74LS164.lua",
+      "has_state": true
     }
   }
 ]
