@@ -131,9 +131,10 @@ pub struct LEDCfg {
 pub struct ChipCfg {
 	ComponentBaseCfg
 pub:
-	chip_uid        string
-	chip_state      string
-	clock_pin_state bool
+	chip_uid       string
+	chip_state     string
+	pin_out_states []int
+	pin_in_states  []int
 }
 
 // ---------------------------------------------------------------------------------------------------------------------

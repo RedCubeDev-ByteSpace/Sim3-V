@@ -102,6 +102,12 @@ pub fn Chip.new(mut app data.App, cfg data.ChipCfg) Chip {
 		utils.register_contact_point(mut app, rx, ry, mut c.contact_points[index_right])
 	}
 
+	// initialize our last input state array so we can check if any inputs changed
+	c.last_input_states = []data.WireState{len: num_pins}
+	for i in 0 .. c.last_input_states.len {
+		c.last_input_states[i] = .uninitialized
+	}
+
 	// try to load the script for this chip
 	c.lua_state_initialized = true
 	c.lua_state = lua.setup_chip_lua_state(app, cfg.chip_uid) or {
@@ -127,13 +133,30 @@ pub fn Chip.new(mut app data.App, cfg data.ChipCfg) Chip {
 		lua.do_load_state(c.lua_state, cfg.chip_state)
 	}
 
-	// also remember the previous clock state so we dont accidentally tick this chip even though it shouldn't be ticked
-	c.previous_clock_state = cfg.clock_pin_state
+	// ALSO remember all other previous pin states
+	for i, state_i in cfg.pin_in_states {
+		state := match state_i {
+			0 { data.WireState.low }
+			1 { data.WireState.high }
+			2 { data.WireState.error }
+			else { data.WireState.uninitialized }
+		}
 
-	// initialize our last input state array so we can check if any inputs changed
-	c.last_input_states = []data.WireState{len: num_pins}
-	for i in 0 .. c.last_input_states.len {
-		c.last_input_states[i] = .uninitialized
+		c.contact_points[i].input_state = state
+
+		// the clock too :)
+		if c.catalog_entry.script.has_state && i == c.catalog_entry.clock_pin {
+			c.previous_clock_state = state == .high
+		}
+	}
+	for i, state_i in cfg.pin_out_states {
+		state := match state_i {
+			0 { data.ContactPointState.low }
+			1 { data.ContactPointState.high }
+			else { data.ContactPointState.floating }
+		}
+
+		c.contact_points[i].set_output_state(mut app, state)
 	}
 
 	// done :)
@@ -142,12 +165,13 @@ pub fn Chip.new(mut app data.App, cfg data.ChipCfg) Chip {
 
 pub fn (c Chip) get_cfg() data.ComponentCfg {
 	return data.ChipCfg{
-		pos:             c.pos
-		rot:             c.rotation.to_int()
-		color:           data.Color.from_rl(c.color)
-		chip_uid:        c.chip_uid
-		clock_pin_state: c.previous_clock_state
-		chip_state:      if c.catalog_entry.script.has_state && c.script_capabilities.has_save_state {
+		pos:            c.pos
+		rot:            c.rotation.to_int()
+		color:          data.Color.from_rl(c.color)
+		chip_uid:       c.chip_uid
+		pin_in_states:  c.contact_points.map(int(it.input_state))
+		pin_out_states: c.contact_points.map(int(it.get_output_state()))
+		chip_state:     if c.catalog_entry.script.has_state && c.script_capabilities.has_save_state {
 			lua.do_save_state(c.lua_state)
 		} else {
 			''
