@@ -2,6 +2,11 @@
 -- Logic Implementation for the 74LS161, 4-Bit Binary Counter
 -- /red - 2026-05-21
 -- ---------------------------------------------------------------------------------------------------------------------
+function PropertySetup()
+
+    addIntegerSliderProperty("Count", 0, 15, 0)
+end
+
 function PinSetup()
 
     -- power pins are just gonna be inputs
@@ -29,7 +34,6 @@ function PinSetup()
 end
 
 -- ---------------------------------------------------------------------------------------------------------------------
-num = 0
 rippleCarry = false
 -- ---------------------------------------------------------------------------------------------------------------------
 
@@ -37,11 +41,11 @@ function Step()
 
     -- if CLR low -> instantly clear the state and output
     if pins.CLR.input == PIN_LOW then
-        num = 0;
+        properties.Count = 0;
         rippleCarry = false;
     else
         -- if the output is 1111 and the pin ENT is high -> turn on ripple carry
-        rippleCarry = num == 15 and pins.ENT.input == 1;
+        rippleCarry = properties.Count == 15 and pins.ENT.input == 1;
     end
 
     updatePins();
@@ -56,7 +60,7 @@ function StepRising()
     if pins.CLR.input == PIN_LOW then
 
         -- just clear the state, then end this step
-        num = 0;
+        properties.Count = 0;
         rippleCarry = false;
         updatePins();
 
@@ -66,7 +70,7 @@ function StepRising()
     -- if LOAD is low
     -- -> load the value from the inputs
     if pins.LOAD.input == PIN_LOW then
-        num = BinToNum({
+        properties.Count = BinToNum({
             pins.D.input,
             pins.C.input,
             pins.B.input,
@@ -80,11 +84,11 @@ function StepRising()
     -- if ENP and ENT are high
     -- -> counting is enabled, count!
     if pins.ENP.input == PIN_HIGH and pins.ENT.input == PIN_HIGH then
-        num = num + 1;
+        properties.Count = properties.Count + 1;
 
         -- have we overflown our 4 bits?
-        if num > 15 then
-            num = 0      -- roll over
+        if properties.Count > 15 then
+            properties.Count = 0      -- roll over
         end
     end
 
@@ -95,7 +99,7 @@ end
 
 function updatePins()
 
-    state = NumToBin(num, 4);
+    state = NumToBin(properties.Count, 4);
     pins.QA .output = state[4];
     pins.QB .output = state[3];
     pins.QC .output = state[2];
@@ -106,13 +110,13 @@ end
 -- ---------------------------------------------------------------------------------------------------------------------
 
 function LoadState(state)
-    num         = state["num"];
-    rippleCarry = state["rippleCarry"];
+    properties.Count = state["num"];
+    rippleCarry      = state["rippleCarry"];
 end
 
 function SaveState()
     return {
-        num = num,
+        num = properties.Count,
         rippleCarry = rippleCarry
     };
 end

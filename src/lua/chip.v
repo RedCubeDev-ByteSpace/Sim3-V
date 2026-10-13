@@ -63,9 +63,66 @@ pub fn has_function(state voidptr, func_name string) bool {
 	return is_function
 }
 
-pub fn do_pin_setup(mut app data.App, state voidptr, mut pins []data.ContactPoint) {
+pub fn do_property_setup(state voidptr) []data.ChipProperty {
+	mut properties := &[]data.ChipProperty{}
+
+	// -----------------------------------------------------------------------------------------------------------------
+	// addIntSliderProperty(<name>, <min>, <max>, <default>)
+	C.lua_pushcfunction(state, fn [mut properties] (lstate voidptr) int {
+		name := unsafe { cstring_to_vstring(C.luaL_checkstring(lstate, 1)) }
+		min := C.luaL_checkinteger(lstate, 2)
+		max := C.luaL_checkinteger(lstate, 3)
+		default := C.luaL_checkinteger(lstate, 4)
+
+		properties << data.IntegerSliderChipProperty{
+			name:  name
+			min:   int(min)
+			max:   int(max)
+			value: int(default)
+		}
+
+		return 0
+	})
+	C.lua_setglobal(state, c'addIntegerSliderProperty')
+	// -----------------------------------------------------------------------------------------------------------------
+	// addIntegerProperty(<name>, <default>)
+	C.lua_pushcfunction(state, fn [mut properties] (lstate voidptr) int {
+		name := unsafe { cstring_to_vstring(C.luaL_checkstring(lstate, 1)) }
+		default := C.luaL_checkinteger(lstate, 2)
+
+		properties << data.IntChipProperty{
+			name:  name
+			value: int(default)
+		}
+
+		return 0
+	})
+	C.lua_setglobal(state, c'addIntegerProperty')
+	// load a reference to the setup function
+	C.lua_getglobal(state, c'PropertySetup')
+
+	// call the function
+	if C.lua_pcall(state, 0, 0, 0) != 0 {
+		str := unsafe { cstring_to_vstring(C.lua_tostring(state, -1)) }
+		println('PropertySetup crashed!! \n' + str)
+		C.lua_pop(state, 1)
+		return []
+	}
+
+	// unset all registration functions
+	C.lua_pushnil(state)
+	C.lua_setglobal(state, c'addIntegerSliderProperty')
+	C.lua_pushnil(state)
+	C.lua_setglobal(state, c'addIntegerProperty')
+	return *properties
+}
+
+pub fn do_pin_setup(mut app data.App, state voidptr, mut pins []data.ContactPoint, mut props []data.ChipProperty) {
 	// load a reference to the setup function
 	C.lua_getglobal(state, c'PinSetup')
+
+	// make all registered properties available here
+	build_property_table(state, props)
 
 	// convert the states of all pins into a lua table
 	build_pin_table(state, pins, false)
@@ -73,18 +130,24 @@ pub fn do_pin_setup(mut app data.App, state voidptr, mut pins []data.ContactPoin
 	// call the function
 	if C.lua_pcall(state, 0, 0, 0) != 0 {
 		str := unsafe { cstring_to_vstring(C.lua_tostring(state, -1)) }
-		println('Setup crashed!! \n' + str)
+		println('PinSetup crashed!! \n' + str)
 		C.lua_pop(state, 1)
 		return
 	}
 
 	// read the pin table back in
 	read_pin_table(mut app, state, mut pins)
+
+	// read the properties back in
+	read_property_table(state, mut props)
 }
 
-pub fn do_step(mut app data.App, state voidptr, mut pins []data.ContactPoint) {
+pub fn do_step(mut app data.App, state voidptr, mut pins []data.ContactPoint, mut props []data.ChipProperty) {
 	// load a reference to the step function
 	C.lua_getglobal(state, c'Step')
+
+	// make all registered properties available here
+	build_property_table(state, props)
 
 	// convert the states of all pins into a lua table
 	build_pin_table(state, pins, true)
@@ -99,11 +162,17 @@ pub fn do_step(mut app data.App, state voidptr, mut pins []data.ContactPoint) {
 
 	// read the pin table back in
 	read_pin_table(mut app, state, mut pins)
+
+	// read the properties back in
+	read_property_table(state, mut props)
 }
 
-pub fn do_step_rising(mut app data.App, state voidptr, mut pins []data.ContactPoint) {
+pub fn do_step_rising(mut app data.App, state voidptr, mut pins []data.ContactPoint, mut props []data.ChipProperty) {
 	// load a reference to the step rising function
 	C.lua_getglobal(state, c'StepRising')
+
+	// make all registered properties available here
+	build_property_table(state, props)
 
 	// convert the states of all pins into a lua table
 	build_pin_table(state, pins, true)
@@ -118,11 +187,17 @@ pub fn do_step_rising(mut app data.App, state voidptr, mut pins []data.ContactPo
 
 	// read the pin table back in
 	read_pin_table(mut app, state, mut pins)
+
+	// read the properties back in
+	read_property_table(state, mut props)
 }
 
-pub fn do_step_falling(mut app data.App, state voidptr, mut pins []data.ContactPoint) {
+pub fn do_step_falling(mut app data.App, state voidptr, mut pins []data.ContactPoint, mut props []data.ChipProperty) {
 	// load a reference to the step falling function
 	C.lua_getglobal(state, c'StepFalling')
+
+	// make all registered properties available here
+	build_property_table(state, props)
 
 	// convert the states of all pins into a lua table
 	build_pin_table(state, pins, true)
@@ -137,9 +212,15 @@ pub fn do_step_falling(mut app data.App, state voidptr, mut pins []data.ContactP
 
 	// read the pin table back in
 	read_pin_table(mut app, state, mut pins)
+
+	// read the properties back in
+	read_property_table(state, mut props)
 }
 
-pub fn do_save_state(state voidptr) string {
+pub fn do_save_state(state voidptr, props []data.ChipProperty) string {
+	// make all registered properties available here
+	build_property_table(state, props)
+
 	// load a reference to the serialization function
 	C.lua_getglobal(state, c'__serialize')
 
@@ -167,7 +248,10 @@ pub fn do_save_state(state voidptr) string {
 	return chip_state
 }
 
-pub fn do_load_state(state voidptr, chip_state string) {
+pub fn do_load_state(state voidptr, chip_state string, mut props []data.ChipProperty) {
+	// make all registered properties available here
+	build_property_table(state, props)
+
 	// load a reference to the load state function
 	C.lua_getglobal(state, c'LoadState')
 
@@ -190,7 +274,11 @@ pub fn do_load_state(state voidptr, chip_state string) {
 		str := unsafe { cstring_to_vstring(C.lua_tostring(state, -1)) }
 		println('LoadState crashed!! \n' + str)
 		C.lua_pop(state, 1)
+		return
 	}
+
+	// read the properties back in
+	read_property_table(state, mut props)
 }
 
 fn build_pin_table(state voidptr, pins []data.ContactPoint, include_input_state bool) {
@@ -247,7 +335,7 @@ fn read_pin_table(mut app data.App, state voidptr, mut pins []data.ContactPoint)
 		C.lua_getfield(state, -1, c'output')
 
 		// first: try to convert the value of the pin to an integer directly
-		mut is_integer := 0
+		mut is_integer := i32(0)
 		mut pin_state := C.lua_tointegerx(state, -1, &is_integer)
 
 		// if that didnt work:
@@ -262,6 +350,50 @@ fn read_pin_table(mut app data.App, state voidptr, mut pins []data.ContactPoint)
 			1 { .high }
 			else { .floating }
 		})
+	}
+
+	C.lua_pop(state, 1)
+}
+
+fn build_property_table(state voidptr, properties []data.ChipProperty) {
+	// create a lua table that contains the current state of all pins
+	C.lua_newtable(state)
+
+	for property in properties {
+		match property {
+			data.IntChipProperty {
+				C.lua_pushinteger(state, property.value)
+			}
+			data.IntegerSliderChipProperty {
+				C.lua_pushinteger(state, property.value)
+			}
+		}
+
+		// push the pin record onto the pin table
+		C.lua_setfield(state, -2, property.name.str)
+	}
+
+	// store this table in a global named "properties"
+	C.lua_setglobal(state, c'properties')
+}
+
+fn read_property_table(state voidptr, mut properties []data.ChipProperty) {
+	// get the "properties" global
+	C.lua_getglobal(state, c'properties')
+
+	// apply the changes made to the actual pins
+	for mut property in properties {
+		// get the record for this property on the stack
+		C.lua_getfield(state, -1, property.name.str)
+
+		match property {
+			data.IntChipProperty {
+				property.value = i32(C.lua_tointeger(state, -1))
+			}
+			data.IntegerSliderChipProperty {
+				property.value = i32(C.lua_tointeger(state, -1))
+			}
+		}
 	}
 
 	C.lua_pop(state, 1)

@@ -25,13 +25,17 @@ mut:
 
 	script_capabilities struct {
 	pub mut:
-		has_pin_setup    bool
-		has_step         bool
-		has_step_rising  bool
-		has_step_falling bool
-		has_load_state   bool
-		has_save_state   bool
+		has_property_setup bool
+		has_pin_setup      bool
+		has_step           bool
+		has_step_rising    bool
+		has_step_falling   bool
+		has_load_state     bool
+		has_save_state     bool
 	}
+
+	property_changed bool
+	properties       []data.ChipProperty
 }
 
 pub fn Chip.new(mut app data.App, cfg data.ChipCfg) Chip {
@@ -117,6 +121,7 @@ pub fn Chip.new(mut app data.App, cfg data.ChipCfg) Chip {
 
 	// find out which functions the chips script allows
 	if c.lua_state_initialized {
+		c.script_capabilities.has_property_setup = lua.has_function(c.lua_state, 'PropertySetup')
 		c.script_capabilities.has_pin_setup = lua.has_function(c.lua_state, 'PinSetup')
 		c.script_capabilities.has_step = lua.has_function(c.lua_state, 'Step')
 		c.script_capabilities.has_step_rising = lua.has_function(c.lua_state, 'StepRising')
@@ -125,12 +130,15 @@ pub fn Chip.new(mut app data.App, cfg data.ChipCfg) Chip {
 		c.script_capabilities.has_save_state = lua.has_function(c.lua_state, 'SaveState')
 	}
 
+	// run the property setup
+	c.setup_properties()
+
 	// run the scripts pin setup
 	c.setup_pins(mut app)
 
 	// if this is a stateful chip -> try loading the state
 	if c.catalog_entry.script.has_state && cfg.chip_state.len > 0 {
-		lua.do_load_state(c.lua_state, cfg.chip_state)
+		lua.do_load_state(c.lua_state, cfg.chip_state, mut c.properties)
 	}
 
 	// ALSO remember all other previous pin states
@@ -172,11 +180,20 @@ pub fn (c Chip) get_cfg() data.ComponentCfg {
 		pin_in_states:  c.contact_points.map(int(it.input_state))
 		pin_out_states: c.contact_points.map(int(it.get_output_state()))
 		chip_state:     if c.catalog_entry.script.has_state && c.script_capabilities.has_save_state {
-			lua.do_save_state(c.lua_state)
+			lua.do_save_state(c.lua_state, c.properties)
 		} else {
 			''
 		}
 	}
+}
+
+fn (mut c Chip) setup_properties() {
+	if !c.lua_state_initialized || !c.script_capabilities.has_property_setup {
+		return
+	}
+
+	// call the pin setup method
+	c.properties = lua.do_property_setup(c.lua_state)
 }
 
 fn (mut c Chip) setup_pins(mut app data.App) {
@@ -185,7 +202,7 @@ fn (mut c Chip) setup_pins(mut app data.App) {
 	}
 
 	// call the pin setup method
-	lua.do_pin_setup(mut app, c.lua_state, mut c.contact_points)
+	lua.do_pin_setup(mut app, c.lua_state, mut c.contact_points, mut c.properties)
 }
 
 pub fn (mut c Chip) on_move(mut app data.App) {
@@ -341,8 +358,8 @@ fn (mut c Chip) draw_component_window(mut app data.App) {
 	imgui.set_next_window_pos(imgui.ImVec2{pos_in_screen_space.x, pos_in_screen_space.y},
 		int(imgui.Cond_.appearing), imgui.ImVec2{})
 
-	if utils.gui_begin_component_window(c, 'Chip', c.component_window_open) {
-		if utils.gui_begin_comp_layout_table(50, 100) {
+	if utils.gui_begin_component_window(c, c.catalog_entry.name, c.component_window_open) {
+		if utils.gui_begin_comp_layout_table(50, 200) {
 			imgui.table_next_row(0, 0)
 
 			imgui.table_set_column_index(0)
@@ -350,6 +367,35 @@ fn (mut c Chip) draw_component_window(mut app data.App) {
 
 			imgui.table_set_column_index(1)
 			c.comp_name = utils.gui_do_text_input(mut app, '##name_input', c.comp_name)
+
+			if c.properties.len > 0 {
+				imgui.separator()
+			}
+
+			for prop in c.properties {
+				imgui.table_next_row(0, 0)
+
+				imgui.table_set_column_index(0)
+				utils.gui_do_label(prop.name)
+
+				imgui.table_set_column_index(1)
+				imgui.set_next_item_width(imgui.get_content_region_avail().x)
+
+				match prop {
+					data.IntegerSliderChipProperty {
+						if imgui.slider_int('##${prop.name}'.str, prop.value, prop.min,
+							prop.max, c'%d', 0)
+						{
+							c.property_changed = true
+						}
+					}
+					data.IntChipProperty {
+						if imgui.input_int('##${prop.name}'.str, prop.value, 1, 1, 0) {
+							c.property_changed = true
+						}
+					}
+				}
+			}
 
 			imgui.end_table()
 		}
@@ -372,7 +418,7 @@ pub fn (mut c Chip) step(mut app data.App, delta f32) {
 	}
 
 	// nothing to do
-	if !has_changed {
+	if !has_changed && !c.property_changed {
 		return
 	}
 
@@ -381,8 +427,11 @@ pub fn (mut c Chip) step(mut app data.App, delta f32) {
 		c.last_input_states[i] = contact.input_state
 	}
 
+	// reset the property changed flag
+	c.property_changed = false
+
 	// do a stateless step
-	lua.do_step(mut app, c.lua_state, mut c.contact_points)
+	lua.do_step(mut app, c.lua_state, mut c.contact_points, mut c.properties)
 
 	// if this is a stateless chip -> we're done!
 	chip_entry := app.catalog.chips[c.chip_uid]
@@ -403,13 +452,13 @@ pub fn (mut c Chip) step(mut app data.App, delta f32) {
 	// rising
 	if current_clock_state {
 		if c.script_capabilities.has_step_rising {
-			lua.do_step_rising(mut app, c.lua_state, mut c.contact_points)
+			lua.do_step_rising(mut app, c.lua_state, mut c.contact_points, mut c.properties)
 		}
 
 		// falling
 	} else {
 		if c.script_capabilities.has_step_falling {
-			lua.do_step_falling(mut app, c.lua_state, mut c.contact_points)
+			lua.do_step_falling(mut app, c.lua_state, mut c.contact_points, mut c.properties)
 		}
 	}
 
